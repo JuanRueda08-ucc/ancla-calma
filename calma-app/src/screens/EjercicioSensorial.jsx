@@ -67,6 +67,7 @@ export default function EjercicioSensorial() {
     <GuidedExerciseShell
       totalSteps={PASOS.length}
       currentStep={pasoIndex + 1}
+      durationSeconds={240}
       onBack={salir}
       footerLabel="Ejercicios sensoriales • 4 min"
     >

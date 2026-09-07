@@ -1,17 +1,36 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { AnimatePresence, motion } from 'framer-motion'
 import StarField from './StarField'
 import { NIGHT_SKY_BG } from '../styles/nightSky'
 
+const TICK_MS = 150
+
 export default function GuidedExerciseShell({
   totalSteps,
   currentStep,
+  durationSeconds,
   onBack,
   footerLabel,
   children,
 }) {
   const [pausado, setPausado] = useState(false)
-  const progreso = (currentStep / totalSteps) * 100
+  const [tiempoTranscurrido, setTiempoTranscurrido] = useState(0)
+
+  useEffect(() => {
+    if (pausado) return undefined
+
+    let ultimoTick = Date.now()
+    const id = setInterval(() => {
+      const ahora = Date.now()
+      const delta = (ahora - ultimoTick) / 1000
+      ultimoTick = ahora
+      setTiempoTranscurrido((prev) => prev + delta)
+    }, TICK_MS)
+
+    return () => clearInterval(id)
+  }, [pausado])
+
+  const progreso = Math.min(100, (tiempoTranscurrido / durationSeconds) * 100)
 
   return (
     <div className={`relative min-h-screen overflow-hidden ${NIGHT_SKY_BG} text-white`}>
@@ -41,7 +60,7 @@ export default function GuidedExerciseShell({
           <motion.div
             className="h-full rounded bg-aire-accent"
             animate={{ width: `${progreso}%` }}
-            transition={{ duration: 0.3, ease: 'easeOut' }}
+            transition={{ duration: TICK_MS / 1000, ease: 'linear' }}
           />
         </div>
 

@@ -55,6 +55,7 @@ export default function EjercicioGrounding() {
     <GuidedExerciseShell
       totalSteps={PASOS.length}
       currentStep={pasoIndex + 1}
+      durationSeconds={180}
       onBack={salir}
       footerLabel="Ejercicio de grounding • 3 min"
     >

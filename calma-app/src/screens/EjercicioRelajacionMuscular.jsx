@@ -102,6 +102,7 @@ export default function EjercicioRelajacionMuscular() {
     <GuidedExerciseShell
       totalSteps={PASOS.length}
       currentStep={pasoIndex + 1}
+      durationSeconds={300}
       onBack={salir}
       footerLabel="Relajación muscular • 5 min"
     >
