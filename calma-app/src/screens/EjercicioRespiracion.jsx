@@ -1,6 +1,6 @@
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { AnimatePresence, motion, useReducedMotion } from 'framer-motion'
+import { AnimatePresence, motion } from 'framer-motion'
 
 const FASES = ['Inhala…', 'Sostén…', 'Exhala…', 'Sostén…']
 const ESCALA_POR_FASE = [1.25, 1.25, 0.85, 0.85]
@@ -10,7 +10,6 @@ const DURACION_FASE_MS = 4000
 
 export default function EjercicioRespiracion() {
   const navigate = useNavigate()
-  const reduceMotion = useReducedMotion()
   const [faseIndex, setFaseIndex] = useState(0)
   const [sonidoActivo, setSonidoActivo] = useState(true)
 
@@ -52,9 +51,9 @@ export default function EjercicioRespiracion() {
             <motion.div
               className="flex h-[210px] w-[210px] items-center justify-center rounded-full bg-[radial-gradient(circle_at_35%_30%,#ffffff_0%,#EAF7FB_55%,#6FE3D6_130%)] shadow-[0_0_0_18px_rgba(111,227,214,0.10),0_0_60px_rgba(111,227,214,0.35)]"
               initial={{ scale: 0.85 }}
-              animate={{ scale: reduceMotion ? 1 : ESCALA_POR_FASE[faseIndex] }}
+              animate={{ scale: ESCALA_POR_FASE[faseIndex] }}
               transition={{
-                duration: reduceMotion ? 0 : DURACION_TRANSICION_POR_FASE[faseIndex],
+                duration: DURACION_TRANSICION_POR_FASE[faseIndex],
                 ease: 'easeInOut',
               }}
             >
