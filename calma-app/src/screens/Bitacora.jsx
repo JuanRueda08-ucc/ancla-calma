@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import { motion } from 'framer-motion'
 import BackButton from '../components/BackButton'
+import VoiceNoteRecorder from '../components/VoiceNoteRecorder'
 import { riseIn } from '../animations/transitions'
 
 const BLOB_RADIUS = '42% 58% 63% 37% / 41% 44% 56% 59%'
@@ -48,15 +49,18 @@ export default function Bitacora() {
   const [tagsActivos, setTagsActivos] = useState(new Set())
   const [emocionLibre, setEmocionLibre] = useState('')
   const [campos, setCampos] = useState(CAMPOS_INICIALES)
-  const [grabando, setGrabando] = useState(false)
+  const [notaVozBlob, setNotaVozBlob] = useState(null)
+  const [notaVozDuracion, setNotaVozDuracion] = useState(null)
   const [toastVisible, setToastVisible] = useState(false)
+  // Cambiar esta key fuerza a React a desmontar/remontar VoiceNoteRecorder al
+  // guardar, reutilizando su cleanup ya probado (stream, mediaRecorder, object
+  // URL) en vez de intentar resetearlo de forma imperativa.
+  const [formResetKey, setFormResetKey] = useState(0)
   const toastTimeout = useRef(null)
-  const grabandoTimeout = useRef(null)
 
   useEffect(() => {
     return () => {
       clearTimeout(toastTimeout.current)
-      clearTimeout(grabandoTimeout.current)
     }
   }, [])
 
@@ -76,26 +80,26 @@ export default function Bitacora() {
     setCampos((prev) => ({ ...prev, [key]: value }))
   }
 
-  const handleNotaVoz = () => {
-    // TODO: integrar grabación de audio real (Web Audio API / MediaRecorder)
-    setGrabando(true)
-    clearTimeout(grabandoTimeout.current)
-    grabandoTimeout.current = setTimeout(() => setGrabando(false), 2000)
-  }
-
   const hayContenido =
     tagsActivos.size > 0 ||
     emocionLibre.trim() !== '' ||
-    Object.values(campos).some((valor) => valor.trim() !== '')
+    Object.values(campos).some((valor) => valor.trim() !== '') ||
+    notaVozBlob !== null
 
   const handleGuardar = () => {
     if (!hayContenido) return
 
-    // TODO: reemplazar por la llamada real al backend/almacenamiento persistente
+    // TODO: reemplazar por la llamada real al backend/almacenamiento persistente.
+    // notaVozBlob es un Blob de audio en memoria — en la integración real se
+    // subiría aquí (ej. como FormData al endpoint, o convertido a base64 si el
+    // backend lo requiere así) antes de descartarlo. No hace falta revocar su
+    // object URL manualmente en este punto: al cambiar formResetKey más abajo,
+    // VoiceNoteRecorder se desmonta y su propio cleanup ya se encarga de eso.
     console.log('Entrada guardada (simulado):', {
       tags: [...tagsActivos],
       emocionLibre,
       ...campos,
+      notaVoz: notaVozBlob ? { size: notaVozBlob.size, duracion: notaVozDuracion } : null,
     })
 
     setToastVisible(true)
@@ -105,6 +109,9 @@ export default function Bitacora() {
     setTagsActivos(new Set())
     setEmocionLibre('')
     setCampos(CAMPOS_INICIALES)
+    setNotaVozBlob(null)
+    setNotaVozDuracion(null)
+    setFormResetKey((prev) => prev + 1)
   }
 
   return (
@@ -184,15 +191,15 @@ export default function Bitacora() {
           </motion.div>
         ))}
 
-        <motion.button
-          {...riseIn(0.34)}
-          type="button"
-          onClick={handleNotaVoz}
-          className="mb-[22px] flex w-full items-center gap-2.5 rounded-full bg-white px-5 py-3.5 text-sm font-semibold text-ink-soft shadow-[0_8px_22px_rgba(0,0,0,0.04)]"
-        >
-          <span>🎙️</span>
-          <span>{grabando ? 'Grabando… (simulado)' : 'Agregar nota de voz'}</span>
-        </motion.button>
+        <motion.div {...riseIn(0.34)} className="mb-[22px]">
+          <VoiceNoteRecorder
+            key={formResetKey}
+            onRecordingChange={(blob, duracion) => {
+              setNotaVozBlob(blob)
+              setNotaVozDuracion(duracion)
+            }}
+          />
+        </motion.div>
 
         <motion.div {...riseIn(0.38)}>
           <button
