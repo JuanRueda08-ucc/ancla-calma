@@ -1,8 +1,49 @@
 import { useEffect, useRef } from 'react'
-import { Renderer, Program, Mesh, Triangle } from 'ogl'
+import { Renderer, Program, Mesh, Triangle, Geometry } from 'ogl'
 
 const MAX_RIPPLES = 12
 const RIPPLE_LIFETIME = 2.0
+const PARTICLE_COUNT = 60
+
+// WebGL reporta los uniform arrays (u_rippleOrigins[12], etc.) como uniforms
+// individuales por índice (u_rippleOrigins[0], u_rippleOrigins[1]...) y nunca
+// reciben valor real vía OGL. Se generan en su lugar 12 pares de uniforms
+// nombrados (u_ripple{i}Origin / u_ripple{i}Time), programáticamente, no a mano.
+const RIPPLE_UNIFORMS_GLSL = Array.from(
+  { length: MAX_RIPPLES },
+  (_, i) => `uniform vec2 u_ripple${i}Origin;\n  uniform float u_ripple${i}Time;`,
+).join('\n  ')
+
+// Un tiempo de inicio "sentinela" (-1000, ver initRippleUniforms más abajo) indica
+// que ese slot no tiene ripple activo — edad quedará muy fuera de [0, RIPPLE_LIFETIME].
+const RIPPLE_GLOW_BLOCKS_GLSL = Array.from(
+  { length: MAX_RIPPLES },
+  (_, i) => `
+    {
+      float edad = u_time - u_ripple${i}Time;
+      if (edad >= 0.0 && edad <= ${RIPPLE_LIFETIME.toFixed(1)}) {
+        float radio = edad * speed;
+        float dist = distance(uv, u_ripple${i}Origin);
+        float ring = smoothstep(radio - thickness, radio, dist) - smoothstep(radio, radio + thickness, dist);
+        float intensidadRipple = 1.0 - edad / ${RIPPLE_LIFETIME.toFixed(1)};
+        total += ring * intensidadRipple;
+      }
+    }`,
+).join('\n')
+
+const RIPPLE_BOOST_BLOCKS_GLSL = Array.from(
+  { length: MAX_RIPPLES },
+  (_, i) => `
+    {
+      float edad = u_time - u_ripple${i}Time;
+      if (edad >= 0.0 && edad <= ${RIPPLE_LIFETIME.toFixed(1)}) {
+        float d = distance(uv, u_ripple${i}Origin);
+        float proximity = 1.0 - smoothstep(0.0, 0.28, d);
+        float fade = 1.0 - edad / ${RIPPLE_LIFETIME.toFixed(1)};
+        boost = max(boost, proximity * fade);
+      }
+    }`,
+).join('\n')
 
 const VERTEX = /* glsl */ `
   attribute vec2 position;
@@ -23,9 +64,7 @@ const FRAGMENT = /* glsl */ `
   uniform float u_time;
   uniform vec2 u_resolution;
   uniform float u_intensity;
-  uniform int u_rippleCount;
-  uniform vec2 u_rippleOrigins[${MAX_RIPPLES}];
-  uniform float u_rippleStartTimes[${MAX_RIPPLES}];
+  ${RIPPLE_UNIFORMS_GLSL}
 
   varying vec2 vUv;
 
@@ -99,20 +138,7 @@ const FRAGMENT = /* glsl */ `
     vec3 total = vec3(0.0);
     const float speed = 0.32;
     const float thickness = 0.035;
-
-    for (int i = 0; i < ${MAX_RIPPLES}; i++) {
-      if (i >= u_rippleCount) break;
-
-      float edad = u_time - u_rippleStartTimes[i];
-      if (edad < 0.0 || edad > ${RIPPLE_LIFETIME.toFixed(1)}) continue;
-
-      float radio = edad * speed;
-      float dist = distance(uv, u_rippleOrigins[i]);
-      float ring = smoothstep(radio - thickness, radio, dist) - smoothstep(radio, radio + thickness, dist);
-      float intensidadRipple = 1.0 - edad / ${RIPPLE_LIFETIME.toFixed(1)};
-
-      total += ring * intensidadRipple;
-    }
+${RIPPLE_GLOW_BLOCKS_GLSL}
 
     return total;
   }
@@ -143,6 +169,85 @@ const FRAGMENT = /* glsl */ `
   }
 `
 
+// Partículas ambientales tipo "plancton bioluminiscente": derivan lento hacia arriba y
+// se reciclan abajo. Comparten los mismos uniforms de ripple que el fondo (Prompt B)
+// para brillar levemente cerca de una interacción reciente.
+const PARTICLE_VERTEX = /* glsl */ `
+  attribute vec2 position;
+  attribute float aSeed;
+  attribute float aSize;
+
+  uniform float u_time;
+  uniform float u_dpr;
+  uniform vec2 u_resolution;
+  ${RIPPLE_UNIFORMS_GLSL}
+
+  varying float vSeed;
+  varying float vRippleBoost;
+
+  float hash(float n) {
+    return fract(sin(n) * 43758.5453123);
+  }
+
+  void main() {
+    // Deriva lenta hacia arriba, desincronizada por partícula (plancton, no lluvia).
+    float speed = 0.02 + aSeed * 0.025;
+    float rawY = position.y + u_time * speed;
+
+    // Cada vez que completa una vuelta (sale por arriba, entra por abajo) obtiene
+    // una X pseudoaleatoria nueva a partir de un hash de su seed + nº de vuelta.
+    float cycle = floor((rawY + 1.0) / 2.0);
+    float y = mod(rawY + 1.0, 2.0) - 1.0;
+    float baseX = hash(aSeed * 91.7 + cycle) * 2.0 - 1.0;
+
+    float sway = sin(u_time * 0.5 + aSeed * 6.2831) * 0.05;
+    vec2 pos = vec2(baseX + sway, y);
+
+    // Distancia a los ripples activos, en el mismo espacio uv-aspecto del fondo.
+    vec2 uv = vec2((pos.x * 0.5 + 0.5) * (u_resolution.x / u_resolution.y), pos.y * 0.5 + 0.5);
+    float boost = 0.0;
+${RIPPLE_BOOST_BLOCKS_GLSL}
+
+    vSeed = aSeed;
+    vRippleBoost = boost;
+
+    gl_Position = vec4(pos, 0.0, 1.0);
+    gl_PointSize = aSize * u_dpr * (1.0 + boost * 0.8);
+  }
+`
+
+const PARTICLE_FRAGMENT = /* glsl */ `
+  precision highp float;
+
+  varying float vSeed;
+  varying float vRippleBoost;
+
+  void main() {
+    vec2 coord = gl_PointCoord * 2.0 - 1.0;
+    float d = length(coord);
+    float circle = smoothstep(1.0, 0.0, d);
+    if (circle <= 0.0) discard;
+
+    vec3 particleColor = mix(vec3(1.0), vec3(0.4353, 0.8902, 0.8392), fract(vSeed * 13.0) * 0.6);
+    float baseOpacity = 0.15 + fract(vSeed * 7.0) * 0.2;
+    float opacity = baseOpacity * circle * (1.0 + vRippleBoost * 1.6);
+
+    gl_FragColor = vec4(particleColor * opacity, opacity);
+  }
+`
+
+// 24 uniforms (2 por ripple slot), generados programáticamente. -1000 como startTime
+// sentinela: edad siempre queda fuera de [0, RIPPLE_LIFETIME], así que ese slot no
+// contribuye hasta que se le asigne un ripple real.
+function createRippleUniforms() {
+  const uniforms = {}
+  for (let i = 0; i < MAX_RIPPLES; i++) {
+    uniforms[`u_ripple${i}Origin`] = { value: [0, 0] }
+    uniforms[`u_ripple${i}Time`] = { value: -1000 }
+  }
+  return uniforms
+}
+
 export default function OceanShaderBackground({ interactive = false, intensity = 0.5 }) {
   const containerRef = useRef(null)
   const programRef = useRef(null)
@@ -164,8 +269,10 @@ export default function OceanShaderBackground({ interactive = false, intensity =
       if (ripples.length > MAX_RIPPLES) ripples.shift()
     }
 
-    const rippleOriginsBuffer = new Float32Array(MAX_RIPPLES * 2)
-    const rippleStartTimesBuffer = new Float32Array(MAX_RIPPLES).fill(-1000)
+    // Array mutado in-place (no reemplazado) para que el programa de partículas,
+    // que apunta a esta misma referencia, vea también los resizes. Valor inicial
+    // provisional (se sobreescribe de inmediato con setSize() más abajo).
+    const resolution = [1, 1]
 
     const program = new Program(gl, {
       vertex: VERTEX,
@@ -174,11 +281,9 @@ export default function OceanShaderBackground({ interactive = false, intensity =
       depthWrite: false,
       uniforms: {
         u_time: { value: 0 },
-        u_resolution: { value: [window.innerWidth, window.innerHeight] },
+        u_resolution: { value: resolution },
         u_intensity: { value: intensity },
-        u_rippleCount: { value: 0 },
-        u_rippleOrigins: { value: rippleOriginsBuffer },
-        u_rippleStartTimes: { value: rippleStartTimesBuffer },
+        ...createRippleUniforms(),
       },
     })
     programRef.current = program
@@ -186,11 +291,50 @@ export default function OceanShaderBackground({ interactive = false, intensity =
     const geometry = new Triangle(gl)
     const mesh = new Mesh(gl, { geometry, program })
 
+    // Partículas: posición inicial y semilla aleatorias, tamaño 2-5px variable.
+    const particlePositions = new Float32Array(PARTICLE_COUNT * 2)
+    const particleSeeds = new Float32Array(PARTICLE_COUNT)
+    const particleSizes = new Float32Array(PARTICLE_COUNT)
+    for (let i = 0; i < PARTICLE_COUNT; i++) {
+      particlePositions[i * 2] = Math.random() * 2 - 1
+      particlePositions[i * 2 + 1] = Math.random() * 2 - 1
+      particleSeeds[i] = Math.random()
+      particleSizes[i] = 2 + Math.random() * 3
+    }
+
+    const particleGeometry = new Geometry(gl, {
+      position: { size: 2, data: particlePositions },
+      aSeed: { size: 1, data: particleSeeds },
+      aSize: { size: 1, data: particleSizes },
+    })
+
+    const particleProgram = new Program(gl, {
+      vertex: PARTICLE_VERTEX,
+      fragment: PARTICLE_FRAGMENT,
+      transparent: true,
+      depthTest: false,
+      depthWrite: false,
+      uniforms: {
+        u_time: { value: 0 },
+        u_dpr: { value: dpr },
+        u_resolution: { value: resolution },
+        ...createRippleUniforms(),
+      },
+    })
+    // Glow aditivo real (no alpha-blend normal) para que sumen luz sobre el fondo.
+    particleProgram.setBlendFunc(gl.SRC_ALPHA, gl.ONE)
+
+    const particleMesh = new Mesh(gl, { geometry: particleGeometry, program: particleProgram, mode: gl.POINTS })
+
+    // Mide el contenedor (nunca window): así el mismo componente sirve tanto para un
+    // fondo a pantalla completa como para vivir dentro de un elemento más pequeño
+    // (ej. una tarjeta), ajustándose siempre a su propio tamaño real.
     const setSize = () => {
-      const width = window.innerWidth
-      const height = window.innerHeight
+      const width = container.clientWidth
+      const height = container.clientHeight
+      resolution[0] = width
+      resolution[1] = height
       renderer.setSize(width, height)
-      program.uniforms.u_resolution.value = [width, height]
     }
     setSize()
 
@@ -235,21 +379,30 @@ export default function OceanShaderBackground({ interactive = false, intensity =
 
       const elapsed = (time - startTime) / 1000
       program.uniforms.u_time.value = elapsed
+      particleProgram.uniforms.u_time.value = elapsed
 
       // Poda los ripples ya extintos del estado en JS, no solo del shader.
       if (ripples.length) {
         ripples = ripples.filter((r) => elapsed - r.startTime <= RIPPLE_LIFETIME)
       }
 
-      rippleStartTimesBuffer.fill(-1000)
-      for (let i = 0; i < ripples.length; i++) {
-        rippleOriginsBuffer[i * 2] = ripples[i].x
-        rippleOriginsBuffer[i * 2 + 1] = ripples[i].y
-        rippleStartTimesBuffer[i] = ripples[i].startTime
-      }
-      program.uniforms.u_rippleCount.value = ripples.length
+      // Un par de uniforms nombrados por slot: los ocupados reciben el ripple real,
+      // el resto vuelve al sentinela (-1000) para no contribuir en el shader.
+      for (let i = 0; i < MAX_RIPPLES; i++) {
+        const ripple = ripples[i]
+        const origin = ripple ? [ripple.x, ripple.y] : [0, 0]
+        const startTimeValue = ripple ? ripple.startTime : -1000
 
+        program.uniforms[`u_ripple${i}Origin`].value = origin
+        program.uniforms[`u_ripple${i}Time`].value = startTimeValue
+        particleProgram.uniforms[`u_ripple${i}Origin`].value = origin
+        particleProgram.uniforms[`u_ripple${i}Time`].value = startTimeValue
+      }
+
+      // Mismo frame, mismo renderer: fondo primero (limpia el buffer), partículas
+      // encima sin limpiar, para que el glow aditivo se sume sobre las caustics.
       renderer.render({ scene: mesh })
+      renderer.render({ scene: particleMesh, clear: false })
     }
 
     const startLoop = () => {
@@ -273,12 +426,18 @@ export default function OceanShaderBackground({ interactive = false, intensity =
     }
 
     document.addEventListener('visibilitychange', handleVisibility)
-    window.addEventListener('resize', setSize)
+
+    // ResizeObserver en vez de window resize: el tamaño del contenedor puede cambiar
+    // sin que la ventana cambie (ej. una tarjeta cuyo contenido varía de alto).
+    const resizeObserver = new ResizeObserver(() => {
+      setSize()
+    })
+    resizeObserver.observe(container)
 
     return () => {
       stopLoop()
       document.removeEventListener('visibilitychange', handleVisibility)
-      window.removeEventListener('resize', setSize)
+      resizeObserver.disconnect()
       if (interactive) {
         gl.canvas.removeEventListener('mousedown', handleMouseDown)
         gl.canvas.removeEventListener('touchstart', handleTouchStart)

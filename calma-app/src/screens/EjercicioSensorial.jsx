@@ -1,7 +1,8 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { motion, useReducedMotion } from 'framer-motion'
 import GuidedExerciseShell from '../components/GuidedExerciseShell'
+import OceanShaderBackground from '../components/OceanShaderBackground'
+import supportsWebGL from '../utils/supportsWebGL'
 
 const PASOS = [
   {
@@ -9,9 +10,8 @@ const PASOS = [
     texto: 'Cierra los ojos y escucha los sonidos a tu alrededor.',
   },
   {
-    titulo: 'Mira con atención',
-    texto:
-      'Observa un objeto cercano como si fuera la primera vez que lo ves. Nota su color, forma y textura.',
+    titulo: 'Enfoque visual',
+    texto: 'Encuentra un objeto y observa todos sus detalles.',
   },
   {
     titulo: 'Respira el aire',
@@ -24,31 +24,17 @@ const PASOS = [
   },
 ]
 
-function PulsingCard({ children, reduceMotion }) {
+function InstructionCard({ children }) {
   return (
-    <motion.div
-      className="mx-auto max-w-[460px] rounded-[20px] border border-white/[0.14] bg-white/[0.08] px-8 py-8 text-base leading-[1.6] text-white/90"
-      animate={
-        reduceMotion
-          ? {}
-          : {
-              boxShadow: [
-                '0 0 0px rgba(111,227,214,0)',
-                '0 0 22px rgba(111,227,214,0.22)',
-                '0 0 0px rgba(111,227,214,0)',
-              ],
-            }
-      }
-      transition={{ duration: 3.5, repeat: Infinity, ease: 'easeInOut' }}
-    >
-      {children}
-    </motion.div>
+    <div className="relative mx-auto max-w-[460px] overflow-hidden rounded-[20px] border border-white/[0.14] bg-white/[0.08] px-8 py-8 text-base leading-[1.6] text-white/90">
+      {supportsWebGL() && <OceanShaderBackground interactive intensity={0.6} />}
+      <p className="pointer-events-none relative z-[1]">{children}</p>
+    </div>
   )
 }
 
 export default function EjercicioSensorial() {
   const navigate = useNavigate()
-  const reduceMotion = useReducedMotion()
   const [pasoIndex, setPasoIndex] = useState(0)
   const esUltimoPaso = pasoIndex === PASOS.length - 1
   const paso = PASOS[pasoIndex]
@@ -72,8 +58,9 @@ export default function EjercicioSensorial() {
       footerLabel="Ejercicios sensoriales • 4 min"
     >
       <div className="text-center">
-        <h2 className="mb-5 text-xl font-semibold text-white">{paso.titulo}</h2>
-        <PulsingCard reduceMotion={reduceMotion}>{paso.texto}</PulsingCard>
+        <h2 className="mb-1.5 text-xl font-semibold text-white">{paso.titulo}</h2>
+        <p className="mb-5 text-xs text-white/50">Toca el recuadro para interactuar</p>
+        <InstructionCard>{paso.texto}</InstructionCard>
         <button
           type="button"
           onClick={handleContinuar}
