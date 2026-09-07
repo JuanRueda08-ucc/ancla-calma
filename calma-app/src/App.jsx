@@ -10,6 +10,7 @@ import EjercicioGrounding from './screens/EjercicioGrounding'
 import EjercicioRelajacionMuscular from './screens/EjercicioRelajacionMuscular'
 import EjercicioSensorial from './screens/EjercicioSensorial'
 import Bitacora from './screens/Bitacora'
+import HistorialBitacora from './screens/HistorialBitacora'
 import IslaFaro from './screens/IslaFaro'
 import IslaSenales from './screens/IslaSenales'
 import PanelAcompanamiento from './screens/PanelAcompanamiento'
@@ -29,6 +30,7 @@ export default function App() {
         <Route path="/islas/aire/puerto-seguro/relajacion-muscular" element={<EjercicioRelajacionMuscular />} />
         <Route path="/islas/aire/puerto-seguro/sensorial" element={<EjercicioSensorial />} />
         <Route path="/bitacora" element={<Bitacora />} />
+        <Route path="/bitacora/historial" element={<HistorialBitacora />} />
         <Route path="/islas/faro" element={<IslaFaro />} />
         <Route path="/islas/senales" element={<IslaSenales />} />
         <Route path="/acompanamiento" element={<PanelAcompanamiento />} />
