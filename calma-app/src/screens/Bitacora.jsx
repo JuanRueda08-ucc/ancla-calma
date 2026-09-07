@@ -4,6 +4,7 @@ import BackButton from '../components/BackButton'
 import VoiceNoteRecorder from '../components/VoiceNoteRecorder'
 import TranscribeMicButton from '../components/TranscribeMicButton'
 import { riseIn } from '../animations/transitions'
+import { guardarEntrada } from '../utils/bitacoraStorage'
 
 const BLOB_RADIUS = '42% 58% 63% 37% / 41% 44% 56% 59%'
 
@@ -53,6 +54,8 @@ export default function Bitacora() {
   const [notaVozBlob, setNotaVozBlob] = useState(null)
   const [notaVozDuracion, setNotaVozDuracion] = useState(null)
   const [toastVisible, setToastVisible] = useState(false)
+  const [toastMensaje, setToastMensaje] = useState('')
+  const [toastEsError, setToastEsError] = useState(false)
   // Cambiar esta key fuerza a React a desmontar/remontar VoiceNoteRecorder al
   // guardar, reutilizando su cleanup ya probado (stream, mediaRecorder, object
   // URL) en vez de intentar resetearlo de forma imperativa.
@@ -90,19 +93,32 @@ export default function Bitacora() {
   const handleGuardar = () => {
     if (!hayContenido) return
 
-    // TODO: reemplazar por la llamada real al backend/almacenamiento persistente.
-    // notaVozBlob es un Blob de audio en memoria — en la integración real se
-    // subiría aquí (ej. como FormData al endpoint, o convertido a base64 si el
-    // backend lo requiere así) antes de descartarlo. No hace falta revocar su
-    // object URL manualmente en este punto: al cambiar formResetKey más abajo,
-    // VoiceNoteRecorder se desmonta y su propio cleanup ya se encarga de eso.
-    console.log('Entrada guardada (simulado):', {
-      tags: [...tagsActivos],
-      emocionLibre,
-      ...campos,
-      notaVoz: notaVozBlob ? { size: notaVozBlob.size, duracion: notaVozDuracion } : null,
-    })
+    try {
+      // notaVozBlob es un Blob de audio en memoria — no se persiste aquí (ver
+      // TODO en bitacoraStorage.js), solo si hubo nota de voz y su duración.
+      // En una integración real, el audio se subiría aparte (ej. FormData a
+      // un endpoint) antes de descartar el Blob local.
+      guardarEntrada({
+        tags: [...tagsActivos],
+        emocionLibre,
+        queEstoySintiendo: campos.sintiendo,
+        queOcurrio: campos.ocurrio,
+        queNecesito: campos.necesito,
+        queMeAyudo: campos.ayudoHoy,
+        tieneNotaDeVoz: notaVozBlob !== null,
+        notaVozDuracion,
+      })
+    } catch {
+      setToastEsError(true)
+      setToastMensaje('No se pudo guardar. Intenta de nuevo.')
+      setToastVisible(true)
+      clearTimeout(toastTimeout.current)
+      toastTimeout.current = setTimeout(() => setToastVisible(false), 2000)
+      return
+    }
 
+    setToastEsError(false)
+    setToastMensaje('Entrada guardada')
     setToastVisible(true)
     clearTimeout(toastTimeout.current)
     toastTimeout.current = setTimeout(() => setToastVisible(false), 2000)
@@ -233,8 +249,12 @@ export default function Bitacora() {
           exit={{ opacity: 0 }}
           className="pointer-events-none fixed inset-x-0 bottom-8 flex justify-center px-5"
         >
-          <div className="rounded-full bg-ink px-5 py-3 text-sm font-medium text-white shadow-lg">
-            Entrada guardada
+          <div
+            className={`rounded-full px-5 py-3 text-sm font-medium text-white shadow-lg ${
+              toastEsError ? 'bg-red-500' : 'bg-ink'
+            }`}
+          >
+            {toastMensaje}
           </div>
         </motion.div>
       )}
