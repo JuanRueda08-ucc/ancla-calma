@@ -1,6 +1,7 @@
 import { useState } from 'react'
-import { AnimatePresence, motion } from 'framer-motion'
+import { motion } from 'framer-motion'
 import BackButton from '../components/BackButton'
+import Accordion from '../components/Accordion'
 import { riseIn } from '../animations/transitions'
 
 const BLOB_RADIUS = '42% 58% 63% 37% / 41% 44% 56% 59%'
@@ -58,64 +59,6 @@ const CATEGORIAS = [
   },
 ]
 
-function Acordeon({ categoria, abierto, onToggle, delay }) {
-  return (
-    <motion.div
-      {...riseIn(delay)}
-      className="mb-3 overflow-hidden rounded-[22px] bg-white shadow-[0_8px_20px_rgba(0,0,0,0.04)]"
-    >
-      <button
-        type="button"
-        onClick={onToggle}
-        aria-expanded={abierto}
-        className="flex w-full items-center gap-3.5 px-[18px] py-4 text-left"
-      >
-        <span
-          className="flex h-11 w-11 flex-shrink-0 items-center justify-center rounded-full text-xl"
-          style={{ background: categoria.iconBg }}
-        >
-          {categoria.icono}
-        </span>
-        <span className="flex-1 text-[15px] font-bold text-ink">{categoria.titulo}</span>
-        <span className="whitespace-nowrap text-xs font-semibold text-ink-soft">
-          {categoria.senales.length} señales
-        </span>
-        <motion.span
-          animate={{ rotate: abierto ? 180 : 0 }}
-          transition={{ duration: 0.2 }}
-          className="text-[#B7B0A4]"
-        >
-          ⌄
-        </motion.span>
-      </button>
-
-      <AnimatePresence initial={false}>
-        {abierto && (
-          <motion.div
-            key="content"
-            initial={{ height: 0, opacity: 0 }}
-            animate={{ height: 'auto', opacity: 1 }}
-            exit={{ height: 0, opacity: 0 }}
-            transition={{ duration: 0.25, ease: 'easeInOut' }}
-            className="overflow-hidden"
-          >
-            <div className="flex flex-col gap-2 px-[18px] pb-4 pl-[68px]">
-              {categoria.senales.map((senal) => (
-                <div
-                  key={senal}
-                  className="rounded-[14px] bg-acomp-bg px-3.5 py-2.5 text-[13.5px] text-[#175C4A]"
-                >
-                  {senal}
-                </div>
-              ))}
-            </div>
-          </motion.div>
-        )}
-      </AnimatePresence>
-    </motion.div>
-  )
-}
-
 export default function IslaSenales() {
   const [abiertos, setAbiertos] = useState(new Set(['emocionales']))
 
@@ -156,9 +99,12 @@ export default function IslaSenales() {
         </motion.div>
 
         {CATEGORIAS.map((categoria, index) => (
-          <Acordeon
+          <Accordion
             key={categoria.id}
-            categoria={categoria}
+            icono={categoria.icono}
+            iconBg={categoria.iconBg}
+            titulo={categoria.titulo}
+            items={categoria.senales}
             abierto={abiertos.has(categoria.id)}
             onToggle={() => toggleAcordeon(categoria.id)}
             delay={0.14 + index * 0.05}
