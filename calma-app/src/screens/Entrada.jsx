@@ -2,6 +2,7 @@ import { useNavigate } from 'react-router-dom'
 import { motion, useReducedMotion } from 'framer-motion'
 import '../styles/entrada.css'
 import { riseIn } from '../animations/transitions'
+import StarField from '../components/StarField'
 
 export default function Entrada() {
   const navigate = useNavigate()
@@ -9,7 +10,7 @@ export default function Entrada() {
 
   return (
     <div className="entrada-bg relative min-h-screen overflow-hidden text-white">
-      <div className="entrada-stars absolute inset-0 z-[1] opacity-60" />
+      <StarField />
 
       <div className="relative z-[3] flex min-h-screen flex-col items-center justify-center px-6 py-10 text-center">
         <motion.div
