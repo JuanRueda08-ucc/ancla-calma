@@ -1,6 +1,9 @@
 import { useEffect, useRef } from 'react'
 import { Renderer, Program, Mesh, Triangle } from 'ogl'
 
+const MAX_RIPPLES = 12
+const RIPPLE_LIFETIME = 2.0
+
 const VERTEX = /* glsl */ `
   attribute vec2 position;
   attribute vec2 uv;
@@ -20,6 +23,9 @@ const FRAGMENT = /* glsl */ `
   uniform float u_time;
   uniform vec2 u_resolution;
   uniform float u_intensity;
+  uniform int u_rippleCount;
+  uniform vec2 u_rippleOrigins[${MAX_RIPPLES}];
+  uniform float u_rippleStartTimes[${MAX_RIPPLES}];
 
   varying vec2 vUv;
 
@@ -88,6 +94,29 @@ const FRAGMENT = /* glsl */ `
     return 42.0 * dot(m * m, vec4(dot(p0, x0), dot(p1, x1), dot(p2, x2), dot(p3, x3)));
   }
 
+  // Anillo de luz que crece y se desvanece durante RIPPLE_LIFETIME segundos.
+  vec3 rippleGlow(vec2 uv) {
+    vec3 total = vec3(0.0);
+    const float speed = 0.32;
+    const float thickness = 0.035;
+
+    for (int i = 0; i < ${MAX_RIPPLES}; i++) {
+      if (i >= u_rippleCount) break;
+
+      float edad = u_time - u_rippleStartTimes[i];
+      if (edad < 0.0 || edad > ${RIPPLE_LIFETIME.toFixed(1)}) continue;
+
+      float radio = edad * speed;
+      float dist = distance(uv, u_rippleOrigins[i]);
+      float ring = smoothstep(radio - thickness, radio, dist) - smoothstep(radio, radio + thickness, dist);
+      float intensidadRipple = 1.0 - edad / ${RIPPLE_LIFETIME.toFixed(1)};
+
+      total += ring * intensidadRipple;
+    }
+
+    return total;
+  }
+
   void main() {
     vec2 uv = vec2(vUv.x * (u_resolution.x / u_resolution.y), vUv.y);
     float t = u_time * 0.05;
@@ -106,6 +135,10 @@ const FRAGMENT = /* glsl */ `
 
     vec3 color = mix(navy, teal, caustics * u_intensity);
 
+    // Luz cálida (blanco con tinte teal) sumada de forma aditiva y suave, no un overlay plano.
+    vec3 warmLight = vec3(0.9, 0.98, 0.96);
+    color += rippleGlow(uv) * warmLight * 0.55;
+
     gl_FragColor = vec4(color, 1.0);
   }
 `
@@ -113,10 +146,6 @@ const FRAGMENT = /* glsl */ `
 export default function OceanShaderBackground({ interactive = false, intensity = 0.5 }) {
   const containerRef = useRef(null)
   const programRef = useRef(null)
-
-  // `interactive` se conecta en un prompt posterior (interacción con puntero/mouse).
-  // eslint-disable-next-line no-unused-vars
-  void interactive
 
   useEffect(() => {
     const container = containerRef.current
@@ -128,6 +157,16 @@ export default function OceanShaderBackground({ interactive = false, intensity =
     gl.canvas.style.display = 'block'
     container.appendChild(gl.canvas)
 
+    // Buffer circular de ripples activos: {x, y, startTime} en espacio uv corregido por aspecto.
+    let ripples = []
+    const addRipple = (x, y, startTime) => {
+      ripples.push({ x, y, startTime })
+      if (ripples.length > MAX_RIPPLES) ripples.shift()
+    }
+
+    const rippleOriginsBuffer = new Float32Array(MAX_RIPPLES * 2)
+    const rippleStartTimesBuffer = new Float32Array(MAX_RIPPLES).fill(-1000)
+
     const program = new Program(gl, {
       vertex: VERTEX,
       fragment: FRAGMENT,
@@ -137,6 +176,9 @@ export default function OceanShaderBackground({ interactive = false, intensity =
         u_time: { value: 0 },
         u_resolution: { value: [window.innerWidth, window.innerHeight] },
         u_intensity: { value: intensity },
+        u_rippleCount: { value: 0 },
+        u_rippleOrigins: { value: rippleOriginsBuffer },
+        u_rippleStartTimes: { value: rippleStartTimesBuffer },
       },
     })
     programRef.current = program
@@ -153,11 +195,60 @@ export default function OceanShaderBackground({ interactive = false, intensity =
     setSize()
 
     const startTime = performance.now()
+
+    // Convierte una coordenada de pantalla (CSS px) al espacio uv-aspecto usado en el shader.
+    const toShaderSpace = (clientX, clientY) => {
+      const rect = gl.canvas.getBoundingClientRect()
+      const aspect = program.uniforms.u_resolution.value[0] / program.uniforms.u_resolution.value[1]
+      const nx = ((clientX - rect.left) / rect.width) * aspect
+      // vUv.y=0 corresponde a la parte INFERIOR del canvas (convención estándar de textura/NDC de
+      // WebGL, con Y+ hacia arriba) — se invierte porque clientY crece hacia abajo.
+      // Verificado empíricamente: sin este flip, un ripple con y pequeño aparecía abajo, no arriba.
+      const ny = 1 - (clientY - rect.top) / rect.height
+      return [nx, ny]
+    }
+
+    const nowSeconds = () => (performance.now() - startTime) / 1000
+
+    const handleMouseDown = (event) => {
+      const [x, y] = toShaderSpace(event.clientX, event.clientY)
+      addRipple(x, y, nowSeconds())
+    }
+
+    const handleTouchStart = (event) => {
+      const time = nowSeconds()
+      for (const touch of event.touches) {
+        const [x, y] = toShaderSpace(touch.clientX, touch.clientY)
+        addRipple(x, y, time)
+      }
+    }
+
+    if (interactive) {
+      gl.canvas.addEventListener('mousedown', handleMouseDown)
+      gl.canvas.addEventListener('touchstart', handleTouchStart, { passive: true })
+    }
+
     let rafId = null
 
     const renderFrame = (time) => {
       rafId = requestAnimationFrame(renderFrame)
-      program.uniforms.u_time.value = (time - startTime) / 1000
+
+      const elapsed = (time - startTime) / 1000
+      program.uniforms.u_time.value = elapsed
+
+      // Poda los ripples ya extintos del estado en JS, no solo del shader.
+      if (ripples.length) {
+        ripples = ripples.filter((r) => elapsed - r.startTime <= RIPPLE_LIFETIME)
+      }
+
+      rippleStartTimesBuffer.fill(-1000)
+      for (let i = 0; i < ripples.length; i++) {
+        rippleOriginsBuffer[i * 2] = ripples[i].x
+        rippleOriginsBuffer[i * 2 + 1] = ripples[i].y
+        rippleStartTimesBuffer[i] = ripples[i].startTime
+      }
+      program.uniforms.u_rippleCount.value = ripples.length
+
       renderer.render({ scene: mesh })
     }
 
@@ -188,13 +279,17 @@ export default function OceanShaderBackground({ interactive = false, intensity =
       stopLoop()
       document.removeEventListener('visibilitychange', handleVisibility)
       window.removeEventListener('resize', setSize)
+      if (interactive) {
+        gl.canvas.removeEventListener('mousedown', handleMouseDown)
+        gl.canvas.removeEventListener('touchstart', handleTouchStart)
+      }
       gl.getExtension('WEBGL_lose_context')?.loseContext()
       if (gl.canvas.parentNode) {
         gl.canvas.parentNode.removeChild(gl.canvas)
       }
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [])
+  }, [interactive])
 
   useEffect(() => {
     if (programRef.current) {
@@ -206,7 +301,7 @@ export default function OceanShaderBackground({ interactive = false, intensity =
     <div
       ref={containerRef}
       aria-hidden="true"
-      className="pointer-events-none absolute inset-0 z-0 overflow-hidden"
+      className={`absolute inset-0 z-0 overflow-hidden ${interactive ? 'pointer-events-auto' : 'pointer-events-none'}`}
     />
   )
 }
