@@ -158,7 +158,7 @@ export default function VoiceNoteRecorder({ onRecordingChange }) {
     return (
       <button type="button" onClick={handleStart} className={pillClass}>
         <span>🎙️</span>
-        <span>Agregar nota de voz</span>
+        <span>Detalles adicionales (nota de voz)</span>
       </button>
     )
   }
@@ -171,7 +171,7 @@ export default function VoiceNoteRecorder({ onRecordingChange }) {
           aria-hidden="true"
           className="h-4 w-4 animate-spin rounded-full border-2 border-ink-soft/25 border-t-ink-soft"
         />
-        <span>Agregar nota de voz</span>
+        <span>Detalles adicionales (nota de voz)</span>
       </div>
     )
   }

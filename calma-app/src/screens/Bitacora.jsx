@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react'
 import { motion } from 'framer-motion'
 import BackButton from '../components/BackButton'
 import VoiceNoteRecorder from '../components/VoiceNoteRecorder'
+import TranscribeMicButton from '../components/TranscribeMicButton'
 import { riseIn } from '../animations/transitions'
 
 const BLOB_RADIUS = '42% 58% 63% 37% / 41% 44% 56% 59%'
@@ -43,7 +44,7 @@ const CAMPOS_CONFIG = [
   { key: 'ayudoHoy', label: '¿Qué me ayudó hoy?', placeholder: 'Algo positivo o que te reconfortó...' },
 ]
 
-const fieldClass = 'mb-4 rounded-lg bg-white px-5 py-[18px] shadow-[0_8px_22px_rgba(0,0,0,0.04)]'
+const fieldClass = 'relative mb-4 rounded-lg bg-white px-5 py-[18px] shadow-[0_8px_22px_rgba(0,0,0,0.04)]'
 
 export default function Bitacora() {
   const [tagsActivos, setTagsActivos] = useState(new Set())
@@ -165,8 +166,11 @@ export default function Bitacora() {
               value={emocionLibre}
               onChange={(e) => setEmocionLibre(e.target.value)}
               placeholder="Ej: esperanzado, perdido, inspirado..."
-              className="w-full border-none bg-transparent text-[14.5px] text-ink placeholder:text-[#B7B0A4] focus:outline-none"
+              className="w-full border-none bg-transparent pr-9 text-[14.5px] text-ink placeholder:text-[#B7B0A4] focus:outline-none"
             />
+            <div className="absolute right-4 top-3.5">
+              <TranscribeMicButton value={emocionLibre} onTranscript={setEmocionLibre} />
+            </div>
           </div>
         </motion.div>
 
@@ -186,8 +190,14 @@ export default function Bitacora() {
               value={campos[campo.key]}
               onChange={(e) => handleCampoChange(campo.key, e.target.value)}
               placeholder={campo.placeholder}
-              className="h-11 w-full resize-none border-none bg-transparent text-[14.5px] text-ink placeholder:text-[#B7B0A4] focus:outline-none"
+              className="h-11 w-full resize-none border-none bg-transparent pr-9 text-[14.5px] text-ink placeholder:text-[#B7B0A4] focus:outline-none"
             />
+            <div className="absolute right-4 top-3.5">
+              <TranscribeMicButton
+                value={campos[campo.key]}
+                onTranscript={(nuevoValor) => handleCampoChange(campo.key, nuevoValor)}
+              />
+            </div>
           </motion.div>
         ))}
 
@@ -199,6 +209,9 @@ export default function Bitacora() {
               setNotaVozDuracion(duracion)
             }}
           />
+          <p className="mt-2 px-1 text-xs text-ink-soft">
+            Cualquier otra cosa que quieras decirte a ti mismo/a más adelante
+          </p>
         </motion.div>
 
         <motion.div {...riseIn(0.38)}>
