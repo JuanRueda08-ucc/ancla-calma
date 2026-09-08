@@ -1,55 +1,69 @@
+import { supabase } from '../lib/supabaseClient'
 import { eliminarAudio } from './audioStorage'
 
-const STORAGE_KEY = 'calma:bitacora'
-
-function generarId() {
-  if (typeof crypto !== 'undefined' && crypto.randomUUID) {
-    return crypto.randomUUID()
+// La tabla usa columnas snake_case; el resto de la app (Bitacora.jsx,
+// HistorialBitacora.jsx) trabaja con los mismos nombres camelCase que
+// usaba la versión de localStorage. Este mapeo es el único lugar que
+// conoce ambas formas.
+function mapearDesdeFila(fila) {
+  return {
+    id: fila.id,
+    fecha: fila.created_at,
+    tags: fila.tags,
+    emocionLibre: fila.emocion_libre,
+    queEstoySintiendo: fila.que_siento,
+    queOcurrio: fila.que_ocurrio,
+    queNecesito: fila.que_necesito,
+    queMeAyudo: fila.que_ayudo,
+    tieneNotaDeVoz: fila.tiene_nota_voz,
+    notaVozDuracion: fila.nota_voz_duracion,
   }
-  return `${Date.now()}-${Math.random().toString(36).slice(2)}`
 }
 
-export function getEntradas() {
-  const raw = localStorage.getItem(STORAGE_KEY)
-  if (!raw) return []
+export async function getEntradas() {
+  const { data, error } = await supabase
+    .from('bitacora_entradas')
+    .select('*')
+    .order('created_at', { ascending: false })
+
+  if (error) throw error
+  return data.map(mapearDesdeFila)
+}
+
+export async function guardarEntrada(entrada) {
+  const {
+    data: { user },
+  } = await supabase.auth.getUser()
+
+  const { data, error } = await supabase
+    .from('bitacora_entradas')
+    .insert({
+      user_id: user.id,
+      tags: entrada.tags,
+      emocion_libre: entrada.emocionLibre,
+      que_siento: entrada.queEstoySintiendo,
+      que_ocurrio: entrada.queOcurrio,
+      que_necesito: entrada.queNecesito,
+      que_ayudo: entrada.queMeAyudo,
+      tiene_nota_voz: entrada.tieneNotaDeVoz,
+      nota_voz_duracion: entrada.notaVozDuracion,
+    })
+    .select()
+    .single()
+
+  if (error) throw error
+  return mapearDesdeFila(data)
+}
+
+export async function eliminarEntrada(id) {
+  // Best-effort: si el archivo de Storage no se puede borrar, no dejamos
+  // la fila de texto huérfana en la base de datos por eso.
   try {
-    const parsed = JSON.parse(raw)
-    return Array.isArray(parsed) ? parsed : []
-  } catch {
-    return []
-  }
-}
-
-export function guardarEntrada(entrada) {
-  const entradaGuardada = {
-    ...entrada,
-    id: generarId(),
-    fecha: new Date().toISOString(),
-  }
-
-  const entradas = [entradaGuardada, ...getEntradas()]
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(entradas))
-
-  return entradaGuardada
-}
-
-export function eliminarEntrada(id) {
-  const entradas = getEntradas().filter((entrada) => entrada.id !== id)
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(entradas))
-
-  // El audio vive en IndexedDB (ver audioStorage.js), aparte de esta entrada
-  // de texto en localStorage. No esperamos esta promesa: si falla, no debe
-  // impedir que la entrada de texto quede eliminada.
-  eliminarAudio(id).catch((error) => {
+    await eliminarAudio(id)
+  } catch (error) {
     console.error('No se pudo eliminar el audio asociado a la entrada:', error)
-  })
+  }
 
-  return entradas
+  const { error } = await supabase.from('bitacora_entradas').delete().eq('id', id)
+  if (error) throw error
 }
-
-// TODO: el audio de la nota de voz (notaVozBlob) no se persiste aquí —
-// los Blobs no son serializables a JSON y localStorage tiene un límite
-// de ~5-10MB total que un solo audio podría agotar. Solo guardamos
-// `tieneNotaDeVoz` y `notaVozDuracion` como metadatos de texto; el
-// audio real necesitaría IndexedDB o un backend con almacenamiento de
-// archivos. localStorage es una solución interina solo para el texto.

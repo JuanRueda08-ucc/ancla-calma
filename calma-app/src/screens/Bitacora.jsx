@@ -97,7 +97,7 @@ export default function Bitacora() {
 
     let entradaGuardada
     try {
-      entradaGuardada = guardarEntrada({
+      entradaGuardada = await guardarEntrada({
         tags: [...tagsActivos],
         emocionLibre,
         queEstoySintiendo: campos.sintiendo,
@@ -117,9 +117,9 @@ export default function Bitacora() {
     }
 
     if (notaVozBlob !== null) {
-      // El audio se guarda aparte, en IndexedDB, usando el mismo id que la
-      // entrada de texto en localStorage como llave compartida. Si esto
-      // falla (ej. cuota excedida), el texto ya quedó guardado — no
+      // El audio se sube aparte, a Supabase Storage, usando el id real que
+      // la base de datos acaba de generar para la entrada de texto. Si esto
+      // falla (ej. problema de red), el texto ya quedó guardado — no
       // interrumpimos el flujo de éxito por un fallo aislado del audio.
       try {
         await guardarAudio(entradaGuardada.id, notaVozBlob)
