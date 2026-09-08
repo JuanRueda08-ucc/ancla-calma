@@ -1,49 +1,43 @@
-const STORAGE_KEY = 'calma:contactos'
-const MAX_CONTACTOS = 3
+import { supabase } from '../lib/supabaseClient'
 
-function generarId() {
-  if (typeof crypto !== 'undefined' && crypto.randomUUID) {
-    return crypto.randomUUID()
-  }
-  return `${Date.now()}-${Math.random().toString(36).slice(2)}`
+const LIMITE_CONTACTOS_MSG = 'Máximo 3 contactos de confianza por usuario'
+
+export async function getContactos() {
+  const { data, error } = await supabase
+    .from('contactos_confianza')
+    .select('*')
+    .order('created_at')
+
+  if (error) throw error
+  return data
 }
 
-export function getContactos() {
-  const raw = localStorage.getItem(STORAGE_KEY)
-  if (!raw) return []
-  try {
-    const parsed = JSON.parse(raw)
-    return Array.isArray(parsed) ? parsed : []
-  } catch {
-    return []
-  }
-}
+export async function guardarContacto({ id, nombre, telefono }) {
+  let query
 
-export function guardarContacto(contacto) {
-  const contactos = getContactos()
-  const existente = contacto.id ? contactos.find((c) => c.id === contacto.id) : null
-
-  if (!existente && contactos.length >= MAX_CONTACTOS) {
-    throw new Error('Máximo 3 contactos de confianza')
-  }
-
-  let contactoGuardado
-  let actualizados
-
-  if (existente) {
-    contactoGuardado = { ...existente, ...contacto }
-    actualizados = contactos.map((c) => (c.id === contacto.id ? contactoGuardado : c))
+  if (id) {
+    query = supabase.from('contactos_confianza').update({ nombre, telefono }).eq('id', id)
   } else {
-    contactoGuardado = { ...contacto, id: generarId() }
-    actualizados = [...contactos, contactoGuardado]
+    const {
+      data: { user },
+    } = await supabase.auth.getUser()
+
+    query = supabase.from('contactos_confianza').insert({ user_id: user.id, nombre, telefono })
   }
 
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(actualizados))
-  return contactoGuardado
+  const { data, error } = await query.select().single()
+
+  if (error) {
+    if (error.message === LIMITE_CONTACTOS_MSG) {
+      throw new Error(LIMITE_CONTACTOS_MSG)
+    }
+    throw new Error('No pudimos guardar el contacto. Intenta de nuevo.')
+  }
+
+  return data
 }
 
-export function eliminarContacto(id) {
-  const contactos = getContactos().filter((c) => c.id !== id)
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(contactos))
-  return contactos
+export async function eliminarContacto(id) {
+  const { error } = await supabase.from('contactos_confianza').delete().eq('id', id)
+  if (error) throw error
 }

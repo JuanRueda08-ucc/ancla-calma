@@ -7,6 +7,7 @@ import { obtenerUbicacion, construirLinkMapa, construirLinkWhatsApp } from '../u
 
 const BLOB_RADIUS = '42% 58% 63% 37% / 41% 44% 56% 59%'
 const MAX_CONTACTOS = 3
+const LOCAL_STORAGE_KEY = 'calma:contactos'
 
 const LINEAS_APOYO = [
   { nombre: 'Bienestar Te Escucha', telefono: '01 8000 113 113' },
@@ -37,27 +38,64 @@ function esTelefonoValido(telefono) {
   return soloDigitos.length >= 7
 }
 
+function leerContactosLocalStorage() {
+  try {
+    const raw = localStorage.getItem(LOCAL_STORAGE_KEY)
+    if (!raw) return []
+    const parsed = JSON.parse(raw)
+    return Array.isArray(parsed) ? parsed : []
+  } catch {
+    return []
+  }
+}
+
 export default function IslaAuxilio() {
   const [toast, setToast] = useState(null)
   const toastTimeout = useRef(null)
 
+  const [cargaEstado, setCargaEstado] = useState('cargando') // 'cargando' | 'error' | 'listo'
   const [contactos, setContactos] = useState([])
   const [formAbierto, setFormAbierto] = useState(false)
   const [editandoId, setEditandoId] = useState(null)
   const [nombreForm, setNombreForm] = useState('')
   const [telefonoForm, setTelefonoForm] = useState('')
   const [errorForm, setErrorForm] = useState('')
+  const [guardando, setGuardando] = useState(false)
 
   const [confirmarEliminarId, setConfirmarEliminarId] = useState(null)
+  const [eliminandoId, setEliminandoId] = useState(null)
   const confirmarTimeoutRef = useRef(null)
+
+  const [migracionDisponible, setMigracionDisponible] = useState(false)
+  const [contactosLocales, setContactosLocales] = useState([])
+  const [migrando, setMigrando] = useState(false)
 
   // null | 'sin-contacto' | 'seleccion' | 'cargando' | 'sin-codigo-pais' | 'error'
   const [compartirEstado, setCompartirEstado] = useState(null)
   const [compartirErrorMsg, setCompartirErrorMsg] = useState('')
   const [contactoProblema, setContactoProblema] = useState(null)
 
+  const cargarContactos = async () => {
+    setCargaEstado('cargando')
+    try {
+      const data = await getContactos()
+      setContactos(data)
+      setCargaEstado('listo')
+
+      if (data.length === 0) {
+        const locales = leerContactosLocalStorage()
+        if (locales.length > 0) {
+          setContactosLocales(locales)
+          setMigracionDisponible(true)
+        }
+      }
+    } catch {
+      setCargaEstado('error')
+    }
+  }
+
   useEffect(() => {
-    setContactos(getContactos())
+    cargarContactos()
   }, [])
 
   useEffect(() => {
@@ -98,7 +136,7 @@ export default function IslaAuxilio() {
     setErrorForm('')
   }
 
-  const handleGuardarContacto = () => {
+  const handleGuardarContacto = async () => {
     const nombre = nombreForm.trim()
     const telefono = telefonoForm.trim()
 
@@ -115,8 +153,9 @@ export default function IslaAuxilio() {
       return
     }
 
+    setGuardando(true)
     try {
-      const contactoGuardado = guardarContacto({
+      const contactoGuardado = await guardarContacto({
         id: editandoId ?? undefined,
         nombre,
         telefono,
@@ -130,6 +169,8 @@ export default function IslaAuxilio() {
       cerrarFormulario()
     } catch (error) {
       setErrorForm(error.message)
+    } finally {
+      setGuardando(false)
     }
   }
 
@@ -139,16 +180,50 @@ export default function IslaAuxilio() {
     confirmarTimeoutRef.current = setTimeout(() => setConfirmarEliminarId(null), 3000)
   }
 
-  const confirmarEliminar = (id) => {
-    eliminarContacto(id)
-    setContactos((prev) => prev.filter((c) => c.id !== id))
-    setConfirmarEliminarId(null)
-    clearTimeout(confirmarTimeoutRef.current)
+  const confirmarEliminar = async (id) => {
+    setEliminandoId(id)
+    try {
+      await eliminarContacto(id)
+      setContactos((prev) => prev.filter((c) => c.id !== id))
+      setConfirmarEliminarId(null)
+      clearTimeout(confirmarTimeoutRef.current)
+    } catch {
+      showToast('No pudimos eliminar el contacto. Intenta de nuevo.')
+    } finally {
+      setEliminandoId(null)
+    }
   }
 
   const cancelarEliminar = () => {
     setConfirmarEliminarId(null)
     clearTimeout(confirmarTimeoutRef.current)
+  }
+
+  const migrarContactosLocales = async () => {
+    setMigrando(true)
+    try {
+      const nuevos = []
+      for (const contacto of contactosLocales.slice(0, MAX_CONTACTOS)) {
+        const contactoGuardado = await guardarContacto({
+          nombre: contacto.nombre,
+          telefono: contacto.telefono,
+        })
+        nuevos.push(contactoGuardado)
+      }
+      setContactos(nuevos)
+      localStorage.removeItem(LOCAL_STORAGE_KEY)
+      setMigracionDisponible(false)
+      showToast('Contactos migrados a tu cuenta')
+    } catch {
+      showToast('No pudimos migrar tus contactos. Intenta de nuevo.')
+    } finally {
+      setMigrando(false)
+    }
+  }
+
+  const descartarMigracion = () => {
+    localStorage.removeItem(LOCAL_STORAGE_KEY)
+    setMigracionDisponible(false)
   }
 
   const iniciarCompartirUbicacion = () => {
@@ -228,7 +303,66 @@ export default function IslaAuxilio() {
           <p className="text-sm text-white/[0.85]">Tu red de apoyo está aquí</p>
         </motion.div>
 
-        {contactos.length === 0 && !formAbierto && (
+        {cargaEstado === 'cargando' && (
+          <div className="flex justify-center py-10">
+            <span
+              aria-hidden="true"
+              className="h-8 w-8 animate-spin rounded-full border-2 border-white/30 border-t-white"
+            />
+          </div>
+        )}
+
+        {cargaEstado === 'error' && (
+          <motion.div
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            className={`mb-4 text-center ${cardClass}`}
+          >
+            <p className="mb-3 text-sm text-ink-soft">
+              No pudimos cargar tus contactos. Intenta de nuevo.
+            </p>
+            <button
+              type="button"
+              onClick={cargarContactos}
+              className="rounded-full bg-gradient-to-br from-auxilio-1 to-auxilio-2 px-6 py-3 text-sm font-bold text-white shadow-[0_10px_20px_rgba(255,122,89,0.25)]"
+            >
+              Reintentar
+            </button>
+          </motion.div>
+        )}
+
+        {cargaEstado === 'listo' && migracionDisponible && (
+          <motion.div
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            className={`mb-4 text-center ${cardClass}`}
+          >
+            <p className="mb-3 text-sm text-ink-soft">
+              Encontramos contactos guardados en este dispositivo. ¿Quieres agregarlos a tu
+              cuenta?
+            </p>
+            <div className="flex justify-center gap-2">
+              <button
+                type="button"
+                disabled={migrando}
+                onClick={migrarContactosLocales}
+                className="rounded-full bg-gradient-to-br from-auxilio-1 to-auxilio-2 px-5 py-2.5 text-sm font-bold text-white shadow-[0_10px_20px_rgba(255,122,89,0.25)] disabled:opacity-70"
+              >
+                {migrando ? 'Migrando…' : 'Sí, migrarlos'}
+              </button>
+              <button
+                type="button"
+                disabled={migrando}
+                onClick={descartarMigracion}
+                className="rounded-full bg-black/10 px-5 py-2.5 text-sm font-semibold text-ink disabled:opacity-70"
+              >
+                No, descartar
+              </button>
+            </div>
+          </motion.div>
+        )}
+
+        {cargaEstado === 'listo' && contactos.length === 0 && !formAbierto && (
           <motion.div {...riseIn(0.08)} className={`mb-4 text-center ${cardClass}`}>
             <p className="mb-3 text-sm text-ink-soft">
               Agrega a alguien en quien confíes, para tenerlo a un toque de distancia
@@ -243,7 +377,7 @@ export default function IslaAuxilio() {
           </motion.div>
         )}
 
-        {contactos.map((contacto, index) => (
+        {cargaEstado === 'listo' && contactos.map((contacto, index) => (
           <motion.div
             key={contacto.id}
             {...riseIn(0.08 + index * 0.06)}
@@ -262,16 +396,18 @@ export default function IslaAuxilio() {
                     <>
                       <button
                         type="button"
+                        disabled={eliminandoId === contacto.id}
                         onClick={() => confirmarEliminar(contacto.id)}
-                        className="whitespace-nowrap rounded-full bg-auxilio-1 px-3 py-1 text-xs font-semibold text-white"
+                        className="whitespace-nowrap rounded-full bg-auxilio-1 px-3 py-1 text-xs font-semibold text-white disabled:opacity-70"
                       >
-                        ¿Eliminar?
+                        {eliminandoId === contacto.id ? 'Eliminando…' : '¿Eliminar?'}
                       </button>
                       <button
                         type="button"
+                        disabled={eliminandoId === contacto.id}
                         onClick={cancelarEliminar}
                         aria-label="Cancelar eliminación"
-                        className="text-base text-ink-soft"
+                        className="text-base text-ink-soft disabled:opacity-70"
                       >
                         ✕
                       </button>
@@ -309,7 +445,7 @@ export default function IslaAuxilio() {
           </motion.div>
         ))}
 
-        {contactos.length > 0 && contactos.length < MAX_CONTACTOS && !formAbierto && (
+        {cargaEstado === 'listo' && contactos.length > 0 && contactos.length < MAX_CONTACTOS && !formAbierto && (
           <motion.button
             {...riseIn(0.1 + contactos.length * 0.06)}
             type="button"
@@ -353,15 +489,17 @@ export default function IslaAuxilio() {
             <div className="flex gap-2">
               <button
                 type="button"
+                disabled={guardando}
                 onClick={handleGuardarContacto}
-                className="flex-1 rounded-full bg-gradient-to-br from-auxilio-1 to-auxilio-2 py-2.5 text-sm font-bold text-white shadow-[0_10px_20px_rgba(255,122,89,0.25)]"
+                className="flex-1 rounded-full bg-gradient-to-br from-auxilio-1 to-auxilio-2 py-2.5 text-sm font-bold text-white shadow-[0_10px_20px_rgba(255,122,89,0.25)] disabled:opacity-70"
               >
-                Guardar
+                {guardando ? 'Guardando…' : 'Guardar'}
               </button>
               <button
                 type="button"
+                disabled={guardando}
                 onClick={cerrarFormulario}
-                className="flex-1 rounded-full bg-black/10 py-2.5 text-sm font-semibold text-ink"
+                className="flex-1 rounded-full bg-black/10 py-2.5 text-sm font-semibold text-ink disabled:opacity-70"
               >
                 Cancelar
               </button>
@@ -369,7 +507,7 @@ export default function IslaAuxilio() {
           </motion.div>
         )}
 
-        {(compartirEstado === null || compartirEstado === 'cargando') && (
+        {cargaEstado === 'listo' && (compartirEstado === null || compartirEstado === 'cargando') && (
           <motion.button
             {...riseIn(0.16)}
             type="button"
