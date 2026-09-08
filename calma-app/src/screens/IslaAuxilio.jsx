@@ -171,14 +171,35 @@ export default function IslaAuxilio() {
       return
     }
 
+    // Abrir la ventana AQUÍ, de forma síncrona, antes de cualquier await —
+    // es lo único que preserva el gesto de usuario del click en mobile.
+    // Si el navegador la bloquea igual (raro, pero pasa con bloqueadores
+    // de popups muy agresivos), ventana será null y lo manejamos abajo.
+    const ventana = window.open('', '_blank')
+
     setCompartirEstado('cargando')
     try {
       const { lat, lng } = await obtenerUbicacion()
       const mensaje = `Esta es mi ubicación en este momento: ${construirLinkMapa(lat, lng)}`
       const url = construirLinkWhatsApp(contacto.telefono, mensaje)
-      window.open(url, '_blank')
+
+      if (ventana && !ventana.closed) {
+        ventana.location.href = url
+      } else {
+        // Fallback: si ni la ventana vacía se pudo abrir, o el usuario la
+        // cerró mientras esperábamos la ubicación, cae a navegar la propia
+        // pestaña — es peor UX (sale de la SPA) pero mejor que no compartir
+        // nada.
+        window.location.href = url
+      }
       setCompartirEstado(null)
     } catch (error) {
+      // Si falló la obtención de ubicación, cierra la ventana vacía que
+      // habíamos abierto — no debe quedar una pestaña en blanco huérfana.
+      if (ventana && !ventana.closed) {
+        ventana.close()
+      }
+
       if (error?.code === 1) {
         // GeolocationPositionError.PERMISSION_DENIED
         setCompartirErrorMsg(
