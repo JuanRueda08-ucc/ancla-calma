@@ -1,33 +1,209 @@
-import { useRef, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { motion } from 'framer-motion'
 import BackButton from '../components/BackButton'
 import { riseIn } from '../animations/transitions'
+import { getContactos, guardarContacto, eliminarContacto } from '../utils/contactosStorage'
+import { obtenerUbicacion, construirLinkMapa, construirLinkWhatsApp } from '../utils/compartirUbicacion'
 
 const BLOB_RADIUS = '42% 58% 63% 37% / 41% 44% 56% 59%'
-
-const PERSONA_CONFIANZA = {
-  iniciales: 'MG',
-  nombre: 'María González',
-  etiqueta: 'Persona de confianza',
-}
+const MAX_CONTACTOS = 3
 
 const LINEAS_APOYO = [
   { nombre: 'Bienestar Te Escucha', telefono: '01 8000 113 113' },
   { nombre: 'Línea de la Vida', telefono: '106' },
 ]
 
-const cardClass =
-  'rounded-lg bg-white p-5 shadow-[0_8px_22px_rgba(0,0,0,0.04)]'
+const cardClass = 'rounded-lg bg-white p-5 shadow-[0_8px_22px_rgba(0,0,0,0.04)]'
+
+function obtenerIniciales(nombre) {
+  const partes = nombre.trim().split(/\s+/).filter(Boolean)
+  const iniciales = partes
+    .slice(0, 2)
+    .map((parte) => parte[0]?.toUpperCase() ?? '')
+    .join('')
+  return iniciales || '?'
+}
+
+function normalizarTelefono(telefono) {
+  const tienePlus = telefono.trim().startsWith('+')
+  const digitos = telefono.replace(/\D/g, '')
+  return tienePlus ? `+${digitos}` : digitos
+}
+
+function esTelefonoValido(telefono) {
+  const patronCaracteres = /^\+?[0-9\s()-]+$/
+  if (!patronCaracteres.test(telefono.trim())) return false
+  const soloDigitos = telefono.replace(/\D/g, '')
+  return soloDigitos.length >= 7
+}
 
 export default function IslaAuxilio() {
   const [toast, setToast] = useState(null)
   const toastTimeout = useRef(null)
 
+  const [contactos, setContactos] = useState([])
+  const [formAbierto, setFormAbierto] = useState(false)
+  const [editandoId, setEditandoId] = useState(null)
+  const [nombreForm, setNombreForm] = useState('')
+  const [telefonoForm, setTelefonoForm] = useState('')
+  const [errorForm, setErrorForm] = useState('')
+
+  const [confirmarEliminarId, setConfirmarEliminarId] = useState(null)
+  const confirmarTimeoutRef = useRef(null)
+
+  // null | 'sin-contacto' | 'seleccion' | 'cargando' | 'sin-codigo-pais' | 'error'
+  const [compartirEstado, setCompartirEstado] = useState(null)
+  const [compartirErrorMsg, setCompartirErrorMsg] = useState('')
+  const [contactoProblema, setContactoProblema] = useState(null)
+
+  useEffect(() => {
+    setContactos(getContactos())
+  }, [])
+
+  useEffect(() => {
+    return () => {
+      clearTimeout(toastTimeout.current)
+      clearTimeout(confirmarTimeoutRef.current)
+    }
+  }, [])
+
   const showToast = (message) => {
-    console.log(message)
     setToast(message)
     window.clearTimeout(toastTimeout.current)
     toastTimeout.current = setTimeout(() => setToast(null), 2200)
+  }
+
+  const abrirFormularioNuevo = () => {
+    setEditandoId(null)
+    setNombreForm('')
+    setTelefonoForm('')
+    setErrorForm('')
+    setFormAbierto(true)
+  }
+
+  const iniciarEdicion = (contacto) => {
+    setConfirmarEliminarId(null)
+    setEditandoId(contacto.id)
+    setNombreForm(contacto.nombre)
+    setTelefonoForm(contacto.telefono)
+    setErrorForm('')
+    setFormAbierto(true)
+  }
+
+  const cerrarFormulario = () => {
+    setFormAbierto(false)
+    setEditandoId(null)
+    setNombreForm('')
+    setTelefonoForm('')
+    setErrorForm('')
+  }
+
+  const handleGuardarContacto = () => {
+    const nombre = nombreForm.trim()
+    const telefono = telefonoForm.trim()
+
+    if (!nombre) {
+      setErrorForm('Ingresa un nombre')
+      return
+    }
+    if (!telefono.startsWith('+')) {
+      setErrorForm('Incluye el código de país (ej. +57 para Colombia)')
+      return
+    }
+    if (!esTelefonoValido(telefono)) {
+      setErrorForm('Ingresa un teléfono válido (mínimo 7 dígitos)')
+      return
+    }
+
+    try {
+      const contactoGuardado = guardarContacto({
+        id: editandoId ?? undefined,
+        nombre,
+        telefono,
+      })
+      setContactos((prev) => {
+        const yaExiste = prev.some((c) => c.id === contactoGuardado.id)
+        return yaExiste
+          ? prev.map((c) => (c.id === contactoGuardado.id ? contactoGuardado : c))
+          : [...prev, contactoGuardado]
+      })
+      cerrarFormulario()
+    } catch (error) {
+      setErrorForm(error.message)
+    }
+  }
+
+  const solicitarEliminar = (id) => {
+    setConfirmarEliminarId(id)
+    clearTimeout(confirmarTimeoutRef.current)
+    confirmarTimeoutRef.current = setTimeout(() => setConfirmarEliminarId(null), 3000)
+  }
+
+  const confirmarEliminar = (id) => {
+    eliminarContacto(id)
+    setContactos((prev) => prev.filter((c) => c.id !== id))
+    setConfirmarEliminarId(null)
+    clearTimeout(confirmarTimeoutRef.current)
+  }
+
+  const cancelarEliminar = () => {
+    setConfirmarEliminarId(null)
+    clearTimeout(confirmarTimeoutRef.current)
+  }
+
+  const iniciarCompartirUbicacion = () => {
+    setCompartirErrorMsg('')
+    if (contactos.length === 0) {
+      setCompartirEstado('sin-contacto')
+      return
+    }
+    if (contactos.length === 1) {
+      compartirConContacto(contactos[0])
+      return
+    }
+    setCompartirEstado('seleccion')
+  }
+
+  const compartirConContacto = async (contacto) => {
+    if (!contacto.telefono.trim().startsWith('+')) {
+      setContactoProblema(contacto)
+      setCompartirEstado('sin-codigo-pais')
+      return
+    }
+
+    setCompartirEstado('cargando')
+    try {
+      const { lat, lng } = await obtenerUbicacion()
+      const mensaje = `Esta es mi ubicación en este momento: ${construirLinkMapa(lat, lng)}`
+      const url = construirLinkWhatsApp(contacto.telefono, mensaje)
+      window.open(url, '_blank')
+      setCompartirEstado(null)
+    } catch (error) {
+      if (error?.code === 1) {
+        // GeolocationPositionError.PERMISSION_DENIED
+        setCompartirErrorMsg(
+          'No pudimos acceder a tu ubicación. Revisa los permisos de ubicación de tu navegador.'
+        )
+      } else {
+        // 'NO_SUPPORT', TIMEOUT (3) o POSITION_UNAVAILABLE (2)
+        setCompartirErrorMsg(
+          'Tu dispositivo no pudo obtener tu ubicación en este momento. Intenta de nuevo.'
+        )
+      }
+      setCompartirEstado('error')
+    }
+  }
+
+  const cerrarPanelCompartir = () => {
+    setCompartirEstado(null)
+    setContactoProblema(null)
+    setCompartirErrorMsg('')
+  }
+
+  const editarContactoProblema = () => {
+    const contacto = contactoProblema
+    cerrarPanelCompartir()
+    if (contacto) iniciarEdicion(contacto)
   }
 
   return (
@@ -46,41 +222,278 @@ export default function IslaAuxilio() {
           <p className="text-sm text-white/[0.85]">Tu red de apoyo está aquí</p>
         </motion.div>
 
-        <motion.div {...riseIn(0.08)} className={`mb-4 ${cardClass}`}>
-          <div className="flex items-center gap-4">
-            <div className="flex h-14 w-14 flex-shrink-0 items-center justify-center rounded-full bg-auxilio-bg text-base font-bold text-auxilio-1">
-              {PERSONA_CONFIANZA.iniciales}
-            </div>
-            <div className="flex-1">
-              <p className="font-semibold text-ink">{PERSONA_CONFIANZA.nombre}</p>
-              <p className="text-xs text-ink-soft">{PERSONA_CONFIANZA.etiqueta}</p>
-              <div className="mt-1 flex items-center gap-1.5">
-                <span className="h-2 w-2 rounded-full bg-acomp-1" />
-                <span className="text-xs font-medium text-acomp-1">Disponible</span>
+        {contactos.length === 0 && !formAbierto && (
+          <motion.div {...riseIn(0.08)} className={`mb-4 text-center ${cardClass}`}>
+            <p className="mb-3 text-sm text-ink-soft">
+              Agrega a alguien en quien confíes, para tenerlo a un toque de distancia
+            </p>
+            <button
+              type="button"
+              onClick={abrirFormularioNuevo}
+              className="rounded-full bg-gradient-to-br from-auxilio-1 to-auxilio-2 px-6 py-3 text-sm font-bold text-white shadow-[0_10px_20px_rgba(255,122,89,0.25)]"
+            >
+              Agregar contacto de confianza
+            </button>
+          </motion.div>
+        )}
+
+        {contactos.map((contacto, index) => (
+          <motion.div
+            key={contacto.id}
+            {...riseIn(0.08 + index * 0.06)}
+            className={`mb-4 ${cardClass}`}
+          >
+            <div className="flex items-center gap-4">
+              <div className="flex h-14 w-14 flex-shrink-0 items-center justify-center rounded-full bg-auxilio-bg text-base font-bold text-auxilio-1">
+                {obtenerIniciales(contacto.nombre)}
               </div>
+              <div className="flex-1">
+                <p className="font-semibold text-ink">{contacto.nombre}</p>
+                <p className="text-xs text-ink-soft">Persona de confianza</p>
+                <div className="mt-1.5 flex items-center gap-3">
+                  <span className="text-xs text-ink-soft">{contacto.telefono}</span>
+                  {confirmarEliminarId === contacto.id ? (
+                    <>
+                      <button
+                        type="button"
+                        onClick={() => confirmarEliminar(contacto.id)}
+                        className="whitespace-nowrap rounded-full bg-auxilio-1 px-3 py-1 text-xs font-semibold text-white"
+                      >
+                        ¿Eliminar?
+                      </button>
+                      <button
+                        type="button"
+                        onClick={cancelarEliminar}
+                        aria-label="Cancelar eliminación"
+                        className="text-base text-ink-soft"
+                      >
+                        ✕
+                      </button>
+                    </>
+                  ) : (
+                    <>
+                      <button
+                        type="button"
+                        onClick={() => iniciarEdicion(contacto)}
+                        aria-label={`Editar a ${contacto.nombre}`}
+                        className="text-sm text-ink-soft/60"
+                      >
+                        ✏️
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => solicitarEliminar(contacto.id)}
+                        aria-label={`Eliminar a ${contacto.nombre}`}
+                        className="text-sm text-ink-soft/60"
+                      >
+                        🗑️
+                      </button>
+                    </>
+                  )}
+                </div>
+              </div>
+              <a
+                href={`tel:${normalizarTelefono(contacto.telefono)}`}
+                className="flex h-11 w-11 flex-shrink-0 items-center justify-center rounded-full bg-auxilio-bg text-lg text-auxilio-1"
+                aria-label={`Llamar a ${contacto.nombre}`}
+              >
+                📞
+              </a>
+            </div>
+          </motion.div>
+        ))}
+
+        {contactos.length > 0 && contactos.length < MAX_CONTACTOS && !formAbierto && (
+          <motion.button
+            {...riseIn(0.1 + contactos.length * 0.06)}
+            type="button"
+            onClick={abrirFormularioNuevo}
+            className="mb-4 w-full rounded-full bg-white/70 py-3 text-sm font-semibold text-white/95 shadow-[0_8px_22px_rgba(0,0,0,0.04)]"
+          >
+            + Agregar otro contacto
+          </motion.button>
+        )}
+
+        {formAbierto && (
+          <motion.div
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="mb-4 rounded-lg bg-white/95 p-4 shadow-[0_8px_22px_rgba(0,0,0,0.06)]"
+          >
+            <p className="mb-3 text-sm font-semibold text-ink">
+              {editandoId ? 'Editar contacto' : 'Agregar contacto de confianza'}
+            </p>
+
+            <label className="mb-1 block text-xs font-semibold text-ink-soft">Nombre</label>
+            <input
+              type="text"
+              value={nombreForm}
+              onChange={(e) => setNombreForm(e.target.value)}
+              placeholder="Ej: Ana Torres"
+              className="mb-3 w-full rounded-lg border border-black/10 bg-white px-3 py-2 text-[14.5px] text-ink placeholder:text-[#B7B0A4] focus:outline-none"
+            />
+
+            <label className="mb-1 block text-xs font-semibold text-ink-soft">Teléfono</label>
+            <input
+              type="tel"
+              value={telefonoForm}
+              onChange={(e) => setTelefonoForm(e.target.value)}
+              placeholder="+57 300 1234567"
+              className="mb-3 w-full rounded-lg border border-black/10 bg-white px-3 py-2 text-[14.5px] text-ink placeholder:text-[#B7B0A4] focus:outline-none"
+            />
+
+            {errorForm && <p className="mb-3 text-xs font-medium text-red-500">{errorForm}</p>}
+
+            <div className="flex gap-2">
+              <button
+                type="button"
+                onClick={handleGuardarContacto}
+                className="flex-1 rounded-full bg-gradient-to-br from-auxilio-1 to-auxilio-2 py-2.5 text-sm font-bold text-white shadow-[0_10px_20px_rgba(255,122,89,0.25)]"
+              >
+                Guardar
+              </button>
+              <button
+                type="button"
+                onClick={cerrarFormulario}
+                className="flex-1 rounded-full bg-black/10 py-2.5 text-sm font-semibold text-ink"
+              >
+                Cancelar
+              </button>
+            </div>
+          </motion.div>
+        )}
+
+        {(compartirEstado === null || compartirEstado === 'cargando') && (
+          <motion.button
+            {...riseIn(0.16)}
+            type="button"
+            disabled={compartirEstado === 'cargando'}
+            onClick={iniciarCompartirUbicacion}
+            className="mb-8 flex w-full items-center gap-3 rounded-full bg-white py-3.5 pl-4 pr-5 text-left shadow-[0_8px_22px_rgba(0,0,0,0.04)] disabled:opacity-70"
+          >
+            <span className="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-full bg-senales-bg text-base text-senales-1">
+              {compartirEstado === 'cargando' ? (
+                <span
+                  aria-hidden="true"
+                  className="h-4 w-4 animate-spin rounded-full border-2 border-senales-1/30 border-t-senales-1"
+                />
+              ) : (
+                '📍'
+              )}
+            </span>
+            <span className="text-sm font-semibold text-ink-soft">
+              {compartirEstado === 'cargando' ? 'Obteniendo tu ubicación…' : 'Compartir mi ubicación'}
+            </span>
+          </motion.button>
+        )}
+
+        {compartirEstado === 'sin-contacto' && (
+          <motion.div
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            className={`mb-8 text-center ${cardClass}`}
+          >
+            <p className="mb-3 text-sm text-ink-soft">
+              Agrega un contacto de confianza primero para poder compartir tu ubicación
+            </p>
+            <div className="flex justify-center gap-2">
+              <button
+                type="button"
+                onClick={() => {
+                  cerrarPanelCompartir()
+                  abrirFormularioNuevo()
+                }}
+                className="rounded-full bg-gradient-to-br from-auxilio-1 to-auxilio-2 px-5 py-2.5 text-sm font-bold text-white shadow-[0_10px_20px_rgba(255,122,89,0.25)]"
+              >
+                Agregar contacto de confianza
+              </button>
+              <button
+                type="button"
+                onClick={cerrarPanelCompartir}
+                className="rounded-full bg-black/10 px-5 py-2.5 text-sm font-semibold text-ink"
+              >
+                Cancelar
+              </button>
+            </div>
+          </motion.div>
+        )}
+
+        {compartirEstado === 'seleccion' && (
+          <motion.div
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            className={`mb-8 ${cardClass}`}
+          >
+            <p className="mb-3 text-sm font-semibold text-ink">
+              ¿A quién le compartes tu ubicación?
+            </p>
+            <div className="flex flex-col gap-2">
+              {contactos.map((contacto) => (
+                <button
+                  key={contacto.id}
+                  type="button"
+                  onClick={() => compartirConContacto(contacto)}
+                  className="rounded-lg bg-auxilio-bg px-4 py-2.5 text-left text-[14.5px] font-semibold text-ink"
+                >
+                  {contacto.nombre}
+                </button>
+              ))}
             </div>
             <button
               type="button"
-              onClick={() => showToast(`Llamando a ${PERSONA_CONFIANZA.nombre}… (simulado)`)}
-              className="flex h-11 w-11 flex-shrink-0 items-center justify-center rounded-full bg-auxilio-bg text-lg text-auxilio-1"
-              aria-label={`Llamar a ${PERSONA_CONFIANZA.nombre}`}
+              onClick={cerrarPanelCompartir}
+              className="mt-3 w-full rounded-full bg-black/10 py-2.5 text-sm font-semibold text-ink"
             >
-              📞
+              Cancelar
             </button>
-          </div>
-        </motion.div>
+          </motion.div>
+        )}
 
-        <motion.button
-          {...riseIn(0.16)}
-          type="button"
-          onClick={() => showToast('Ubicación compartida (simulado)')}
-          className={`mb-8 flex w-full items-center gap-3 rounded-full bg-white py-3.5 pl-4 pr-5 text-left shadow-[0_8px_22px_rgba(0,0,0,0.04)]`}
-        >
-          <span className="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-full bg-senales-bg text-base text-senales-1">
-            📍
-          </span>
-          <span className="text-sm font-semibold text-ink-soft">Compartir mi ubicación</span>
-        </motion.button>
+        {compartirEstado === 'sin-codigo-pais' && (
+          <motion.div
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            className={`mb-8 text-center ${cardClass}`}
+          >
+            <p className="mb-3 text-sm text-ink-soft">
+              Este contacto no tiene código de país guardado. Edítalo primero para poder
+              compartir por WhatsApp.
+            </p>
+            <div className="flex justify-center gap-2">
+              <button
+                type="button"
+                onClick={editarContactoProblema}
+                className="rounded-full bg-gradient-to-br from-auxilio-1 to-auxilio-2 px-5 py-2.5 text-sm font-bold text-white shadow-[0_10px_20px_rgba(255,122,89,0.25)]"
+              >
+                Editar contacto
+              </button>
+              <button
+                type="button"
+                onClick={cerrarPanelCompartir}
+                className="rounded-full bg-black/10 px-5 py-2.5 text-sm font-semibold text-ink"
+              >
+                Cancelar
+              </button>
+            </div>
+          </motion.div>
+        )}
+
+        {compartirEstado === 'error' && (
+          <motion.div
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            className={`mb-8 text-center ${cardClass}`}
+          >
+            <p className="mb-3 text-sm font-medium text-red-500">{compartirErrorMsg}</p>
+            <button
+              type="button"
+              onClick={cerrarPanelCompartir}
+              className="rounded-full bg-black/10 px-5 py-2.5 text-sm font-semibold text-ink"
+            >
+              Cerrar
+            </button>
+          </motion.div>
+        )}
 
         <motion.p {...riseIn(0.22)} className="mb-3 text-sm font-semibold text-white/80">
           Líneas de apoyo profesional
