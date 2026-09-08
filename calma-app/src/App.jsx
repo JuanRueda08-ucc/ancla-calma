@@ -16,6 +16,7 @@ import IslaSenales from './screens/IslaSenales'
 import PanelAcompanamiento from './screens/PanelAcompanamiento'
 import Login from './screens/Login'
 import Registro from './screens/Registro'
+import Privacidad from './screens/Privacidad'
 import RequireAuth from './components/RequireAuth'
 import { AuthProvider } from './context/AuthContext'
 
@@ -62,6 +63,7 @@ export default function App() {
           <Route path="/acompanamiento" element={<PanelAcompanamiento />} />
           <Route path="/login" element={<Login />} />
           <Route path="/registro" element={<Registro />} />
+          <Route path="/privacidad" element={<Privacidad />} />
         </Routes>
       </BrowserRouter>
     </AuthProvider>
