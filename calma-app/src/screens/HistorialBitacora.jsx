@@ -1,9 +1,10 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { AnimatePresence, motion } from 'framer-motion'
 import BackButton from '../components/BackButton'
 import { riseIn } from '../animations/transitions'
 import { getEntradas, eliminarEntrada } from '../utils/bitacoraStorage'
+import { obtenerAudio } from '../utils/audioStorage'
 
 const BLOB_RADIUS = '42% 58% 63% 37% / 41% 44% 56% 59%'
 
@@ -55,11 +56,61 @@ function obtenerFragmento(entrada) {
 function EntradaCard({ entrada, delay, onEliminar }) {
   const [abierto, setAbierto] = useState(false)
   const [confirmando, setConfirmando] = useState(false)
+  // 'idle' | 'loading' | 'ready' | 'unavailable'
+  const [audioState, setAudioState] = useState('idle')
+  const [isPlaying, setIsPlaying] = useState(false)
+
+  const objectUrlRef = useRef(null)
+  const audioElRef = useRef(null)
 
   const fragmento = obtenerFragmento(entrada)
   const preguntasConContenido = PREGUNTAS.filter(
     (p) => entrada[p.key] && entrada[p.key].trim() !== ''
   )
+
+  // Carga perezosa del audio real (IndexedDB) solo mientras la tarjeta está
+  // expandida. Al colapsar o desmontar, revocamos el object URL para no
+  // dejar memoria huérfana mientras el usuario navega el historial.
+  useEffect(() => {
+    if (!abierto || !entrada.tieneNotaDeVoz) return undefined
+
+    let cancelado = false
+    setAudioState('loading')
+
+    obtenerAudio(entrada.id)
+      .then((blob) => {
+        if (cancelado) return
+        if (blob) {
+          objectUrlRef.current = URL.createObjectURL(blob)
+          setAudioState('ready')
+        } else {
+          setAudioState('unavailable')
+        }
+      })
+      .catch(() => {
+        if (!cancelado) setAudioState('unavailable')
+      })
+
+    return () => {
+      cancelado = true
+      if (objectUrlRef.current) {
+        URL.revokeObjectURL(objectUrlRef.current)
+        objectUrlRef.current = null
+      }
+      setIsPlaying(false)
+      setAudioState('idle')
+    }
+  }, [abierto, entrada.id, entrada.tieneNotaDeVoz])
+
+  const togglePlay = () => {
+    const audio = audioElRef.current
+    if (!audio) return
+    if (isPlaying) {
+      audio.pause()
+    } else {
+      audio.play()
+    }
+  }
 
   return (
     <motion.div
@@ -133,6 +184,42 @@ function EntradaCard({ entrada, delay, onEliminar }) {
                   <p className="text-[14px] leading-[1.5] text-ink-soft">{entrada[p.key]}</p>
                 </div>
               ))}
+
+              {entrada.tieneNotaDeVoz && (
+                <div>
+                  <p className="mb-1 text-[13px] font-semibold text-ink">Nota de voz</p>
+                  {audioState === 'ready' ? (
+                    <div className="flex items-center gap-2.5">
+                      <button
+                        type="button"
+                        onClick={(e) => {
+                          e.stopPropagation()
+                          togglePlay()
+                        }}
+                        aria-label={isPlaying ? 'Pausar nota de voz' : 'Reproducir nota de voz'}
+                        className="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-full bg-auxilio-bg text-base text-auxilio-1"
+                      >
+                        {isPlaying ? '⏸' : '▶'}
+                      </button>
+                      <span className="text-[13.5px] text-ink-soft">
+                        {formatDuracion(entrada.notaVozDuracion)}
+                      </span>
+                      <audio
+                        ref={audioElRef}
+                        src={objectUrlRef.current ?? undefined}
+                        onPlay={() => setIsPlaying(true)}
+                        onPause={() => setIsPlaying(false)}
+                        onEnded={() => setIsPlaying(false)}
+                        className="hidden"
+                      />
+                    </div>
+                  ) : audioState === 'loading' ? (
+                    <p className="text-[13px] text-ink-soft">Cargando audio…</p>
+                  ) : (
+                    <p className="text-[13px] italic text-ink-soft">Audio no disponible</p>
+                  )}
+                </div>
+              )}
 
               <div className="flex justify-end pt-1">
                 {confirmando ? (

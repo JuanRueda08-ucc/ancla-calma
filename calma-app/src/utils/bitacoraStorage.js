@@ -1,3 +1,5 @@
+import { eliminarAudio } from './audioStorage'
+
 const STORAGE_KEY = 'calma:bitacora'
 
 function generarId() {
@@ -34,6 +36,14 @@ export function guardarEntrada(entrada) {
 export function eliminarEntrada(id) {
   const entradas = getEntradas().filter((entrada) => entrada.id !== id)
   localStorage.setItem(STORAGE_KEY, JSON.stringify(entradas))
+
+  // El audio vive en IndexedDB (ver audioStorage.js), aparte de esta entrada
+  // de texto en localStorage. No esperamos esta promesa: si falla, no debe
+  // impedir que la entrada de texto quede eliminada.
+  eliminarAudio(id).catch((error) => {
+    console.error('No se pudo eliminar el audio asociado a la entrada:', error)
+  })
+
   return entradas
 }
 

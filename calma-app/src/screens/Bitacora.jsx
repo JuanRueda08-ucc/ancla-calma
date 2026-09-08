@@ -6,6 +6,7 @@ import VoiceNoteRecorder from '../components/VoiceNoteRecorder'
 import TranscribeMicButton from '../components/TranscribeMicButton'
 import { riseIn } from '../animations/transitions'
 import { guardarEntrada } from '../utils/bitacoraStorage'
+import { guardarAudio } from '../utils/audioStorage'
 
 const BLOB_RADIUS = '42% 58% 63% 37% / 41% 44% 56% 59%'
 
@@ -91,15 +92,12 @@ export default function Bitacora() {
     Object.values(campos).some((valor) => valor.trim() !== '') ||
     notaVozBlob !== null
 
-  const handleGuardar = () => {
+  const handleGuardar = async () => {
     if (!hayContenido) return
 
+    let entradaGuardada
     try {
-      // notaVozBlob es un Blob de audio en memoria — no se persiste aquí (ver
-      // TODO en bitacoraStorage.js), solo si hubo nota de voz y su duración.
-      // En una integración real, el audio se subiría aparte (ej. FormData a
-      // un endpoint) antes de descartar el Blob local.
-      guardarEntrada({
+      entradaGuardada = guardarEntrada({
         tags: [...tagsActivos],
         emocionLibre,
         queEstoySintiendo: campos.sintiendo,
@@ -116,6 +114,18 @@ export default function Bitacora() {
       clearTimeout(toastTimeout.current)
       toastTimeout.current = setTimeout(() => setToastVisible(false), 2000)
       return
+    }
+
+    if (notaVozBlob !== null) {
+      // El audio se guarda aparte, en IndexedDB, usando el mismo id que la
+      // entrada de texto en localStorage como llave compartida. Si esto
+      // falla (ej. cuota excedida), el texto ya quedó guardado — no
+      // interrumpimos el flujo de éxito por un fallo aislado del audio.
+      try {
+        await guardarAudio(entradaGuardada.id, notaVozBlob)
+      } catch (error) {
+        console.error('No se pudo guardar el audio de la nota de voz:', error)
+      }
     }
 
     setToastEsError(false)
