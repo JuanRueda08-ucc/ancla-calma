@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { motion } from 'framer-motion'
 import BackButton from '../components/BackButton'
+import CerrarSesionButton from '../components/CerrarSesionButton'
 import VoiceNoteRecorder from '../components/VoiceNoteRecorder'
 import TranscribeMicButton from '../components/TranscribeMicButton'
 import { riseIn } from '../animations/transitions'
@@ -156,13 +157,16 @@ export default function Bitacora() {
           </div>
           <h1 className="mb-1.5 text-[26px] font-semibold text-ink">Tu bitácora emocional</h1>
           <p className="text-sm text-ink-soft">Un espacio para reflexionar y registrar</p>
-          <Link
-            to="/bitacora/historial"
-            className="mt-3 inline-flex items-center gap-1.5 text-xs font-semibold text-ink-soft"
-          >
-            <span>🕰️</span>
-            <span>Ver historial</span>
-          </Link>
+          <div className="mt-3 flex items-center justify-center gap-4">
+            <Link
+              to="/bitacora/historial"
+              className="inline-flex items-center gap-1.5 text-xs font-semibold text-ink-soft"
+            >
+              <span>🕰️</span>
+              <span>Ver historial</span>
+            </Link>
+            <CerrarSesionButton />
+          </div>
         </motion.div>
 
         <motion.div {...riseIn(0.08)}>
