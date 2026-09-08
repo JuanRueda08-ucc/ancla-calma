@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { motion } from 'framer-motion'
 import BackButton from '../components/BackButton'
+import CerrarSesionButton from '../components/CerrarSesionButton'
 import VoiceNoteRecorder from '../components/VoiceNoteRecorder'
 import TranscribeMicButton from '../components/TranscribeMicButton'
 import { riseIn } from '../animations/transitions'
@@ -97,7 +98,7 @@ export default function Bitacora() {
 
     let entradaGuardada
     try {
-      entradaGuardada = guardarEntrada({
+      entradaGuardada = await guardarEntrada({
         tags: [...tagsActivos],
         emocionLibre,
         queEstoySintiendo: campos.sintiendo,
@@ -117,9 +118,9 @@ export default function Bitacora() {
     }
 
     if (notaVozBlob !== null) {
-      // El audio se guarda aparte, en IndexedDB, usando el mismo id que la
-      // entrada de texto en localStorage como llave compartida. Si esto
-      // falla (ej. cuota excedida), el texto ya quedó guardado — no
+      // El audio se sube aparte, a Supabase Storage, usando el id real que
+      // la base de datos acaba de generar para la entrada de texto. Si esto
+      // falla (ej. problema de red), el texto ya quedó guardado — no
       // interrumpimos el flujo de éxito por un fallo aislado del audio.
       try {
         await guardarAudio(entradaGuardada.id, notaVozBlob)
@@ -156,13 +157,16 @@ export default function Bitacora() {
           </div>
           <h1 className="mb-1.5 text-[26px] font-semibold text-ink">Tu bitácora emocional</h1>
           <p className="text-sm text-ink-soft">Un espacio para reflexionar y registrar</p>
-          <Link
-            to="/bitacora/historial"
-            className="mt-3 inline-flex items-center gap-1.5 text-xs font-semibold text-ink-soft"
-          >
-            <span>🕰️</span>
-            <span>Ver historial</span>
-          </Link>
+          <div className="mt-3 flex items-center justify-center gap-4">
+            <Link
+              to="/bitacora/historial"
+              className="inline-flex items-center gap-1.5 text-xs font-semibold text-ink-soft"
+            >
+              <span>🕰️</span>
+              <span>Ver historial</span>
+            </Link>
+            <CerrarSesionButton />
+          </div>
         </motion.div>
 
         <motion.div {...riseIn(0.08)}>

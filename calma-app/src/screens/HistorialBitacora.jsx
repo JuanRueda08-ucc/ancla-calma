@@ -3,10 +3,14 @@ import { Link } from 'react-router-dom'
 import { AnimatePresence, motion } from 'framer-motion'
 import BackButton from '../components/BackButton'
 import { riseIn } from '../animations/transitions'
-import { getEntradas, eliminarEntrada } from '../utils/bitacoraStorage'
-import { obtenerAudio } from '../utils/audioStorage'
+import { getEntradas, guardarEntrada, eliminarEntrada } from '../utils/bitacoraStorage'
+import { obtenerAudio, guardarAudio } from '../utils/audioStorage'
 
 const BLOB_RADIUS = '42% 58% 63% 37% / 41% 44% 56% 59%'
+const LOCAL_STORAGE_KEY = 'calma:bitacora'
+const LEGACY_AUDIO_DB_NAME = 'calma-audio'
+const LEGACY_AUDIO_STORE_NAME = 'notas'
+const cardClass = 'rounded-lg bg-white p-5 text-center shadow-[0_8px_22px_rgba(0,0,0,0.04)]'
 
 const TAG_EMOJIS = {
   Tranquilidad: '😌',
@@ -51,6 +55,53 @@ function obtenerFragmento(entrada) {
   const candidato = PREGUNTAS.map((p) => entrada[p.key]).find((valor) => valor && valor.trim() !== '')
   if (!candidato) return null
   return candidato.length > 100 ? `${candidato.slice(0, 100)}…` : candidato
+}
+
+function leerEntradasLocalStorage() {
+  try {
+    const raw = localStorage.getItem(LOCAL_STORAGE_KEY)
+    if (!raw) return []
+    const parsed = JSON.parse(raw)
+    return Array.isArray(parsed) ? parsed : []
+  } catch {
+    return []
+  }
+}
+
+// Lee el audio de una entrada vieja directamente de la IndexedDB que usaba
+// la versión anterior de audioStorage.js, solo para el flujo de migración.
+function leerAudioLegacy(id) {
+  return new Promise((resolve) => {
+    const request = indexedDB.open(LEGACY_AUDIO_DB_NAME)
+    request.onupgradeneeded = () => {
+      if (!request.result.objectStoreNames.contains(LEGACY_AUDIO_STORE_NAME)) {
+        request.result.createObjectStore(LEGACY_AUDIO_STORE_NAME, { keyPath: 'id' })
+      }
+    }
+    request.onerror = () => resolve(null)
+    request.onsuccess = () => {
+      const db = request.result
+      if (!db.objectStoreNames.contains(LEGACY_AUDIO_STORE_NAME)) {
+        db.close()
+        resolve(null)
+        return
+      }
+      const tx = db.transaction(LEGACY_AUDIO_STORE_NAME, 'readonly')
+      const getRequest = tx.objectStore(LEGACY_AUDIO_STORE_NAME).get(id)
+      getRequest.onsuccess = () => resolve(getRequest.result ? getRequest.result.blob : null)
+      getRequest.onerror = () => resolve(null)
+      tx.oncomplete = () => db.close()
+    }
+  })
+}
+
+function eliminarBaseAudioLegacy() {
+  return new Promise((resolve) => {
+    const request = indexedDB.deleteDatabase(LEGACY_AUDIO_DB_NAME)
+    request.onsuccess = () => resolve()
+    request.onerror = () => resolve()
+    request.onblocked = () => resolve()
+  })
 }
 
 function EntradaCard({ entrada, delay, onEliminar }) {
@@ -268,18 +319,89 @@ function EntradaCard({ entrada, delay, onEliminar }) {
 }
 
 export default function HistorialBitacora() {
+  const [cargaEstado, setCargaEstado] = useState('cargando') // 'cargando' | 'error' | 'listo'
   const [entradas, setEntradas] = useState([])
 
+  const [migracionDisponible, setMigracionDisponible] = useState(false)
+  const [entradasLocales, setEntradasLocales] = useState([])
+  const [migrando, setMigrando] = useState(false)
+
+  const cargarEntradas = async () => {
+    setCargaEstado('cargando')
+    try {
+      const data = await getEntradas()
+      setEntradas(data)
+      setCargaEstado('listo')
+
+      if (data.length === 0) {
+        const locales = leerEntradasLocalStorage()
+        if (locales.length > 0) {
+          setEntradasLocales(locales)
+          setMigracionDisponible(true)
+        }
+      }
+    } catch {
+      setCargaEstado('error')
+    }
+  }
+
   useEffect(() => {
-    const cargadas = [...getEntradas()].sort(
-      (a, b) => new Date(b.fecha).getTime() - new Date(a.fecha).getTime()
-    )
-    setEntradas(cargadas)
+    cargarEntradas()
   }, [])
 
-  const handleEliminar = (id) => {
-    eliminarEntrada(id)
-    setEntradas((prev) => prev.filter((entrada) => entrada.id !== id))
+  const handleEliminar = async (id) => {
+    try {
+      await eliminarEntrada(id)
+      setEntradas((prev) => prev.filter((entrada) => entrada.id !== id))
+    } catch (error) {
+      console.error('No se pudo eliminar la entrada:', error)
+    }
+  }
+
+  const migrarEntradasLocales = async () => {
+    setMigrando(true)
+    try {
+      const ordenadas = [...entradasLocales].sort(
+        (a, b) => new Date(a.fecha).getTime() - new Date(b.fecha).getTime()
+      )
+
+      for (const entradaLocal of ordenadas) {
+        const entradaGuardada = await guardarEntrada({
+          tags: entradaLocal.tags ?? [],
+          emocionLibre: entradaLocal.emocionLibre,
+          queEstoySintiendo: entradaLocal.queEstoySintiendo,
+          queOcurrio: entradaLocal.queOcurrio,
+          queNecesito: entradaLocal.queNecesito,
+          queMeAyudo: entradaLocal.queMeAyudo,
+          tieneNotaDeVoz: entradaLocal.tieneNotaDeVoz,
+          notaVozDuracion: entradaLocal.notaVozDuracion,
+        })
+
+        if (entradaLocal.tieneNotaDeVoz) {
+          try {
+            const blob = await leerAudioLegacy(entradaLocal.id)
+            if (blob) await guardarAudio(entradaGuardada.id, blob)
+          } catch (error) {
+            console.error('No se pudo migrar el audio de una entrada:', error)
+          }
+        }
+      }
+
+      localStorage.removeItem(LOCAL_STORAGE_KEY)
+      await eliminarBaseAudioLegacy()
+      setMigracionDisponible(false)
+      await cargarEntradas()
+    } catch (error) {
+      console.error('No se pudieron migrar todas las entradas:', error)
+    } finally {
+      setMigrando(false)
+    }
+  }
+
+  const descartarMigracion = async () => {
+    localStorage.removeItem(LOCAL_STORAGE_KEY)
+    await eliminarBaseAudioLegacy()
+    setMigracionDisponible(false)
   }
 
   return (
@@ -298,7 +420,66 @@ export default function HistorialBitacora() {
           <p className="text-sm text-ink-soft">Todo lo que has registrado hasta ahora</p>
         </motion.div>
 
-        {entradas.length === 0 ? (
+        {cargaEstado === 'cargando' && (
+          <div className="flex justify-center py-10">
+            <span
+              aria-hidden="true"
+              className="h-8 w-8 animate-spin rounded-full border-2 border-ink/15 border-t-ink/60"
+            />
+          </div>
+        )}
+
+        {cargaEstado === 'error' && (
+          <motion.div
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            className={`mt-6 ${cardClass}`}
+          >
+            <p className="mb-3 text-sm text-ink-soft">
+              No pudimos cargar tu historial. Intenta de nuevo.
+            </p>
+            <button
+              type="button"
+              onClick={cargarEntradas}
+              className="rounded-full bg-gradient-to-br from-faro-1 to-[#FF9C4A] px-6 py-3 text-sm font-bold text-white shadow-[0_10px_20px_rgba(242,169,59,0.25)]"
+            >
+              Reintentar
+            </button>
+          </motion.div>
+        )}
+
+        {cargaEstado === 'listo' && migracionDisponible && (
+          <motion.div
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            className={`mb-4 ${cardClass}`}
+          >
+            <p className="mb-3 text-sm text-ink-soft">
+              Encontramos entradas guardadas en este dispositivo. ¿Quieres agregarlas a tu
+              cuenta?
+            </p>
+            <div className="flex justify-center gap-2">
+              <button
+                type="button"
+                disabled={migrando}
+                onClick={migrarEntradasLocales}
+                className="rounded-full bg-gradient-to-br from-faro-1 to-[#FF9C4A] px-5 py-2.5 text-sm font-bold text-white shadow-[0_10px_20px_rgba(242,169,59,0.25)] disabled:opacity-70"
+              >
+                {migrando ? 'Migrando…' : 'Sí, migrarlas'}
+              </button>
+              <button
+                type="button"
+                disabled={migrando}
+                onClick={descartarMigracion}
+                className="rounded-full bg-black/10 px-5 py-2.5 text-sm font-semibold text-ink disabled:opacity-70"
+              >
+                No, descartar
+              </button>
+            </div>
+          </motion.div>
+        )}
+
+        {cargaEstado === 'listo' && entradas.length === 0 && (
           <motion.div {...riseIn(0.1)} className="mt-6 text-center">
             <p className="mx-auto max-w-[380px] text-[15px] leading-[1.6] text-ink-soft">
               Todavía no tienes entradas guardadas. Cuando registres algo en tu bitácora,
@@ -311,7 +492,9 @@ export default function HistorialBitacora() {
               Ir a la bitácora
             </Link>
           </motion.div>
-        ) : (
+        )}
+
+        {cargaEstado === 'listo' &&
           entradas.map((entrada, index) => (
             <EntradaCard
               key={entrada.id}
@@ -319,8 +502,7 @@ export default function HistorialBitacora() {
               delay={0.05 * index}
               onEliminar={handleEliminar}
             />
-          ))
-        )}
+          ))}
       </div>
     </div>
   )

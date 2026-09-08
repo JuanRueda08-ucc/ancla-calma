@@ -14,27 +14,58 @@ import HistorialBitacora from './screens/HistorialBitacora'
 import IslaFaro from './screens/IslaFaro'
 import IslaSenales from './screens/IslaSenales'
 import PanelAcompanamiento from './screens/PanelAcompanamiento'
+import Login from './screens/Login'
+import Registro from './screens/Registro'
+import Privacidad from './screens/Privacidad'
+import RequireAuth from './components/RequireAuth'
+import { AuthProvider } from './context/AuthContext'
 
 export default function App() {
   return (
-    <BrowserRouter>
-      <Routes>
-        <Route path="/" element={<Entrada />} />
-        <Route path="/elegir" element={<ElegirCamino />} />
-        <Route path="/islas" element={<Islas />} />
-        <Route path="/islas/auxilio" element={<IslaAuxilio />} />
-        <Route path="/islas/aire" element={<IslaAireMenu />} />
-        <Route path="/islas/aire/respiracion" element={<EjercicioRespiracion />} />
-        <Route path="/islas/aire/puerto-seguro" element={<PuertoSeguro />} />
-        <Route path="/islas/aire/puerto-seguro/grounding" element={<EjercicioGrounding />} />
-        <Route path="/islas/aire/puerto-seguro/relajacion-muscular" element={<EjercicioRelajacionMuscular />} />
-        <Route path="/islas/aire/puerto-seguro/sensorial" element={<EjercicioSensorial />} />
-        <Route path="/bitacora" element={<Bitacora />} />
-        <Route path="/bitacora/historial" element={<HistorialBitacora />} />
-        <Route path="/islas/faro" element={<IslaFaro />} />
-        <Route path="/islas/senales" element={<IslaSenales />} />
-        <Route path="/acompanamiento" element={<PanelAcompanamiento />} />
-      </Routes>
-    </BrowserRouter>
+    <AuthProvider>
+      <BrowserRouter>
+        <Routes>
+          <Route path="/" element={<Entrada />} />
+          <Route path="/elegir" element={<ElegirCamino />} />
+          <Route path="/islas" element={<Islas />} />
+          <Route
+            path="/islas/auxilio"
+            element={
+              <RequireAuth>
+                <IslaAuxilio />
+              </RequireAuth>
+            }
+          />
+          <Route path="/islas/aire" element={<IslaAireMenu />} />
+          <Route path="/islas/aire/respiracion" element={<EjercicioRespiracion />} />
+          <Route path="/islas/aire/puerto-seguro" element={<PuertoSeguro />} />
+          <Route path="/islas/aire/puerto-seguro/grounding" element={<EjercicioGrounding />} />
+          <Route path="/islas/aire/puerto-seguro/relajacion-muscular" element={<EjercicioRelajacionMuscular />} />
+          <Route path="/islas/aire/puerto-seguro/sensorial" element={<EjercicioSensorial />} />
+          <Route
+            path="/bitacora"
+            element={
+              <RequireAuth>
+                <Bitacora />
+              </RequireAuth>
+            }
+          />
+          <Route
+            path="/bitacora/historial"
+            element={
+              <RequireAuth>
+                <HistorialBitacora />
+              </RequireAuth>
+            }
+          />
+          <Route path="/islas/faro" element={<IslaFaro />} />
+          <Route path="/islas/senales" element={<IslaSenales />} />
+          <Route path="/acompanamiento" element={<PanelAcompanamiento />} />
+          <Route path="/login" element={<Login />} />
+          <Route path="/registro" element={<Registro />} />
+          <Route path="/privacidad" element={<Privacidad />} />
+        </Routes>
+      </BrowserRouter>
+    </AuthProvider>
   )
 }

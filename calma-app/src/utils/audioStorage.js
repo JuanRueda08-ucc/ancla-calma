@@ -1,49 +1,48 @@
-const DB_NAME = 'calma-audio'
-const DB_VERSION = 1
-const STORE_NAME = 'notas'
+import { supabase } from '../lib/supabaseClient'
 
-export function abrirDB() {
-  return new Promise((resolve, reject) => {
-    const request = indexedDB.open(DB_NAME, DB_VERSION)
+const BUCKET = 'notas-voz'
 
-    request.onupgradeneeded = () => {
-      const db = request.result
-      if (!db.objectStoreNames.contains(STORE_NAME)) {
-        db.createObjectStore(STORE_NAME, { keyPath: 'id' })
-      }
-    }
-
-    request.onsuccess = () => resolve(request.result)
-    request.onerror = () => reject(request.error)
-  })
+function rutaAudio(userId, entradaId) {
+  return `${userId}/${entradaId}.webm`
 }
 
-export async function guardarAudio(id, blob) {
-  const db = await abrirDB()
-  return new Promise((resolve, reject) => {
-    const tx = db.transaction(STORE_NAME, 'readwrite')
-    tx.objectStore(STORE_NAME).put({ id, blob })
-    tx.oncomplete = () => resolve()
-    tx.onerror = () => reject(tx.error)
-  })
+async function idUsuarioActual() {
+  const {
+    data: { user },
+  } = await supabase.auth.getUser()
+  return user.id
 }
 
-export async function obtenerAudio(id) {
-  const db = await abrirDB()
-  return new Promise((resolve, reject) => {
-    const tx = db.transaction(STORE_NAME, 'readonly')
-    const request = tx.objectStore(STORE_NAME).get(id)
-    request.onsuccess = () => resolve(request.result ? request.result.blob : null)
-    request.onerror = () => reject(request.error)
-  })
+function esErrorNoEncontrado(error) {
+  return error?.statusCode === '404' || /not.?found/i.test(error?.message ?? '')
 }
 
-export async function eliminarAudio(id) {
-  const db = await abrirDB()
-  return new Promise((resolve, reject) => {
-    const tx = db.transaction(STORE_NAME, 'readwrite')
-    tx.objectStore(STORE_NAME).delete(id)
-    tx.oncomplete = () => resolve()
-    tx.onerror = () => reject(tx.error)
-  })
+export async function guardarAudio(entradaId, blob) {
+  const userId = await idUsuarioActual()
+  const { error } = await supabase.storage
+    .from(BUCKET)
+    .upload(rutaAudio(userId, entradaId), blob, { upsert: true })
+
+  if (error) throw error
+}
+
+export async function obtenerAudio(entradaId) {
+  const userId = await idUsuarioActual()
+  const { data, error } = await supabase.storage
+    .from(BUCKET)
+    .download(rutaAudio(userId, entradaId))
+
+  if (error) {
+    if (esErrorNoEncontrado(error)) return null
+    throw error
+  }
+
+  return data
+}
+
+export async function eliminarAudio(entradaId) {
+  const userId = await idUsuarioActual()
+  const { error } = await supabase.storage.from(BUCKET).remove([rutaAudio(userId, entradaId)])
+
+  if (error) throw error
 }
