@@ -1,0 +1,12 @@
+{
+  "name": "ancla-calma",
+  "private": true,
+  "description": "Monorepo raíz del proyecto ANCLA / Calma — ver AGENTS.md para estructura completa",
+  "scripts": {
+    "dev": "npm run dev --prefix calma-app",
+    "build": "npm run build --prefix calma-app",
+    "install:app": "npm install --prefix calma-app",
+    "db:push": "supabase db push",
+    "db:migration": "supabase migration new"
+  }
+}
