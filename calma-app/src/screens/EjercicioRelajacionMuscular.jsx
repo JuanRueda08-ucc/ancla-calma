@@ -1,11 +1,9 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { AnimatePresence, motion } from 'framer-motion'
 import GuidedExerciseShell from '../components/GuidedExerciseShell'
-
-const DIM_FILL = 'rgba(255,255,255,0.18)'
-const ACTIVE_FILL = '#F2A93B'
-const ACTIVE_FILTER = 'drop-shadow(0 0 12px rgba(242,169,59,0.85))'
-const GLOW_TRANSITION = 'fill 400ms ease, filter 400ms ease'
+import piezaBaseConOjo from '../assets/personajes/pirata/pieza_base_conojo.png'
+import piezaPupila from '../assets/personajes/pirata/pieza_pupila.png'
 
 const PASOS = [
   {
@@ -47,38 +45,108 @@ const PASOS = [
   },
 ]
 
-function BodySilhouette({ activeParts }) {
-  const styleFor = (key) => ({
-    fill: activeParts.includes(key) ? ACTIVE_FILL : DIM_FILL,
-    filter: activeParts.includes(key) ? ACTIVE_FILTER : 'none',
-    transition: GLOW_TRANSITION,
-  })
+// Coordenadas en % del contenedor (mismas proporciones que la imagen completa 2373x2924).
+const ZONAS = {
+  jaw: { left: 33, top: 0, width: 39, height: 31 },
+  shoulders: { left: 28, top: 27, width: 52, height: 15 },
+  armLeft: { left: 0, top: 32, width: 35, height: 32 },
+  armRight: { left: 63, top: 32, width: 36, height: 42 },
+  handLeft: { left: 0, top: 52, width: 20, height: 12 },
+  handRight: { left: 83, top: 60, width: 16, height: 14 },
+  torso: { left: 30, top: 30, width: 45, height: 38 },
+  legLeft: { left: 18, top: 63, width: 34, height: 17 },
+  legRight: { left: 58, top: 63, width: 30, height: 17 },
+  footLeft: { left: 8, top: 79, width: 42, height: 19 },
+  footRight: { left: 60, top: 79, width: 26, height: 18 },
+}
 
+// Posición de la pupila en % del contenedor y su recorrido en % de su propio ancho/alto
+// (0.8% / 0.15% del contenedor, convertidos a % del tamaño de la pupila: 7.3% / 5.5%).
+const PUPILA_POS = { left: 47.2, top: 16.0, width: 7.3, height: 5.5 }
+const PUPILA_DX = ((0.8 / PUPILA_POS.width) * 100).toFixed(2) + '%'
+const PUPILA_DY = ((0.15 / PUPILA_POS.height) * 100).toFixed(2) + '%'
+
+// Ciclo del ojo: centro (sostén) → derecha (sostén) → centro (sostén) → izquierda (sostén) → centro.
+const OJO_DURACION = 8.7
+const OJO_TIEMPOS = [0, 2.5, 2.8, 4.3, 4.6, 6.6, 6.9, 8.4, 8.7].map((t) => t / OJO_DURACION)
+const OJO_ANIMACION = {
+  x: [0, 0, PUPILA_DX, PUPILA_DX, 0, 0, `-${PUPILA_DX}`, `-${PUPILA_DX}`, 0],
+  y: [0, 0, `-${PUPILA_DY}`, `-${PUPILA_DY}`, 0, 0, PUPILA_DY, PUPILA_DY, 0],
+  transition: {
+    duration: OJO_DURACION,
+    times: OJO_TIEMPOS,
+    repeat: Infinity,
+    ease: 'easeInOut',
+  },
+}
+
+function ZoneGlow({ rect }) {
   return (
-    <svg viewBox="0 0 120 230" width="140" height="268" className="mx-auto mb-6">
-      {/* cabeza */}
-      <circle cx="60" cy="20" r="14" style={styleFor('head')} />
-      {/* mandíbula */}
-      <ellipse cx="60" cy="30" rx="9" ry="6" style={styleFor('jaw')} />
-      {/* cuello */}
-      <rect x="54" y="34" width="12" height="8" rx="3" style={styleFor('neck')} />
-      {/* hombros */}
-      <rect x="28" y="42" width="64" height="13" rx="6.5" style={styleFor('shoulders')} />
-      {/* brazos */}
-      <rect x="17" y="50" width="14" height="82" rx="7" style={styleFor('armLeft')} />
-      <rect x="89" y="50" width="14" height="82" rx="7" style={styleFor('armRight')} />
-      {/* manos */}
-      <ellipse cx="24" cy="140" rx="10" ry="10" style={styleFor('handLeft')} />
-      <ellipse cx="96" cy="140" rx="10" ry="10" style={styleFor('handRight')} />
-      {/* torso / abdomen */}
-      <rect x="41" y="52" width="38" height="76" rx="15" style={styleFor('torso')} />
-      {/* piernas */}
-      <rect x="44" y="124" width="14" height="88" rx="7" style={styleFor('legLeft')} />
-      <rect x="62" y="124" width="14" height="88" rx="7" style={styleFor('legRight')} />
-      {/* pies */}
-      <ellipse cx="51" cy="220" rx="13" ry="6.5" style={styleFor('footLeft')} />
-      <ellipse cx="69" cy="220" rx="13" ry="6.5" style={styleFor('footRight')} />
-    </svg>
+    <div
+      className="absolute"
+      style={{ left: `${rect.left}%`, top: `${rect.top}%`, width: `${rect.width}%`, height: `${rect.height}%` }}
+    >
+      <div
+        className="absolute rounded-full"
+        style={{
+          inset: '-18%',
+          background: 'radial-gradient(circle, rgba(255,200,90,0.5) 0%, rgba(255,200,90,0) 70%)',
+          filter: 'blur(24px)',
+        }}
+      />
+      <div
+        className="absolute rounded-full"
+        style={{ inset: '4%', border: '2.5px solid rgba(255,225,150,0.85)' }}
+      />
+    </div>
+  )
+}
+
+function PersonajeConOjo({ pasoIndex, partesActivas }) {
+  return (
+    <div
+      className="relative mx-auto mb-6 w-full max-w-[280px]"
+      style={{ aspectRatio: '2373 / 2924' }}
+    >
+      <img
+        src={piezaBaseConOjo}
+        alt="Personaje pirata"
+        className="pointer-events-none absolute inset-0 h-full w-full select-none"
+      />
+      <motion.div
+        className="absolute"
+        style={{
+          left: `${PUPILA_POS.left}%`,
+          top: `${PUPILA_POS.top}%`,
+          width: `${PUPILA_POS.width}%`,
+          height: `${PUPILA_POS.height}%`,
+        }}
+        animate={{ x: OJO_ANIMACION.x, y: OJO_ANIMACION.y }}
+        transition={OJO_ANIMACION.transition}
+      >
+        <img src={piezaPupila} alt="" className="pointer-events-none h-full w-full select-none" />
+      </motion.div>
+      <AnimatePresence mode="wait">
+        <motion.div key={pasoIndex} className="absolute inset-0">
+          {partesActivas.map((parte) => {
+            const rect = ZONAS[parte]
+            if (!rect) return null
+            return (
+              <motion.div
+                key={parte}
+                initial={{ opacity: 0, scale: 0.9 }}
+                animate={{ opacity: 1, scale: 1 }}
+                exit={{ opacity: 0, scale: 0.9 }}
+                transition={{ duration: 0.4, ease: 'easeOut' }}
+                className="absolute inset-0"
+              >
+                <ZoneGlow rect={rect} />
+              </motion.div>
+            )
+          })}
+        </motion.div>
+      </AnimatePresence>
+    </div>
   )
 }
 
@@ -107,7 +175,7 @@ export default function EjercicioRelajacionMuscular() {
       footerLabel="Relajación muscular • 5 min"
     >
       <div className="text-center">
-        <BodySilhouette activeParts={paso.partes} />
+        <PersonajeConOjo pasoIndex={pasoIndex} partesActivas={paso.partes} />
         <span className="mb-3 inline-block rounded-full bg-white/10 px-4 py-1 text-xs font-semibold text-faro-1">
           {paso.zona}
         </span>
