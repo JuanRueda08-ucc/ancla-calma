@@ -1,7 +1,7 @@
 import { useNavigate } from 'react-router-dom'
 import { motion } from 'framer-motion'
 import { riseIn } from '../animations/transitions'
-import AccountMenu from '../components/AccountMenu'
+import ScreenHeader from '../components/ScreenHeader'
 
 const BLOB_RADIUS = '42% 58% 63% 37% / 41% 44% 56% 59%'
 
@@ -67,11 +67,9 @@ export default function ElegirCamino() {
   return (
     <div className="min-h-screen bg-gradient-to-b from-[#FDF8F1] to-[#EAF0F7]">
       <div className="mx-auto max-w-[620px] px-5 pb-20 pt-10">
-        <div className="flex justify-end">
-          <AccountMenu />
-        </div>
+        <ScreenHeader />
 
-        <motion.div {...riseIn(0)} className="mb-9 mt-5 text-center">
+        <motion.div {...riseIn(0)} className="mb-9 text-center">
           <h1 className="mb-2 text-[28px] font-semibold text-ink">¿Qué necesitas hoy?</h1>
           <p className="text-[14.5px] text-ink-soft">
             Elige el camino que se ajuste a este momento

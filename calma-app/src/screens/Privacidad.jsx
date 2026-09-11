@@ -1,5 +1,5 @@
 import { motion } from 'framer-motion'
-import BackButton from '../components/BackButton'
+import ScreenHeader from '../components/ScreenHeader'
 import { riseIn } from '../animations/transitions'
 
 const CORREO_CONTACTO = 'juanjoruedav@gmail.com'
@@ -16,7 +16,7 @@ export default function Privacidad() {
   return (
     <div className="min-h-screen bg-gradient-to-b from-sand to-sand-deep">
       <div className="mx-auto max-w-[620px] px-6 py-10">
-        <BackButton to="/registro" />
+        <ScreenHeader backTo="/registro" showAccount={false} />
 
         <motion.div
           {...riseIn(0)}

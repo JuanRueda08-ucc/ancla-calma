@@ -1,7 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import { AnimatePresence, motion, Reorder, useDragControls } from 'framer-motion'
-import BackButton from '../components/BackButton'
-import AccountMenu from '../components/AccountMenu'
+import ScreenHeader from '../components/ScreenHeader'
 import { riseIn } from '../animations/transitions'
 
 const ICONOS_DISPONIBLES = ['🎵', '🚶', '📞', '🫁', '💧', '😴', '📝', '🎉', '🌳', '🎨']
@@ -214,10 +213,7 @@ export default function IslaFaro() {
   return (
     <div className="min-h-screen bg-gradient-to-b from-faro-1 to-faro-2">
       <div className="mx-auto max-w-[620px] px-5 pb-20 pt-10">
-        <div className="flex items-center justify-between">
-          <BackButton to="/islas" />
-          <AccountMenu buttonClassName="bg-white/20 text-white" />
-        </div>
+        <ScreenHeader backTo="/islas" accountButtonClassName="bg-white/20 text-white" />
 
         <motion.div {...riseIn(0)} className="mb-8 text-center">
           <svg viewBox="0 0 100 90" width="76" height="76" className="mx-auto mb-3">

@@ -67,6 +67,14 @@ otro agente. Al terminar una tarea significativa, actualizar este archivo.
   ejercicios guiados y las pantallas de Perfil/Login/Registro/Privacidad;
   muestra el avatar real con sesión iniciada, o invita a iniciar sesión
   si no la hay
+- Perfil ahora también tiene su propio botón de "Cerrar sesión" al final
+  de la pantalla (además del que ya existe en `AccountMenu`), con
+  tratamiento visual distinto (ghost/rojo) al resto de botones de
+  guardado de la pantalla
+- Corregida la asimetría vertical del ícono de cuenta entre pantallas:
+  nuevo `ScreenHeader.jsx` centraliza el layout de BackButton +
+  AccountMenu (con placeholders cuando falta alguno) para que el
+  posicionamiento sea idéntico en todas las pantallas que los usan
 
 ## Pendiente / ideas anotadas para retomar (sin fecha)
 - Eliminar cuenta (Edge Function) — siguiente paso ya planeado para el

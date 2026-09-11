@@ -1,7 +1,6 @@
 import { useNavigate } from 'react-router-dom'
 import { motion } from 'framer-motion'
-import BackButton from '../components/BackButton'
-import AccountMenu from '../components/AccountMenu'
+import ScreenHeader from '../components/ScreenHeader'
 import { riseIn } from '../animations/transitions'
 
 const BLOB_RADIUS = '42% 58% 63% 37% / 41% 44% 56% 59%'
@@ -93,10 +92,7 @@ export default function Islas() {
   return (
     <div className="min-h-screen bg-gradient-to-b from-[#FDF8F1] to-[#F7EEDF]">
       <div className="mx-auto max-w-[620px] px-5 pb-20 pt-10">
-        <div className="flex items-center justify-between">
-          <BackButton to="/elegir" />
-          <AccountMenu />
-        </div>
+        <ScreenHeader backTo="/elegir" />
 
         <motion.div {...riseIn(0)} className="mb-8 text-center">
           <p className="mb-1.5 text-[15px] text-ink-soft">Elige a dónde ir</p>

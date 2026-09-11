@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { motion } from 'framer-motion'
-import BackButton from '../components/BackButton'
+import ScreenHeader from '../components/ScreenHeader'
 import { riseIn } from '../animations/transitions'
 import { useAuth } from '../context/AuthContext'
 import { supabase } from '../lib/supabaseClient'
@@ -23,7 +24,8 @@ function mapUpdateEmailError(error) {
 }
 
 export default function Perfil() {
-  const { user, refreshProfile } = useAuth()
+  const { user, refreshProfile, signOut } = useAuth()
+  const navigate = useNavigate()
 
   const [perfilCargando, setPerfilCargando] = useState(true)
   const [avatarId, setAvatarId] = useState(null)
@@ -149,10 +151,18 @@ export default function Perfil() {
     setConfirmarContrasena('')
   }
 
+  const cerrarSesion = () => {
+    // Mismo orden que en AccountMenu: navegar primero, de forma síncrona,
+    // y llamar a signOut() después — si no, el redirect reactivo de
+    // RequireAuth gana la carrera y termina en /login en vez de /elegir.
+    navigate('/elegir', { replace: true })
+    signOut()
+  }
+
   return (
     <div className="min-h-screen bg-sand">
       <div className="mx-auto max-w-[620px] px-5 pb-20 pt-10">
-        <BackButton to="/islas" />
+        <ScreenHeader backTo="/islas" showAccount={false} />
 
         <motion.div {...riseIn(0)} className="mb-8 text-center">
           <h1 className="mb-1.5 text-[26px] font-semibold text-ink">Tu perfil</h1>
@@ -313,6 +323,16 @@ export default function Perfil() {
             {passwordEnviando ? 'Actualizando…' : 'Actualizar contraseña'}
           </button>
         </motion.form>
+
+        <motion.div {...riseIn(0.24)} className="mt-6 text-center">
+          <button
+            type="button"
+            onClick={cerrarSesion}
+            className="rounded-full border-[1.5px] border-red-500/25 px-6 py-2.5 text-sm font-semibold text-red-500"
+          >
+            Cerrar sesión
+          </button>
+        </motion.div>
       </div>
     </div>
   )

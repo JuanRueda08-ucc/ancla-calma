@@ -1,7 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import { motion } from 'framer-motion'
-import BackButton from '../components/BackButton'
-import AccountMenu from '../components/AccountMenu'
+import ScreenHeader from '../components/ScreenHeader'
 import Accordion from '../components/Accordion'
 import { riseIn } from '../animations/transitions'
 
@@ -167,10 +166,7 @@ export default function PanelAcompanamiento() {
   return (
     <div className="relative min-h-screen bg-acomp-bg">
       <div className="mx-auto max-w-[620px] px-5 pb-20 pt-10">
-        <div className="flex items-center justify-between">
-          <BackButton to="/elegir" />
-          <AccountMenu />
-        </div>
+        <ScreenHeader backTo="/elegir" />
 
         <motion.div {...riseIn(nextDelay())} className="mb-8 text-center">
           <div

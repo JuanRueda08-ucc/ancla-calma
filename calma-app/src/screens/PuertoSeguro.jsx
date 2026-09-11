@@ -1,7 +1,6 @@
 import { useNavigate } from 'react-router-dom'
 import { motion } from 'framer-motion'
-import BackButton from '../components/BackButton'
-import AccountMenu from '../components/AccountMenu'
+import ScreenHeader from '../components/ScreenHeader'
 import StarField from '../components/StarField'
 import { riseIn } from '../animations/transitions'
 import { NIGHT_SKY_BG } from '../styles/nightSky'
@@ -76,10 +75,7 @@ export default function PuertoSeguro() {
       <StarField />
 
       <div className="relative z-[3] mx-auto max-w-[620px] px-5 pb-20 pt-10">
-        <div className="flex items-center justify-between">
-          <BackButton to="/islas/aire" />
-          <AccountMenu buttonClassName="bg-white/20 text-white" />
-        </div>
+        <ScreenHeader backTo="/islas/aire" accountButtonClassName="bg-white/20 text-white" />
 
         <motion.div {...riseIn(0)} className="mb-8 text-center">
           <svg

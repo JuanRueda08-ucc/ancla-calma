@@ -1,7 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import { motion } from 'framer-motion'
-import BackButton from '../components/BackButton'
-import AccountMenu from '../components/AccountMenu'
+import ScreenHeader from '../components/ScreenHeader'
 import { riseIn } from '../animations/transitions'
 import { getContactos, guardarContacto, eliminarContacto } from '../utils/contactosStorage'
 import { obtenerUbicacion, construirLinkMapa, construirLinkWhatsApp } from '../utils/compartirUbicacion'
@@ -291,10 +290,7 @@ export default function IslaAuxilio() {
   return (
     <div className="relative min-h-screen bg-gradient-to-b from-auxilio-1 to-auxilio-2">
       <div className="mx-auto max-w-[620px] px-5 pb-20 pt-10">
-        <div className="flex items-center justify-between">
-          <BackButton to="/islas" />
-          <AccountMenu buttonClassName="bg-white/20 text-white" />
-        </div>
+        <ScreenHeader backTo="/islas" accountButtonClassName="bg-white/20 text-white" />
 
         <motion.div {...riseIn(0)} className="mb-8 text-center">
           <div
