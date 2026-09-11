@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import { motion } from 'framer-motion'
 import BackButton from '../components/BackButton'
-import CerrarSesionButton from '../components/CerrarSesionButton'
+import AccountMenu from '../components/AccountMenu'
 import { riseIn } from '../animations/transitions'
 import { getContactos, guardarContacto, eliminarContacto } from '../utils/contactosStorage'
 import { obtenerUbicacion, construirLinkMapa, construirLinkWhatsApp } from '../utils/compartirUbicacion'
@@ -293,7 +293,7 @@ export default function IslaAuxilio() {
       <div className="mx-auto max-w-[620px] px-5 pb-20 pt-10">
         <div className="flex items-center justify-between">
           <BackButton to="/islas" />
-          <CerrarSesionButton textClassName="text-white/85" />
+          <AccountMenu buttonClassName="bg-white/20 text-white" />
         </div>
 
         <motion.div {...riseIn(0)} className="mb-8 text-center">

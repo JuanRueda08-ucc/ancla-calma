@@ -101,9 +101,17 @@ algo que parecía un bug era en realidad una decisión deliberada. Antes de
   algo a "corregir" ocultándolo en el texto legal.
 - **No existe todavía una función de autoeliminación de cuenta completa**
   — la política es honesta sobre esto y remite a contacto manual por
-  correo (`juanjoruedav@mail.com`). Si en el futuro se construye esa
+  correo (`juanjoruedav@gmail.com`). Si en el futuro se construye esa
   función, actualizar tanto el código como este texto de la política en
   el mismo cambio, no por separado.
+
+## Cuenta y sesión
+- **"Cerrar sesión" (en `AccountMenu`) NO usa el patrón de confirmación de
+  dos pasos** que sí usan las acciones destructivas (eliminar
+  contacto/entrada de bitácora) — es una decisión deliberada, no una
+  inconsistencia a corregir: cerrar sesión no borra ningún dato del
+  usuario (sus contactos y su bitácora siguen intactos en Supabase), así
+  que la fricción extra de confirmar no aporta nada ahí.
 
 ## Multi-agente (Codex + Claude Code)
 - Ver `AGENTS.md` (raíz, `calma-app/`, `supabase/`) para convenciones que

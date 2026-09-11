@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { motion } from 'framer-motion'
 import BackButton from '../components/BackButton'
-import CerrarSesionButton from '../components/CerrarSesionButton'
+import AccountMenu from '../components/AccountMenu'
 import VoiceNoteRecorder from '../components/VoiceNoteRecorder'
 import TranscribeMicButton from '../components/TranscribeMicButton'
 import { riseIn } from '../animations/transitions'
@@ -146,7 +146,10 @@ export default function Bitacora() {
   return (
     <div className="relative min-h-screen bg-sand">
       <div className="mx-auto max-w-[620px] px-5 pb-20 pt-10">
-        <BackButton to="/islas" />
+        <div className="flex items-center justify-between">
+          <BackButton to="/islas" />
+          <AccountMenu />
+        </div>
 
         <motion.div {...riseIn(0)} className="mb-8 text-center">
           <div
@@ -157,16 +160,13 @@ export default function Bitacora() {
           </div>
           <h1 className="mb-1.5 text-[26px] font-semibold text-ink">Tu bitácora emocional</h1>
           <p className="text-sm text-ink-soft">Un espacio para reflexionar y registrar</p>
-          <div className="mt-3 flex items-center justify-center gap-4">
-            <Link
-              to="/bitacora/historial"
-              className="inline-flex items-center gap-1.5 text-xs font-semibold text-ink-soft"
-            >
-              <span>🕰️</span>
-              <span>Ver historial</span>
-            </Link>
-            <CerrarSesionButton />
-          </div>
+          <Link
+            to="/bitacora/historial"
+            className="mt-4 inline-flex items-center gap-1.5 rounded-full border-[1.5px] border-black/[0.07] bg-white px-[15px] py-[9px] text-[13.5px] font-semibold text-ink-soft shadow-[0_8px_22px_rgba(0,0,0,0.04)]"
+          >
+            <span>🕰️</span>
+            <span>Ver historial</span>
+          </Link>
         </motion.div>
 
         <motion.div {...riseIn(0.08)}>

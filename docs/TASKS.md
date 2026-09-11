@@ -47,13 +47,17 @@ otro agente. Al terminar una tarea significativa, actualizar este archivo.
   de la política de privacidad, con fecha y correo de contacto reales —
   sigue pendiente de revisión legal profesional antes de considerarse
   definitivo, ver sección "Privacidad" en DECISIONS.md
+- Rediseño de "Cerrar sesión": pasó de texto pequeño inline a un ícono de
+  cuenta persistente arriba a la derecha (`AccountMenu`, espejo del
+  `BackButton`) con menú desplegable y cierre en un solo tap, sin
+  confirmación de dos pasos (ver DECISIONS.md). Como parte del mismo
+  cambio, "Ver historial" en Bitácora pasó de link pequeño a botón real
+  y visible.
 
 ## Pendiente / ideas anotadas para retomar (sin fecha)
 - Rediseño estructural grande: layouts distintos por tipo de pantalla en
   vez de la misma plantilla (header + tarjetas apiladas + botón) repetida
   — quedó en pausa antes de la ronda de backend
-- Botón de "Cerrar sesión" funciona pero es visualmente muy discreto —
-  pendiente de ajuste de diseño
 - Ubicación en tiempo real (requiere backend adicional: Supabase Realtime
   + página propia de mapa en vivo) — pospuesto, ver DECISIONS.md
 - Revisión legal profesional del texto de `/privacidad` — el contenido ya
