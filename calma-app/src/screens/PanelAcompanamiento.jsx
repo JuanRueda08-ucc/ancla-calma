@@ -1,9 +1,10 @@
 import { useEffect, useRef, useState } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useLocation, useNavigate } from 'react-router-dom'
 import { motion } from 'framer-motion'
 import ScreenHeader from '../components/ScreenHeader'
 import Accordion from '../components/Accordion'
 import { riseIn } from '../animations/transitions'
+import { useAuth } from '../context/AuthContext'
 import { getContactos, normalizarTelefono } from '../utils/contactosStorage'
 import { construirLinkWhatsApp } from '../utils/compartirUbicacion'
 
@@ -101,32 +102,45 @@ const boxClass = 'mb-4 rounded-[20px] bg-white px-5 py-[18px] shadow-[0_8px_20px
 
 export default function PanelAcompanamiento() {
   const navigate = useNavigate()
+  const location = useLocation()
+  const { user, loading: authLoading } = useAuth()
   const [abiertos, setAbiertos] = useState(new Set(['emocionales']))
   const [toast, setToast] = useState(null)
   const toastTimeoutRef = useRef(null)
 
-  const [cargaEstado, setCargaEstado] = useState('cargando') // 'cargando' | 'error' | 'listo'
+  // 'cargando' | 'sin-sesion' | 'sin-contacto' | 'error' | 'listo'
+  const [cargaEstado, setCargaEstado] = useState('cargando')
   const [contactos, setContactos] = useState([])
 
-  // null | 'sin-contacto' | 'seleccion' | 'sin-codigo-pais'
+  // null | 'seleccion' | 'sin-codigo-pais'
   const [accionEstado, setAccionEstado] = useState(null)
   const [accionTipo, setAccionTipo] = useState(null) // 'llamar' | 'mensaje'
   const [contactoProblema, setContactoProblema] = useState(null)
 
+  // Esta pantalla es de acceso libre (no está detrás de RequireAuth, a
+  // diferencia de IslaAuxilio), así que sin sesión getContactos() siempre
+  // falla por falta de autenticación — se evita esa llamada y se distingue
+  // ese caso de un error de red real, que sí amerita "Reintentar".
   const cargarContactos = async () => {
+    if (!user) {
+      setCargaEstado('sin-sesion')
+      return
+    }
     setCargaEstado('cargando')
     try {
       const data = await getContactos()
       setContactos(data)
-      setCargaEstado('listo')
+      setCargaEstado(data.length === 0 ? 'sin-contacto' : 'listo')
     } catch {
       setCargaEstado('error')
     }
   }
 
   useEffect(() => {
+    if (authLoading) return
     cargarContactos()
-  }, [])
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [authLoading, user])
 
   useEffect(() => {
     return () => clearTimeout(toastTimeoutRef.current)
@@ -163,6 +177,10 @@ export default function PanelAcompanamiento() {
     navigate('/islas/auxilio')
   }
 
+  const irAIniciarSesion = () => {
+    navigate('/login', { state: { from: location.pathname } })
+  }
+
   const cerrarPanelAccion = () => {
     setAccionEstado(null)
     setAccionTipo(null)
@@ -191,10 +209,6 @@ export default function PanelAcompanamiento() {
 
   const iniciarAccion = (tipo) => {
     setAccionTipo(tipo)
-    if (contactos.length === 0) {
-      setAccionEstado('sin-contacto')
-      return
-    }
     if (contactos.length === 1) {
       ejecutarAccion(tipo, contactos[0])
       return
@@ -314,74 +328,82 @@ export default function PanelAcompanamiento() {
           </div>
         </motion.div>
 
-        <motion.button
-          {...riseIn(nextDelay())}
-          type="button"
-          onClick={handleContactar}
-          className="mb-3 flex w-full items-center justify-center gap-2 rounded-full bg-gradient-to-br from-acomp-1 to-[#22A78C] py-4 text-[15px] font-bold text-white shadow-[0_14px_26px_rgba(47,191,159,0.2)]"
+        <motion.div
+          initial={{ opacity: 0, y: 40 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true, amount: 0.3 }}
+          transition={{ duration: 0.5, ease: 'easeOut' }}
         >
-          👤 Contactar a tu persona
-        </motion.button>
-
-        {cargaEstado === 'error' && (
-          <motion.div {...riseIn(nextDelay())} className={`${boxClass} text-center`}>
-            <p className="mb-3 text-sm text-ink-soft">
-              No pudimos cargar tus contactos de confianza.
-            </p>
-            <button
-              type="button"
-              onClick={cargarContactos}
-              className="rounded-full bg-gradient-to-br from-acomp-1 to-[#22A78C] px-5 py-2.5 text-sm font-bold text-white"
-            >
-              Reintentar
-            </button>
-          </motion.div>
-        )}
-
-        <motion.div {...riseIn(nextDelay())} className="mb-4 flex gap-3">
           <button
             type="button"
-            disabled={cargaEstado !== 'listo'}
-            onClick={() => iniciarAccion('llamar')}
-            className="flex flex-1 items-center justify-center gap-2 rounded-full bg-gradient-to-br from-acomp-2 to-[#3E6FC4] py-3.5 text-sm font-bold text-white disabled:opacity-60"
+            onClick={handleContactar}
+            className="mb-3 flex w-full items-center justify-center gap-2 rounded-full bg-gradient-to-br from-acomp-1 to-[#22A78C] py-4 text-[15px] font-bold text-white shadow-[0_14px_26px_rgba(47,191,159,0.2)]"
           >
-            📞 Llamar
+            👤 Contactar a tu persona
           </button>
-          <button
-            type="button"
-            disabled={cargaEstado !== 'listo'}
-            onClick={() => iniciarAccion('mensaje')}
-            className="flex flex-1 items-center justify-center gap-2 rounded-full bg-gradient-to-br from-[#48C97A] to-[#2FA968] py-3.5 text-sm font-bold text-white disabled:opacity-60"
-          >
-            💬 Mensaje
-          </button>
-        </motion.div>
 
-        {accionEstado === 'sin-contacto' && (
-          <motion.div
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            className={`${boxClass} text-center`}
-          >
-            <p className="mb-3 text-sm text-ink-soft">Agrega un contacto de confianza primero</p>
-            <div className="flex justify-center gap-2">
+          {cargaEstado === 'sin-sesion' && (
+            <div className={`${boxClass} text-center`}>
+              <p className="mb-3 text-sm text-ink-soft">
+                Se requiere inicio de sesión para añadir contactos.
+              </p>
               <button
                 type="button"
-                onClick={irAAgregarContacto}
+                onClick={irAIniciarSesion}
+                className="rounded-full bg-gradient-to-br from-acomp-1 to-[#22A78C] px-5 py-2.5 text-sm font-bold text-white"
+              >
+                Iniciar sesión
+              </button>
+            </div>
+          )}
+
+          {cargaEstado === 'sin-contacto' && (
+            <div className={`${boxClass} text-center`}>
+              <p className="mb-3 text-sm text-ink-soft">Agrega un contacto de confianza</p>
+              <button
+                type="button"
+                onClick={handleContactar}
                 className="rounded-full bg-gradient-to-br from-acomp-1 to-[#22A78C] px-5 py-2.5 text-sm font-bold text-white"
               >
                 Agregar contacto de confianza
               </button>
+            </div>
+          )}
+
+          {cargaEstado === 'error' && (
+            <div className={`${boxClass} text-center`}>
+              <p className="mb-3 text-sm text-ink-soft">
+                No pudimos cargar tus contactos de confianza.
+              </p>
               <button
                 type="button"
-                onClick={cerrarPanelAccion}
-                className="rounded-full bg-black/10 px-5 py-2.5 text-sm font-semibold text-ink"
+                onClick={cargarContactos}
+                className="rounded-full bg-gradient-to-br from-acomp-1 to-[#22A78C] px-5 py-2.5 text-sm font-bold text-white"
               >
-                Cancelar
+                Reintentar
               </button>
             </div>
-          </motion.div>
-        )}
+          )}
+
+          <div className="mb-4 flex gap-3">
+            <button
+              type="button"
+              disabled={cargaEstado !== 'listo'}
+              onClick={() => iniciarAccion('llamar')}
+              className="flex flex-1 items-center justify-center gap-2 rounded-full bg-gradient-to-br from-acomp-2 to-[#3E6FC4] py-3.5 text-sm font-bold text-white disabled:opacity-60"
+            >
+              📞 Llamar
+            </button>
+            <button
+              type="button"
+              disabled={cargaEstado !== 'listo'}
+              onClick={() => iniciarAccion('mensaje')}
+              className="flex flex-1 items-center justify-center gap-2 rounded-full bg-gradient-to-br from-[#48C97A] to-[#2FA968] py-3.5 text-sm font-bold text-white disabled:opacity-60"
+            >
+              💬 Mensaje
+            </button>
+          </div>
+        </motion.div>
 
         {accionEstado === 'seleccion' && (
           <motion.div

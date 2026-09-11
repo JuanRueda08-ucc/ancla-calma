@@ -117,6 +117,27 @@ algo que parecía un bug era en realidad una decisión deliberada. Antes de
   a `/islas/auxilio`, que es donde se gestionan esos contactos, y
   Llamar/Mensaje resuelven el contacto con la misma lógica 0/1/2-3
   contactos que ya usa `compartirConContacto()` en `IslaAuxilio.jsx`.
+- **El bloque "Contactar a tu persona / Llamar / Mensaje" es parte del
+  flujo normal de la pantalla, NO fijo/sticky al fondo del viewport** —
+  se anima con `whileInView` de Framer Motion (fade + slide-up, una sola
+  vez, al entrar en el viewport durante el scroll) en vez de quedar
+  pegado como una barra de acción siempre visible. Decisión explícita de
+  priorizar una pantalla más limpia por sobre tener el CTA de contacto
+  siempre a la vista. No convertirlo a `position: fixed`/`sticky`
+  pensando que mejora la conversión sin retomar esta conversación
+  primero.
+- **Panel de Acompañamiento verifica que haya sesión activa (`user` de
+  `useAuth()`) ANTES de llamar a `getContactos()`**, y si no hay sesión
+  no hace esa llamada en absoluto — muestra directamente "Se requiere
+  inicio de sesión para añadir contactos." con un botón a `/login`. Esto
+  es necesario porque esta pantalla es de **acceso libre** (no está
+  envuelta en `RequireAuth`, a diferencia de `IslaAuxilio`): sin este
+  chequeo previo, un usuario sin sesión dispararía siempre el mismo
+  error genérico de "no pudimos cargar tus contactos" con un botón
+  "Reintentar" que jamás funcionaría, porque la causa real es falta de
+  autenticación, no un problema de red. `IslaAuxilio.jsx` SÍ tiene
+  sesión garantizada por `RequireAuth` en el router, así que no
+  necesita (ni debe) replicar este chequeo.
 
 ## Cuenta y sesión
 - **"Cerrar sesión" (en `AccountMenu`) NO usa el patrón de confirmación de
