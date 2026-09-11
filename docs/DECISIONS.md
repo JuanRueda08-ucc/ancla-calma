@@ -112,6 +112,20 @@ algo que parecía un bug era en realidad una decisión deliberada. Antes de
   inconsistencia a corregir: cerrar sesión no borra ningún dato del
   usuario (sus contactos y su bitácora siguen intactos en Supabase), así
   que la fricción extra de confirmar no aporta nada ahí.
+- **Cambiar contraseña en `/perfil` no pide la contraseña actual** como
+  confirmación adicional, a diferencia de lo que haría una app bancaria.
+  Es una decisión consciente de mantener la fricción baja para una app de
+  bienestar, no un descuido de seguridad — se puede reforzar más adelante
+  (reautenticación previa) si se considera necesario.
+- **Avatar y nombre de usuario en `/perfil` se guardan juntos con un solo
+  botón "Guardar"** (selección en borrador local hasta presionarlo), a
+  diferencia de correo y contraseña, que tienen cada uno su propio botón
+  de acción inmediata. Es intencional: avatar/nombre son campos
+  "cosméticos" de bajo riesgo que se pueden agrupar en un solo guardado,
+  mientras que correo y contraseña son cambios sensibles (afectan el
+  acceso a la cuenta) que ameritan su propia confirmación explícita y
+  aislada, sin mezclarse con otros cambios pendientes en la misma
+  pantalla.
 
 ## Multi-agente (Codex + Claude Code)
 - Ver `AGENTS.md` (raíz, `calma-app/`, `supabase/`) para convenciones que

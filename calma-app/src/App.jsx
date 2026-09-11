@@ -17,6 +17,7 @@ import PanelAcompanamiento from './screens/PanelAcompanamiento'
 import Login from './screens/Login'
 import Registro from './screens/Registro'
 import Privacidad from './screens/Privacidad'
+import Perfil from './screens/Perfil'
 import RequireAuth from './components/RequireAuth'
 import { AuthProvider } from './context/AuthContext'
 
@@ -64,6 +65,14 @@ export default function App() {
           <Route path="/login" element={<Login />} />
           <Route path="/registro" element={<Registro />} />
           <Route path="/privacidad" element={<Privacidad />} />
+          <Route
+            path="/perfil"
+            element={
+              <RequireAuth>
+                <Perfil />
+              </RequireAuth>
+            }
+          />
         </Routes>
       </BrowserRouter>
     </AuthProvider>

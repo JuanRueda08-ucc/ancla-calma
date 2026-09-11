@@ -1,12 +1,15 @@
 import { useEffect, useRef, useState } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
+import { AVATARES } from '../constants/avatares'
 
 export default function AccountMenu({ buttonClassName = 'bg-brand-navy text-white' }) {
-  const { signOut } = useAuth()
+  const { signOut, profile } = useAuth()
   const navigate = useNavigate()
   const [abierto, setAbierto] = useState(false)
   const contenedorRef = useRef(null)
+
+  const avatarActual = AVATARES.find((avatar) => avatar.id === profile?.avatar_id)
 
   useEffect(() => {
     if (!abierto) return
@@ -37,13 +40,27 @@ export default function AccountMenu({ buttonClassName = 'bg-brand-navy text-whit
         onClick={() => setAbierto((prev) => !prev)}
         aria-label="Cuenta"
         aria-expanded={abierto}
-        className={`flex h-9 w-9 items-center justify-center rounded-full text-base ${buttonClassName}`}
+        className={`flex h-9 w-9 items-center justify-center overflow-hidden rounded-full text-base ${
+          avatarActual ? '' : buttonClassName
+        }`}
       >
-        👤
+        {avatarActual ? (
+          <img src={avatarActual.src} alt={avatarActual.nombre} className="h-full w-full object-cover" />
+        ) : (
+          '👤'
+        )}
       </button>
 
       {abierto && (
         <div className="absolute right-0 top-full z-10 mt-2 w-44 overflow-hidden rounded-lg bg-white py-1.5 shadow-[0_8px_22px_rgba(0,0,0,0.12)]">
+          <Link
+            to="/perfil"
+            onClick={() => setAbierto(false)}
+            className="flex w-full items-center gap-2 px-4 py-2.5 text-left text-sm font-semibold text-ink"
+          >
+            <span>👤</span>
+            <span>Mi perfil</span>
+          </Link>
           <button
             type="button"
             onClick={cerrarSesion}

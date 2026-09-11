@@ -53,8 +53,15 @@ otro agente. Al terminar una tarea significativa, actualizar este archivo.
   confirmación de dos pasos (ver DECISIONS.md). Como parte del mismo
   cambio, "Ver historial" en Bitácora pasó de link pequeño a botón real
   y visible.
+- Pantalla de perfil (`/perfil`): selector de avatar (3 opciones,
+  persistido en `profiles.avatar_id`), formulario de cambio de correo
+  (con confirmación por email de Supabase) y formulario de cambio de
+  contraseña. Accesible desde "Mi perfil" en `AccountMenu`.
 
 ## Pendiente / ideas anotadas para retomar (sin fecha)
+- Eliminar cuenta (Edge Function) — siguiente paso ya planeado para el
+  panel de perfil: la política de privacidad remite a contacto manual
+  por correo mientras tanto, ver DECISIONS.md
 - Rediseño estructural grande: layouts distintos por tipo de pantalla en
   vez de la misma plantilla (header + tarjetas apiladas + botón) repetida
   — quedó en pausa antes de la ronda de backend
