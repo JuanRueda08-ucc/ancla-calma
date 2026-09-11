@@ -105,6 +105,19 @@ algo que parecía un bug era en realidad una decisión deliberada. Antes de
   función, actualizar tanto el código como este texto de la política en
   el mismo cambio, no por separado.
 
+## Panel de Acompañamiento
+- **"Contactar/Llamar/Mensaje" en el Panel de Acompañamiento reutilizan la
+  MISMA lista de `contactos_confianza` del usuario que la Isla del
+  Auxilio** — no existe un concepto separado de "persona acompañada" con
+  su propio contacto guardado aparte. Es una simplificación deliberada,
+  no un error: construir un modelo real de "persona vinculada" (con su
+  propio registro, posiblemente bidireccional entre acompañante y
+  acompañado) es un cambio de arquitectura más grande, pendiente para el
+  futuro si se necesita. Mientras tanto, "Contactar a tu persona" navega
+  a `/islas/auxilio`, que es donde se gestionan esos contactos, y
+  Llamar/Mensaje resuelven el contacto con la misma lógica 0/1/2-3
+  contactos que ya usa `compartirConContacto()` en `IslaAuxilio.jsx`.
+
 ## Cuenta y sesión
 - **"Cerrar sesión" (en `AccountMenu`) NO usa el patrón de confirmación de
   dos pasos** que sí usan las acciones destructivas (eliminar

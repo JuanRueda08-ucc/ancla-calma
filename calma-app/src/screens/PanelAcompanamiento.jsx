@@ -1,8 +1,11 @@
 import { useEffect, useRef, useState } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { motion } from 'framer-motion'
 import ScreenHeader from '../components/ScreenHeader'
 import Accordion from '../components/Accordion'
 import { riseIn } from '../animations/transitions'
+import { getContactos, normalizarTelefono } from '../utils/contactosStorage'
+import { construirLinkWhatsApp } from '../utils/compartirUbicacion'
 
 const BLOB_RADIUS = '42% 58% 63% 37% / 41% 44% 56% 59%'
 
@@ -97,9 +100,33 @@ const HERRAMIENTAS_APOYO = [
 const boxClass = 'mb-4 rounded-[20px] bg-white px-5 py-[18px] shadow-[0_8px_20px_rgba(0,0,0,0.04)]'
 
 export default function PanelAcompanamiento() {
+  const navigate = useNavigate()
   const [abiertos, setAbiertos] = useState(new Set(['emocionales']))
   const [toast, setToast] = useState(null)
   const toastTimeoutRef = useRef(null)
+
+  const [cargaEstado, setCargaEstado] = useState('cargando') // 'cargando' | 'error' | 'listo'
+  const [contactos, setContactos] = useState([])
+
+  // null | 'sin-contacto' | 'seleccion' | 'sin-codigo-pais'
+  const [accionEstado, setAccionEstado] = useState(null)
+  const [accionTipo, setAccionTipo] = useState(null) // 'llamar' | 'mensaje'
+  const [contactoProblema, setContactoProblema] = useState(null)
+
+  const cargarContactos = async () => {
+    setCargaEstado('cargando')
+    try {
+      const data = await getContactos()
+      setContactos(data)
+      setCargaEstado('listo')
+    } catch {
+      setCargaEstado('error')
+    }
+  }
+
+  useEffect(() => {
+    cargarContactos()
+  }, [])
 
   useEffect(() => {
     return () => clearTimeout(toastTimeoutRef.current)
@@ -133,27 +160,46 @@ export default function PanelAcompanamiento() {
   }
 
   const handleContactar = () => {
-    // TODO: integrar con el canal real de contacto de la persona de confianza
-    console.log('Contactar a tu persona (simulado)')
-    showToast('Contactando… (simulado)')
+    navigate('/islas/auxilio')
   }
 
-  const handleLlamar = () => {
-    // TODO: integrar con llamada telefónica real
-    console.log('Llamar (simulado)')
-    showToast('Llamando… (simulado)')
+  const cerrarPanelAccion = () => {
+    setAccionEstado(null)
+    setAccionTipo(null)
+    setContactoProblema(null)
   }
 
-  const handleMensaje = () => {
-    // TODO: integrar con mensajería real (SMS/WhatsApp/etc.)
-    console.log('Mensaje (simulado)')
-    showToast('Abriendo mensaje… (simulado)')
+  const irAAgregarContacto = () => {
+    cerrarPanelAccion()
+    navigate('/islas/auxilio')
   }
 
-  const handleProbarAlerta = () => {
-    // TODO: integrar con el sistema real de alertas/notificaciones push
-    console.log('Alerta de prueba enviada (simulado)')
-    showToast('Alerta de prueba enviada', 2000)
+  const ejecutarAccion = (tipo, contacto) => {
+    if (tipo === 'mensaje' && !contacto.telefono.trim().startsWith('+')) {
+      setContactoProblema(contacto)
+      setAccionEstado('sin-codigo-pais')
+      return
+    }
+
+    if (tipo === 'llamar') {
+      window.location.href = `tel:${normalizarTelefono(contacto.telefono)}`
+    } else {
+      window.location.href = construirLinkWhatsApp(contacto.telefono, '')
+    }
+    cerrarPanelAccion()
+  }
+
+  const iniciarAccion = (tipo) => {
+    setAccionTipo(tipo)
+    if (contactos.length === 0) {
+      setAccionEstado('sin-contacto')
+      return
+    }
+    if (contactos.length === 1) {
+      ejecutarAccion(tipo, contactos[0])
+      return
+    }
+    setAccionEstado('seleccion')
   }
 
   let delay = 0
@@ -277,32 +323,125 @@ export default function PanelAcompanamiento() {
           👤 Contactar a tu persona
         </motion.button>
 
+        {cargaEstado === 'error' && (
+          <motion.div {...riseIn(nextDelay())} className={`${boxClass} text-center`}>
+            <p className="mb-3 text-sm text-ink-soft">
+              No pudimos cargar tus contactos de confianza.
+            </p>
+            <button
+              type="button"
+              onClick={cargarContactos}
+              className="rounded-full bg-gradient-to-br from-acomp-1 to-[#22A78C] px-5 py-2.5 text-sm font-bold text-white"
+            >
+              Reintentar
+            </button>
+          </motion.div>
+        )}
+
         <motion.div {...riseIn(nextDelay())} className="mb-4 flex gap-3">
           <button
             type="button"
-            onClick={handleLlamar}
-            className="flex flex-1 items-center justify-center gap-2 rounded-full bg-gradient-to-br from-acomp-2 to-[#3E6FC4] py-3.5 text-sm font-bold text-white"
+            disabled={cargaEstado !== 'listo'}
+            onClick={() => iniciarAccion('llamar')}
+            className="flex flex-1 items-center justify-center gap-2 rounded-full bg-gradient-to-br from-acomp-2 to-[#3E6FC4] py-3.5 text-sm font-bold text-white disabled:opacity-60"
           >
             📞 Llamar
           </button>
           <button
             type="button"
-            onClick={handleMensaje}
-            className="flex flex-1 items-center justify-center gap-2 rounded-full bg-gradient-to-br from-[#48C97A] to-[#2FA968] py-3.5 text-sm font-bold text-white"
+            disabled={cargaEstado !== 'listo'}
+            onClick={() => iniciarAccion('mensaje')}
+            className="flex flex-1 items-center justify-center gap-2 rounded-full bg-gradient-to-br from-[#48C97A] to-[#2FA968] py-3.5 text-sm font-bold text-white disabled:opacity-60"
           >
             💬 Mensaje
           </button>
         </motion.div>
 
-        <motion.div {...riseIn(nextDelay())} className="text-center">
-          <button
-            type="button"
-            onClick={handleProbarAlerta}
-            className="inline-flex items-center gap-1.5 rounded-full border-[1.5px] border-dashed border-black/[0.15] px-3.5 py-2 text-[12.5px] font-semibold text-ink-soft"
+        {accionEstado === 'sin-contacto' && (
+          <motion.div
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            className={`${boxClass} text-center`}
           >
-            🔔 Probar alerta
-          </button>
-        </motion.div>
+            <p className="mb-3 text-sm text-ink-soft">Agrega un contacto de confianza primero</p>
+            <div className="flex justify-center gap-2">
+              <button
+                type="button"
+                onClick={irAAgregarContacto}
+                className="rounded-full bg-gradient-to-br from-acomp-1 to-[#22A78C] px-5 py-2.5 text-sm font-bold text-white"
+              >
+                Agregar contacto de confianza
+              </button>
+              <button
+                type="button"
+                onClick={cerrarPanelAccion}
+                className="rounded-full bg-black/10 px-5 py-2.5 text-sm font-semibold text-ink"
+              >
+                Cancelar
+              </button>
+            </div>
+          </motion.div>
+        )}
+
+        {accionEstado === 'seleccion' && (
+          <motion.div
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            className={boxClass}
+          >
+            <p className="mb-3 text-sm font-semibold text-ink">
+              {accionTipo === 'llamar' ? '¿A quién quieres llamar?' : '¿A quién quieres escribirle?'}
+            </p>
+            <div className="flex flex-col gap-2">
+              {contactos.map((contacto) => (
+                <button
+                  key={contacto.id}
+                  type="button"
+                  onClick={() => ejecutarAccion(accionTipo, contacto)}
+                  className="rounded-lg bg-acomp-bg px-4 py-2.5 text-left text-[14.5px] font-semibold text-ink"
+                >
+                  {contacto.nombre}
+                </button>
+              ))}
+            </div>
+            <button
+              type="button"
+              onClick={cerrarPanelAccion}
+              className="mt-3 w-full rounded-full bg-black/10 py-2.5 text-sm font-semibold text-ink"
+            >
+              Cancelar
+            </button>
+          </motion.div>
+        )}
+
+        {accionEstado === 'sin-codigo-pais' && (
+          <motion.div
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            className={`${boxClass} text-center`}
+          >
+            <p className="mb-3 text-sm text-ink-soft">
+              {contactoProblema?.nombre} no tiene código de país guardado. Edítalo primero para
+              poder escribirle por WhatsApp.
+            </p>
+            <div className="flex justify-center gap-2">
+              <button
+                type="button"
+                onClick={irAAgregarContacto}
+                className="rounded-full bg-gradient-to-br from-acomp-1 to-[#22A78C] px-5 py-2.5 text-sm font-bold text-white"
+              >
+                Editar contacto
+              </button>
+              <button
+                type="button"
+                onClick={cerrarPanelAccion}
+                className="rounded-full bg-black/10 px-5 py-2.5 text-sm font-semibold text-ink"
+              >
+                Cancelar
+              </button>
+            </div>
+          </motion.div>
+        )}
       </div>
 
       {toast && (

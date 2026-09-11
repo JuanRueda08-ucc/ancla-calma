@@ -2,6 +2,12 @@ import { supabase } from '../lib/supabaseClient'
 
 const LIMITE_CONTACTOS_MSG = 'Máximo 3 contactos de confianza por usuario'
 
+export function normalizarTelefono(telefono) {
+  const tienePlus = telefono.trim().startsWith('+')
+  const digitos = telefono.replace(/\D/g, '')
+  return tienePlus ? `+${digitos}` : digitos
+}
+
 export async function getContactos() {
   const { data, error } = await supabase
     .from('contactos_confianza')

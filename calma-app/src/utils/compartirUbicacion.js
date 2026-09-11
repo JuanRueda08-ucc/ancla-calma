@@ -33,10 +33,13 @@ export function construirLinkMapa(lat, lng) {
 // wa.me (el esquema "click to chat" de WhatsApp) solo acepta dígitos —
 // código de país + número, sin "+", espacios, guiones ni paréntesis.
 // Abrir esta URL nunca envía el mensaje automáticamente: solo abre el chat
-// con el texto pre-rellenado, y el usuario debe confirmar el envío desde
-// WhatsApp. Esa confirmación manual es una limitación intencional del
-// esquema click-to-chat, no un bug de esta integración.
+// (con el texto pre-rellenado si se pasa `mensaje`), y el usuario debe
+// confirmar el envío desde WhatsApp. Esa confirmación manual es una
+// limitación intencional del esquema click-to-chat, no un bug de esta
+// integración. Un `mensaje` vacío abre el chat sin texto prellenado (sin
+// el parámetro ?text=), en vez de prellenar una cadena vacía.
 export function construirLinkWhatsApp(telefonoConCodigoPais, mensaje) {
   const soloDigitos = telefonoConCodigoPais.replace(/\D/g, '')
-  return `https://wa.me/${soloDigitos}?text=${encodeURIComponent(mensaje)}`
+  const base = `https://wa.me/${soloDigitos}`
+  return mensaje ? `${base}?text=${encodeURIComponent(mensaje)}` : base
 }

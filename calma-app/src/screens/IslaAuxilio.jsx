@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from 'react'
 import { motion } from 'framer-motion'
 import ScreenHeader from '../components/ScreenHeader'
 import { riseIn } from '../animations/transitions'
-import { getContactos, guardarContacto, eliminarContacto } from '../utils/contactosStorage'
+import { getContactos, guardarContacto, eliminarContacto, normalizarTelefono } from '../utils/contactosStorage'
 import { obtenerUbicacion, construirLinkMapa, construirLinkWhatsApp } from '../utils/compartirUbicacion'
 
 const BLOB_RADIUS = '42% 58% 63% 37% / 41% 44% 56% 59%'
@@ -23,12 +23,6 @@ function obtenerIniciales(nombre) {
     .map((parte) => parte[0]?.toUpperCase() ?? '')
     .join('')
   return iniciales || '?'
-}
-
-function normalizarTelefono(telefono) {
-  const tienePlus = telefono.trim().startsWith('+')
-  const digitos = telefono.replace(/\D/g, '')
-  return tienePlus ? `+${digitos}` : digitos
 }
 
 function esTelefonoValido(telefono) {

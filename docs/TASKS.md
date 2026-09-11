@@ -76,6 +76,17 @@ otro agente. Al terminar una tarea significativa, actualizar este archivo.
   AccountMenu (con placeholders cuando falta alguno) para que el
   posicionamiento sea idéntico en todas las pantallas que los usan
 
+- Panel de Acompañamiento (`PanelAcompanamiento.jsx`): los placeholders
+  simulados de "Contactar a tu persona" / "Llamar" / "Mensaje" ahora son
+  funciones reales, reutilizando la misma lista de `contactos_confianza`
+  y la lógica de resolución 0/1/2-3 contactos ya construida en
+  `IslaAuxilio.jsx`/`compartirUbicacion.js` (ver DECISIONS.md).
+  "Contactar a tu persona" navega a `/islas/auxilio`; Llamar usa `tel:`;
+  Mensaje abre WhatsApp (`wa.me`) sin texto prellenado, con la misma
+  validación de código de país que "Compartir ubicación". El botón
+  "Probar alerta" fue eliminado por completo — era simulación sin
+  función real detrás, no un placeholder a reemplazar por algo nuevo.
+
 ## Pendiente / ideas anotadas para retomar (sin fecha)
 - Eliminar cuenta (Edge Function) — siguiente paso ya planeado para el
   panel de perfil: la política de privacidad remite a contacto manual
