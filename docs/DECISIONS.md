@@ -92,6 +92,19 @@ algo que parecía un bug era en realidad una decisión deliberada. Antes de
   conocida mientras no haya presupuesto/necesidad de un servicio de STT de
   pago con mejor cobertura de navegadores.
 
+## Privacidad
+- **La política de privacidad declara explícitamente que la transcripción
+  de voz usa el reconocimiento de voz nativo del navegador**, lo cual
+  envía el audio a servidores de Google (Chrome/Edge) o Apple (Safari) —
+  esto es una limitación real de la Web Speech API (ver también la
+  entrada sobre Web Speech API más arriba), no un error de redacción ni
+  algo a "corregir" ocultándolo en el texto legal.
+- **No existe todavía una función de autoeliminación de cuenta completa**
+  — la política es honesta sobre esto y remite a contacto manual por
+  correo (`juanjoruedav@mail.com`). Si en el futuro se construye esa
+  función, actualizar tanto el código como este texto de la política en
+  el mismo cambio, no por separado.
+
 ## Multi-agente (Codex + Claude Code)
 - Ver `AGENTS.md` (raíz, `calma-app/`, `supabase/`) para convenciones que
   ambos agentes deben seguir. `CLAUDE.md` en cada una de esas carpetas solo

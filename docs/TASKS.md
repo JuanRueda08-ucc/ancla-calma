@@ -43,6 +43,10 @@ otro agente. Al terminar una tarea significativa, actualizar este archivo.
   Seguro, con pausa/play funcional
 - Personaje pirata en Relajación muscular: personaje estático + 7 zonas
   de resaltado (glow/ring) por paso + animación sutil de pupila
+- Texto real de `/privacidad` (ya no es placeholder): contenido completo
+  de la política de privacidad, con fecha y correo de contacto reales —
+  sigue pendiente de revisión legal profesional antes de considerarse
+  definitivo, ver sección "Privacidad" en DECISIONS.md
 
 ## Pendiente / ideas anotadas para retomar (sin fecha)
 - Rediseño estructural grande: layouts distintos por tipo de pantalla en
@@ -52,8 +56,9 @@ otro agente. Al terminar una tarea significativa, actualizar este archivo.
   pendiente de ajuste de diseño
 - Ubicación en tiempo real (requiere backend adicional: Supabase Realtime
   + página propia de mapa en vivo) — pospuesto, ver DECISIONS.md
-- Texto legal real de `/privacidad` — hoy es un placeholder explícito, no
-  usar en producción real sin que alguien con criterio legal lo redacte
+- Revisión legal profesional del texto de `/privacidad` — el contenido ya
+  no es placeholder, pero falta que alguien con criterio legal lo valide
+  antes de considerarlo definitivo
 - Actualizar el README del repo para que ya no describa funciones como
   "placeholder" que dejaron de serlo (llamadas, compartir ubicación, nota
   de voz, transcripción ya son reales)
