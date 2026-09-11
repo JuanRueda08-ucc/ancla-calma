@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { AnimatePresence, motion } from 'framer-motion'
 import BackButton from '../components/BackButton'
+import AccountMenu from '../components/AccountMenu'
 import { riseIn } from '../animations/transitions'
 import { getEntradas, guardarEntrada, eliminarEntrada } from '../utils/bitacoraStorage'
 import { obtenerAudio, guardarAudio } from '../utils/audioStorage'
@@ -407,7 +408,10 @@ export default function HistorialBitacora() {
   return (
     <div className="relative min-h-screen bg-sand">
       <div className="mx-auto max-w-[620px] px-5 pb-20 pt-10">
-        <BackButton to="/bitacora" />
+        <div className="flex items-center justify-between">
+          <BackButton to="/bitacora" />
+          <AccountMenu />
+        </div>
 
         <motion.div {...riseIn(0)} className="mb-8 text-center">
           <div

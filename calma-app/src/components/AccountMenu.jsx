@@ -4,7 +4,7 @@ import { useAuth } from '../context/AuthContext'
 import { AVATARES } from '../constants/avatares'
 
 export default function AccountMenu({ buttonClassName = 'bg-brand-navy text-white' }) {
-  const { signOut, profile } = useAuth()
+  const { user, signOut, profile } = useAuth()
   const navigate = useNavigate()
   const [abierto, setAbierto] = useState(false)
   const contenedorRef = useRef(null)
@@ -33,6 +33,11 @@ export default function AccountMenu({ buttonClassName = 'bg-brand-navy text-whit
     signOut()
   }
 
+  const irALogin = () => {
+    setAbierto(false)
+    navigate('/login')
+  }
+
   return (
     <div ref={contenedorRef} className="relative">
       <button
@@ -53,22 +58,35 @@ export default function AccountMenu({ buttonClassName = 'bg-brand-navy text-whit
 
       {abierto && (
         <div className="absolute right-0 top-full z-10 mt-2 w-44 overflow-hidden rounded-lg bg-white py-1.5 shadow-[0_8px_22px_rgba(0,0,0,0.12)]">
-          <Link
-            to="/perfil"
-            onClick={() => setAbierto(false)}
-            className="flex w-full items-center gap-2 px-4 py-2.5 text-left text-sm font-semibold text-ink"
-          >
-            <span>👤</span>
-            <span>Mi perfil</span>
-          </Link>
-          <button
-            type="button"
-            onClick={cerrarSesion}
-            className="flex w-full items-center gap-2 px-4 py-2.5 text-left text-sm font-semibold text-ink"
-          >
-            <span>🚪</span>
-            <span>Cerrar sesión</span>
-          </button>
+          {user ? (
+            <>
+              <Link
+                to="/perfil"
+                onClick={() => setAbierto(false)}
+                className="flex w-full items-center gap-2 px-4 py-2.5 text-left text-sm font-semibold text-ink"
+              >
+                <span>👤</span>
+                <span>Mi perfil</span>
+              </Link>
+              <button
+                type="button"
+                onClick={cerrarSesion}
+                className="flex w-full items-center gap-2 px-4 py-2.5 text-left text-sm font-semibold text-ink"
+              >
+                <span>🚪</span>
+                <span>Cerrar sesión</span>
+              </button>
+            </>
+          ) : (
+            <button
+              type="button"
+              onClick={irALogin}
+              className="flex w-full items-center gap-2 px-4 py-2.5 text-left text-sm font-semibold text-ink"
+            >
+              <span>🔑</span>
+              <span>Iniciar sesión</span>
+            </button>
+          )}
         </div>
       )}
     </div>

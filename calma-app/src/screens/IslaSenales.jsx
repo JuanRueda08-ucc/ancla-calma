@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { motion } from 'framer-motion'
 import BackButton from '../components/BackButton'
+import AccountMenu from '../components/AccountMenu'
 import Accordion from '../components/Accordion'
 import { riseIn } from '../animations/transitions'
 
@@ -77,7 +78,10 @@ export default function IslaSenales() {
   return (
     <div className="min-h-screen bg-senales-bg">
       <div className="mx-auto max-w-[620px] px-5 pb-20 pt-10">
-        <BackButton to="/islas" />
+        <div className="flex items-center justify-between">
+          <BackButton to="/islas" />
+          <AccountMenu />
+        </div>
 
         <motion.div {...riseIn(0)} className="mb-8 text-center">
           <div

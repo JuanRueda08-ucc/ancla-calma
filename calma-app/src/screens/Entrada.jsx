@@ -3,6 +3,7 @@ import { motion, useReducedMotion } from 'framer-motion'
 import '../styles/entrada.css'
 import { riseIn } from '../animations/transitions'
 import StarField from '../components/StarField'
+import AccountMenu from '../components/AccountMenu'
 
 export default function Entrada() {
   const navigate = useNavigate()
@@ -11,6 +12,10 @@ export default function Entrada() {
   return (
     <div className="entrada-bg relative min-h-screen overflow-hidden text-white">
       <StarField />
+
+      <motion.div {...riseIn(0)} className="absolute right-6 top-6 z-[4]">
+        <AccountMenu buttonClassName="bg-white/20 text-white" />
+      </motion.div>
 
       <div className="relative z-[3] flex min-h-screen flex-col items-center justify-center px-6 py-10 text-center">
         <motion.div

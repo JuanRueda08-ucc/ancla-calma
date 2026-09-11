@@ -1,6 +1,7 @@
 import { useNavigate } from 'react-router-dom'
 import { motion } from 'framer-motion'
 import BackButton from '../components/BackButton'
+import AccountMenu from '../components/AccountMenu'
 import { riseIn } from '../animations/transitions'
 
 const BLOB_RADIUS = '42% 58% 63% 37% / 41% 44% 56% 59%'
@@ -72,7 +73,10 @@ export default function IslaAireMenu() {
   return (
     <div className="min-h-screen bg-gradient-to-b from-aire-1 via-aire-2 to-[#7592B3]">
       <div className="mx-auto max-w-[620px] px-5 pb-20 pt-10">
-        <BackButton to="/islas" />
+        <div className="flex items-center justify-between">
+          <BackButton to="/islas" />
+          <AccountMenu buttonClassName="bg-white/20 text-white" />
+        </div>
 
         <motion.div {...riseIn(0)} className="mb-8 text-center">
           <h1 className="mb-1.5 text-[26px] font-semibold text-white">Isla del Aire</h1>
