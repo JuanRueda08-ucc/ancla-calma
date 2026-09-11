@@ -2,7 +2,7 @@ import { motion } from 'framer-motion'
 import BackButton from '../components/BackButton'
 import { riseIn } from '../animations/transitions'
 
-const CORREO_CONTACTO = 'juanjoruedav@mail.com'
+const CORREO_CONTACTO = 'juanjoruedav@gmail.com'
 
 function CorreoContacto() {
   return (
