@@ -127,6 +127,29 @@ algo que parecía un bug era en realidad una decisión deliberada. Antes de
   aislada, sin mezclarse con otros cambios pendientes en la misma
   pantalla.
 
+## Perfil y cuenta
+- AccountMenu muestra "Iniciar sesión" en vez de ocultarse cuando no hay
+  sesión activa — decisión explícita, no un descuido: se evaluaron ambas
+  opciones (ocultar el ícono vs. mostrar un acceso directo a login) y se
+  eligió mantenerlo visible en todas las pantallas sin login obligatorio,
+  como invitación constante a crear cuenta.
+- Los 4 ejercicios guiados (Respiración, Grounding, Relajación muscular,
+  Sensorial) NO llevan el ícono de AccountMenu, a propósito — ya tienen
+  su propio header minimalista (pausa/play + cerrar) y agregar un tercer
+  ícono ahí sobrecargaría una pantalla pensada para estar enfocada, no
+  para navegar. No agregarlo ahí "completando la cobertura" sin revisar
+  esta nota primero.
+- Avatar y nombre de usuario se guardan juntos con un botón "Guardar"
+  explícito (estado local hasta confirmar), mientras que cambiar
+  correo/contraseña tienen cada uno su propio botón de acción inmediata
+  — son categorías de cambio distintas: avatar/nombre son cosméticos de
+  bajo riesgo, correo/contraseña son cambios sensibles que ameritan
+  confirmación propia por separado.
+- Cambiar contraseña no pide la contraseña actual como paso previo —
+  decisión consciente de mantener la fricción baja en una app de
+  bienestar, no un descuido de seguridad. Se puede reforzar más adelante
+  si se considera necesario.
+
 ## Multi-agente (Codex + Claude Code)
 - Ver `AGENTS.md` (raíz, `calma-app/`, `supabase/`) para convenciones que
   ambos agentes deben seguir. `CLAUDE.md` en cada una de esas carpetas solo

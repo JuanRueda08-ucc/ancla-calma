@@ -57,6 +57,16 @@ otro agente. Al terminar una tarea significativa, actualizar este archivo.
   persistido en `profiles.avatar_id`), formulario de cambio de correo
   (con confirmación por email de Supabase) y formulario de cambio de
   contraseña. Accesible desde "Mi perfil" en `AccountMenu`.
+- Panel de Perfil: selector de avatar (3 personajes de marca) + nombre
+  de usuario opcional, guardados juntos con un botón "Guardar" explícito
+  (a diferencia de correo/contraseña, que actualizan de inmediato cada
+  uno por separado)
+- Perfil del usuario (avatar, nombre) centralizado en AuthContext, con
+  `refreshProfile()` para propagar cambios sin recargar la página
+- Ícono de cuenta (AccountMenu) presente en toda la app excepto los 4
+  ejercicios guiados y las pantallas de Perfil/Login/Registro/Privacidad;
+  muestra el avatar real con sesión iniciada, o invita a iniciar sesión
+  si no la hay
 
 ## Pendiente / ideas anotadas para retomar (sin fecha)
 - Eliminar cuenta (Edge Function) — siguiente paso ya planeado para el

@@ -32,9 +32,7 @@
 
 ## Autenticación
 Supabase Auth, email + contraseña, confirmación de correo obligatoria.
-`AuthContext` (`src/context/AuthContext.jsx`) expone `{ user, session, loading, signOut }`
-vía `onAuthStateChange`. `RequireAuth` (`src/components/RequireAuth.jsx`) es el
-wrapper de rutas protegidas.
+`AuthContext` (`src/context/AuthContext.jsx`) expone `{ user, session, loading, profile, signOut, refreshProfile }` vía `onAuthStateChange`. `profile` (avatar_id, display_name) se carga automáticamente desde la tabla `profiles` una vez que la sesión resuelve, y se resetea a `null` al cerrar sesión. `refreshProfile()` permite volver a cargarlo bajo demanda (usado por Perfil.jsx tras guardar cambios, para que el resto de la app —como el avatar en AccountMenu— se entere sin necesidad de recargar la página). `RequireAuth` (`src/components/RequireAuth.jsx`) es el wrapper de rutas protegidas.
 
 ## Base de datos (Postgres, esquema `public`)
 
@@ -56,6 +54,12 @@ Todas las tablas necesitan GRANT explícito a `authenticated` además de las
 policies de RLS — ver DECISIONS.md para el bug que motivó esta regla.
 
 ## Componentes/utilidades compartidas clave
+- `AccountMenu.jsx`: ícono persistente de cuenta, presente en casi todas
+  las pantallas (ver DECISIONS.md para las exclusiones deliberadas: los
+  4 ejercicios guiados, Perfil, Login/Registro/Privacidad). Muestra el
+  avatar real del usuario si hay sesión y perfil cargado, o el ícono
+  genérico como respaldo. Sin sesión, ofrece un acceso directo a
+  "Iniciar sesión" en vez de ocultarse.
 - `GuidedExerciseShell.jsx`: shell común de los 3 ejercicios de Puerto Seguro
   (fondo StarField, barra superior pausa/cerrar, temporizador real con barra
   de progreso ligada a `durationSeconds`, independiente del avance manual
