@@ -83,11 +83,6 @@ otro agente. Al terminar una tarea significativa, actualizar este archivo.
   (ver DECISIONS.md). Al eliminar, navega a `/elegir?cuenta_eliminada=1`
   (mismo orden navegar-antes-de-signOut ya usado en cerrar sesión), que
   muestra un banner breve "Tu cuenta fue eliminada".
-  **Nota:** la limpieza de Storage dentro de la función (borrar audio de
-  notas-voz) fue verificada solo por revisión de código, no con un
-  borrado real de una cuenta que tuviera archivos de audio guardados —
-  si en el futuro se reporta un archivo huérfano en el bucket, empezar
-  la investigación ahí.
 
 - Panel de Acompañamiento (`PanelAcompanamiento.jsx`): los placeholders
   simulados de "Contactar a tu persona" / "Llamar" / "Mensaje" ahora son
