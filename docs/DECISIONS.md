@@ -99,14 +99,13 @@ algo que parecía un bug era en realidad una decisión deliberada. Antes de
   esto es una limitación real de la Web Speech API (ver también la
   entrada sobre Web Speech API más arriba), no un error de redacción ni
   algo a "corregir" ocultándolo en el texto legal.
-- **PENDIENTE:** la política de privacidad todavía dice que no existe
-  autoeliminación de cuenta y remite a contacto manual por correo
-  (`juanjoruedav@gmail.com`), pero esa función ya se implementó (ver
-  "Eliminar cuenta" más abajo y la sección "Zona de peligro" en
-  `/perfil`) — quedó desactualizada porque esta tarea pidió
-  explícitamente no tocar otras pantallas fuera de `Perfil.jsx`. Falta
-  un cambio aparte que actualice el texto de `Privacidad.jsx` para
-  reflejar que la autoeliminación ya es real.
+- **RESUELTO:** el párrafo de "Eliminar tu cuenta por completo" en
+  `Privacidad.jsx` decía que esto no era autogestionable y remitía a
+  contacto manual por correo — quedó desactualizado cuando se implementó
+  la Zona de peligro en `/perfil` (ver "Eliminar cuenta" más abajo), y
+  ya se corrigió: ahora describe la autoeliminación real desde Mi perfil
+  → Zona de peligro, incluyendo qué se borra y que pide una palabra de
+  confirmación.
 
 ## Panel de Acompañamiento
 - **"Contactar/Llamar/Mensaje" en el Panel de Acompañamiento reutilizan la

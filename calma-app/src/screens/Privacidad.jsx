@@ -24,7 +24,7 @@ export default function Privacidad() {
         >
           <h1 className="mb-1.5 text-[22px] font-semibold text-ink">Política de privacidad</h1>
           <p className="mb-6 text-sm text-ink-soft/70">
-            Última actualización: 10 de septiembre de 2026
+            Última actualización: 12 de septiembre de 2026
           </p>
 
           <div className="mx-auto max-w-[52ch] space-y-7 text-[15px] leading-relaxed text-ink-soft">
@@ -130,9 +130,12 @@ export default function Privacidad() {
                   app (Isla del Auxilio y tu Historial, respectivamente).
                 </li>
                 <li>
-                  <strong className="text-ink">Eliminar tu cuenta por completo</strong>: por ahora
-                  esto no es autogestionable desde la app — escríbenos a <CorreoContacto />{' '}
-                  solicitando la eliminación, y procesaremos tu solicitud manualmente.
+                  <strong className="text-ink">Eliminar tu cuenta por completo</strong>: puedes
+                  hacerlo tú mismo/a en cualquier momento desde Mi perfil → Zona de peligro. Esto
+                  borra de inmediato y de forma permanente tu cuenta, tus contactos de confianza,
+                  y toda tu bitácora (incluyendo las notas de voz). No hay forma de deshacer esta
+                  acción, así que la app te pide escribir una palabra de confirmación antes de
+                  proceder.
                 </li>
               </ul>
             </section>
