@@ -49,6 +49,10 @@ export default function Perfil() {
   const [passwordError, setPasswordError] = useState('')
   const [passwordMensaje, setPasswordMensaje] = useState('')
 
+  const [textoConfirmacionEliminar, setTextoConfirmacionEliminar] = useState('')
+  const [eliminandoCuenta, setEliminandoCuenta] = useState(false)
+  const [eliminarCuentaError, setEliminarCuentaError] = useState('')
+
   useEffect(() => {
     let cancelado = false
 
@@ -158,6 +162,29 @@ export default function Perfil() {
     // y llamar a signOut() después — si no, el redirect reactivo de
     // RequireAuth gana la carrera y termina en /login en vez de /elegir.
     navigate('/elegir', { replace: true })
+    signOut()
+  }
+
+  const puedeEliminarCuenta = textoConfirmacionEliminar === 'ELIMINAR'
+
+  const handleEliminarCuenta = async () => {
+    if (!puedeEliminarCuenta || eliminandoCuenta) return
+
+    setEliminarCuentaError('')
+    setEliminandoCuenta(true)
+    const { data, error } = await supabase.functions.invoke('eliminar-cuenta')
+
+    if (error || !data?.success) {
+      setEliminandoCuenta(false)
+      setEliminarCuentaError('No pudimos eliminar tu cuenta. Intenta de nuevo.')
+      return
+    }
+
+    // Mismo orden que cerrarSesion: navegar primero, de forma síncrona,
+    // y limpiar la sesión local después — la cuenta ya no existe en el
+    // servidor, pero el navegador todavía cree que hay sesión hasta que
+    // signOut() actualiza ese estado.
+    navigate('/elegir?cuenta_eliminada=1', { replace: true })
     signOut()
   }
 
@@ -333,6 +360,45 @@ export default function Perfil() {
             className="rounded-full border-[1.5px] border-red-500/25 px-6 py-2.5 text-sm font-semibold text-red-500"
           >
             Cerrar sesión
+          </button>
+        </motion.div>
+
+        <motion.div
+          {...riseIn(0.3)}
+          className="mt-8 rounded-lg border-2 border-red-300 bg-red-50 p-5"
+        >
+          <p className="mb-2 text-sm font-semibold text-red-600">Zona de peligro</p>
+          <p className="mb-4 text-xs leading-relaxed text-red-500/90">
+            Esto elimina tu cuenta de forma permanente, junto con tus contactos de confianza,
+            tu bitácora completa (incluyendo notas de voz), y tu perfil. No se puede deshacer.
+          </p>
+
+          <label
+            htmlFor="perfil-confirmar-eliminar"
+            className="mb-1 block text-xs font-semibold text-red-600"
+          >
+            Escribe ELIMINAR para confirmar
+          </label>
+          <input
+            id="perfil-confirmar-eliminar"
+            type="text"
+            value={textoConfirmacionEliminar}
+            onChange={(e) => setTextoConfirmacionEliminar(e.target.value)}
+            disabled={eliminandoCuenta}
+            className="mb-3 w-full rounded-lg border border-red-300 bg-white px-3 py-2 text-[14.5px] text-ink focus:outline-none disabled:opacity-60"
+          />
+
+          {eliminarCuentaError && (
+            <p className="mb-3 text-xs font-medium text-red-600">{eliminarCuentaError}</p>
+          )}
+
+          <button
+            type="button"
+            onClick={handleEliminarCuenta}
+            disabled={!puedeEliminarCuenta || eliminandoCuenta}
+            className="w-full rounded-full bg-red-500 py-2.5 text-sm font-bold text-white shadow-[0_10px_20px_rgba(220,38,38,0.25)] disabled:cursor-not-allowed disabled:opacity-50 disabled:shadow-none"
+          >
+            {eliminandoCuenta ? 'Eliminando cuenta…' : 'Eliminar cuenta definitivamente'}
           </button>
         </motion.div>
       </div>

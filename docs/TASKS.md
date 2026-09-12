@@ -75,6 +75,19 @@ otro agente. Al terminar una tarea significativa, actualizar este archivo.
   nuevo `ScreenHeader.jsx` centraliza el layout de BackButton +
   AccountMenu (con placeholders cuando falta alguno) para que el
   posicionamiento sea idéntico en todas las pantallas que los usan
+- Eliminar cuenta, end-to-end (backend + frontend): Edge Function
+  `eliminar-cuenta` (borra Storage de notas de voz, luego el usuario de
+  Auth, con cascada hacia `profiles`/`contactos_confianza`/
+  `bitacora_entradas`) ya conectada a una sección real "Zona de peligro"
+  al final de `/perfil`, con confirmación por texto exacto "ELIMINAR"
+  (ver DECISIONS.md). Al eliminar, navega a `/elegir?cuenta_eliminada=1`
+  (mismo orden navegar-antes-de-signOut ya usado en cerrar sesión), que
+  muestra un banner breve "Tu cuenta fue eliminada".
+  **Nota:** la limpieza de Storage dentro de la función (borrar audio de
+  notas-voz) fue verificada solo por revisión de código, no con un
+  borrado real de una cuenta que tuviera archivos de audio guardados —
+  si en el futuro se reporta un archivo huérfano en el bucket, empezar
+  la investigación ahí.
 
 - Panel de Acompañamiento (`PanelAcompanamiento.jsx`): los placeholders
   simulados de "Contactar a tu persona" / "Llamar" / "Mensaje" ahora son
@@ -88,9 +101,6 @@ otro agente. Al terminar una tarea significativa, actualizar este archivo.
   función real detrás, no un placeholder a reemplazar por algo nuevo.
 
 ## Pendiente / ideas anotadas para retomar (sin fecha)
-- Eliminar cuenta (Edge Function) — siguiente paso ya planeado para el
-  panel de perfil: la política de privacidad remite a contacto manual
-  por correo mientras tanto, ver DECISIONS.md
 - Rediseño estructural grande: layouts distintos por tipo de pantalla en
   vez de la misma plantilla (header + tarjetas apiladas + botón) repetida
   — quedó en pausa antes de la ronda de backend

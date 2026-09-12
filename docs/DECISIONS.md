@@ -99,11 +99,14 @@ algo que parecía un bug era en realidad una decisión deliberada. Antes de
   esto es una limitación real de la Web Speech API (ver también la
   entrada sobre Web Speech API más arriba), no un error de redacción ni
   algo a "corregir" ocultándolo en el texto legal.
-- **No existe todavía una función de autoeliminación de cuenta completa**
-  — la política es honesta sobre esto y remite a contacto manual por
-  correo (`juanjoruedav@gmail.com`). Si en el futuro se construye esa
-  función, actualizar tanto el código como este texto de la política en
-  el mismo cambio, no por separado.
+- **PENDIENTE:** la política de privacidad todavía dice que no existe
+  autoeliminación de cuenta y remite a contacto manual por correo
+  (`juanjoruedav@gmail.com`), pero esa función ya se implementó (ver
+  "Eliminar cuenta" más abajo y la sección "Zona de peligro" en
+  `/perfil`) — quedó desactualizada porque esta tarea pidió
+  explícitamente no tocar otras pantallas fuera de `Perfil.jsx`. Falta
+  un cambio aparte que actualice el texto de `Privacidad.jsx` para
+  reflejar que la autoeliminación ya es real.
 
 ## Panel de Acompañamiento
 - **"Contactar/Llamar/Mensaje" en el Panel de Acompañamiento reutilizan la
@@ -160,6 +163,23 @@ algo que parecía un bug era en realidad una decisión deliberada. Antes de
   acceso a la cuenta) que ameritan su propia confirmación explícita y
   aislada, sin mezclarse con otros cambios pendientes en la misma
   pantalla.
+
+## Eliminar cuenta
+- **Eliminar cuenta pide escribir "ELIMINAR" exacto (sensible a
+  mayúsculas, sin recortar espacios) en vez del patrón de confirmación
+  de dos toques** que ya usan las acciones destructivas de un solo
+  elemento (borrar un contacto o una entrada de bitácora) — es
+  intencional, no inconsistencia: eliminar cuenta es la única acción de
+  toda la app que destruye TODO de forma irreversible (contactos de
+  confianza, bitácora completa con sus notas de voz, y el perfil), así
+  que amerita un nivel de fricción deliberadamente más alto que borrar
+  un solo elemento. No reemplazar esto por el patrón de dos toques
+  pensando que "unifica" la UX de confirmaciones destructivas — la
+  gravedad no es la misma.
+- Se pide escribir la palabra fija "ELIMINAR", no el correo del usuario,
+  a propósito: es más simple de teclear bajo estrés y evita que un error
+  de captura del email (typo) bloquee sin motivo a alguien que sí quiere
+  eliminar su cuenta.
 
 ## Perfil y cuenta
 - **El botón "Volver" de `/perfil` usa `location.state.from`** (mismo

@@ -1,4 +1,4 @@
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, useSearchParams } from 'react-router-dom'
 import { motion } from 'framer-motion'
 import { riseIn } from '../animations/transitions'
 import ScreenHeader from '../components/ScreenHeader'
@@ -64,10 +64,22 @@ function CaminoCard({ to, emoji, title, description, gradient, shadow, delay }) 
 }
 
 export default function ElegirCamino() {
+  const [searchParams] = useSearchParams()
+  const cuentaEliminada = searchParams.get('cuenta_eliminada') === '1'
+
   return (
     <div className="min-h-screen bg-gradient-to-b from-[#FDF8F1] to-[#EAF0F7]">
       <div className="mx-auto max-w-[620px] px-5 pb-20 pt-10">
         <ScreenHeader />
+
+        {cuentaEliminada && (
+          <motion.div
+            {...riseIn(0)}
+            className="mb-5 rounded-lg bg-acomp-bg px-4 py-3 text-center text-sm font-semibold text-acomp-1"
+          >
+            Tu cuenta fue eliminada
+          </motion.div>
+        )}
 
         <motion.div {...riseIn(0)} className="mb-9 text-center">
           <h1 className="mb-2 text-[28px] font-semibold text-ink">¿Qué necesitas hoy?</h1>
