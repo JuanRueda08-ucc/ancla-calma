@@ -162,6 +162,18 @@ algo que parecía un bug era en realidad una decisión deliberada. Antes de
   pantalla.
 
 ## Perfil y cuenta
+- **El botón "Volver" de `/perfil` usa `location.state.from`** (mismo
+  patrón ya establecido en Login/Registro/`RequireAuth`), no un destino
+  fijo a `/islas`. `AccountMenu` pasa el origen real al navegar
+  (`navigate('/perfil', { state: { from: location.pathname } })`) para
+  que "Volver" regrese a la pantalla desde la que realmente se entró
+  (`/acompanamiento`, `/islas/faro`, `/bitacora`, etc.), no siempre a
+  `/islas`. El fallback a `/islas` sigue existiendo solo para el caso sin
+  ese state (por ejemplo, entrar directo a `/perfil` por URL) — no es un
+  error, es intencional para cuando no hay contexto de navegación previo.
+  El botón "Cerrar sesión" no se ve afectado por esto: sigue yendo
+  siempre a `/elegir`, sin importar el origen, porque cerrar sesión es
+  una acción distinta a simplemente "volver".
 - AccountMenu muestra "Iniciar sesión" en vez de ocultarse cuando no hay
   sesión activa — decisión explícita, no un descuido: se evaluaron ambas
   opciones (ocultar el ícono vs. mostrar un acceso directo a login) y se

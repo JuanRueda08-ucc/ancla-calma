@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useLocation, useNavigate } from 'react-router-dom'
 import { motion } from 'framer-motion'
 import ScreenHeader from '../components/ScreenHeader'
 import { riseIn } from '../animations/transitions'
@@ -26,6 +26,8 @@ function mapUpdateEmailError(error) {
 export default function Perfil() {
   const { user, refreshProfile, signOut } = useAuth()
   const navigate = useNavigate()
+  const location = useLocation()
+  const volverA = location.state?.from ?? '/islas'
 
   const [perfilCargando, setPerfilCargando] = useState(true)
   const [avatarId, setAvatarId] = useState(null)
@@ -162,7 +164,7 @@ export default function Perfil() {
   return (
     <div className="min-h-screen bg-sand">
       <div className="mx-auto max-w-[620px] px-5 pb-20 pt-10">
-        <ScreenHeader backTo="/islas" showAccount={false} />
+        <ScreenHeader backTo={volverA} showAccount={false} />
 
         <motion.div {...riseIn(0)} className="mb-8 text-center">
           <h1 className="mb-1.5 text-[26px] font-semibold text-ink">Tu perfil</h1>

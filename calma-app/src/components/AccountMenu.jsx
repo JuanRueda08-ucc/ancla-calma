@@ -1,11 +1,12 @@
 import { useEffect, useRef, useState } from 'react'
-import { Link, useNavigate } from 'react-router-dom'
+import { Link, useLocation, useNavigate } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
 import { AVATARES } from '../constants/avatares'
 
 export default function AccountMenu({ buttonClassName = 'bg-brand-navy text-white' }) {
   const { user, signOut, profile } = useAuth()
   const navigate = useNavigate()
+  const location = useLocation()
   const [abierto, setAbierto] = useState(false)
   const contenedorRef = useRef(null)
 
@@ -62,6 +63,7 @@ export default function AccountMenu({ buttonClassName = 'bg-brand-navy text-whit
             <>
               <Link
                 to="/perfil"
+                state={{ from: location.pathname }}
                 onClick={() => setAbierto(false)}
                 className="flex w-full items-center gap-2 px-4 py-2.5 text-left text-sm font-semibold text-ink"
               >
