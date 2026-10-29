@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from 'react'
 import { motion } from 'framer-motion'
 import ScreenHeader from '../components/ScreenHeader'
 import StarField from '../components/StarField'
-import '../styles/islaAuxilio.css'
+import '../styles/islaNoche.css'
 import { riseIn } from '../animations/transitions'
 import { getContactos, guardarContacto, eliminarContacto, normalizarTelefono } from '../utils/contactosStorage'
 import { obtenerUbicacion, construirLinkMapa, construirLinkWhatsApp } from '../utils/compartirUbicacion'
@@ -308,9 +308,9 @@ export default function IslaAuxilio() {
   const mostrarAcciones = administrando && contactos.length > 0
 
   return (
-    <div className="auxilio-noche-bg relative min-h-[100dvh] overflow-hidden">
+    <div className="isla-noche-bg relative min-h-[100dvh] overflow-hidden">
       {/* resplandor cálido: marca la isla de auxilio dentro de la misma noche */}
-      <div className="auxilio-resplandor pointer-events-none absolute inset-x-0 top-0 h-[55vh]" aria-hidden="true" />
+      <div className="isla-resplandor isla-resplandor--auxilio pointer-events-none absolute inset-x-0 top-0 h-[55vh]" aria-hidden="true" />
       <StarField />
       <div className="relative z-[2] mx-auto max-w-[620px] px-5 pb-20 pt-10">
         <ScreenHeader backTo="/islas" accountButtonClassName="bg-white/20 text-white" />

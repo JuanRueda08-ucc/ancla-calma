@@ -1,0 +1,31 @@
+/* Pantallas de cada isla: la misma noche de Entrada/ElegirCamino/Islas, y cada
+   isla se reconoce por la luz de su color que baja desde arriba. */
+.isla-noche-bg {
+  background: linear-gradient(180deg, #030b1e 0%, #001b44 40%, #002e6b 100%);
+}
+
+/* Con "screen" la luz se suma al navy; con mezcla normal un color cálido
+   semitransparente sobre navy se vuelve marrón. */
+.isla-resplandor {
+  mix-blend-mode: screen;
+}
+
+.isla-resplandor--auxilio {
+  background: radial-gradient(
+    ellipse 90% 75% at 50% -5%,
+    rgba(255, 177, 153, 0.75) 0%,
+    rgba(255, 122, 89, 0.5) 30%,
+    rgba(255, 122, 89, 0.12) 60%,
+    transparent 80%
+  );
+}
+
+.isla-resplandor--aire {
+  background: radial-gradient(
+    ellipse 90% 75% at 50% -5%,
+    rgba(234, 247, 251, 0.55) 0%,
+    rgba(111, 227, 214, 0.45) 30%,
+    rgba(111, 227, 214, 0.1) 60%,
+    transparent 80%
+  );
+}
