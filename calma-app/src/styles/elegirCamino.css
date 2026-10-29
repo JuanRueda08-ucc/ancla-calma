@@ -1,0 +1,4 @@
+/* mismo cielo nocturno de Entrada: al pasar de pantalla se siente como un solo lugar */
+.elegir-bg {
+  background: linear-gradient(180deg, #030b1e 0%, #001b44 34%, #002e6b 70%, #0a4b94 90%);
+}

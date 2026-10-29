@@ -86,7 +86,7 @@ src/
 | Ruta | Pantalla | Vuelve a |
 |---|---|---|
 | `/` | `Entrada` | — |
-| `/elegir` | `ElegirCamino` | — |
+| `/elegir` | `ElegirCamino` | `/` |
 | `/islas` | `Islas` | `/elegir` |
 | `/islas/auxilio` 🔒 | `IslaAuxilio` | `/islas` |
 | `/islas/aire` | `IslaAireMenu` | `/islas` |
@@ -209,7 +209,7 @@ src/
 | Route | Screen | Back to |
 |---|---|---|
 | `/` | `Entrada` (welcome) | — |
-| `/elegir` | `ElegirCamino` (choose a path) | — |
+| `/elegir` | `ElegirCamino` (choose a path) | `/` |
 | `/islas` | `Islas` (islands) | `/elegir` |
 | `/islas/auxilio` 🔒 | `IslaAuxilio` (crisis help) | `/islas` |
 | `/islas/aire` | `IslaAireMenu` (calming exercises) | `/islas` |
