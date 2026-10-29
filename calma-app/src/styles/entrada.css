@@ -1,13 +1,49 @@
+/* cielo nocturno: se aclara hacia el horizonte, donde empieza el mar */
 .entrada-bg {
-  background: linear-gradient(180deg, #06142b 0%, #002e6b 45%, #0a4b94 75%, #3e7cb8 100%);
+  background: linear-gradient(180deg, #030b1e 0%, #001b44 38%, #002e6b 66%, #0a4b94 78%);
 }
 
+.entrada-wordmark {
+  font-size: clamp(56px, 17vw, 112px);
+}
+
+/* el haz se ancla en la linterna; el contenedor posiciona y el motion.div solo rota,
+   así Framer Motion no pisa ningún translate de posicionamiento */
 .entrada-beam {
-  background: conic-gradient(
-    from -35deg at 50% 0%,
-    rgba(255, 241, 199, 0.32) 0deg,
-    rgba(255, 241, 199, 0) 30deg 330deg,
-    rgba(255, 241, 199, 0.32) 360deg
+  width: 170vmax;
+  height: 120px;
+  margin-top: -60px;
+  transform-origin: 0% 50%;
+  clip-path: polygon(0 47%, 100% 0, 100% 100%, 0 53%);
+  background: linear-gradient(
+    90deg,
+    rgba(255, 233, 184, 0.62) 0%,
+    rgba(255, 211, 122, 0.3) 22%,
+    rgba(242, 169, 59, 0.1) 55%,
+    rgba(242, 169, 59, 0) 82%
   );
-  transform-origin: 50% 0%;
+}
+
+.entrada-halo {
+  background: radial-gradient(
+    circle,
+    rgba(255, 233, 184, 0.9) 0%,
+    rgba(255, 211, 122, 0.45) 30%,
+    rgba(242, 169, 59, 0.12) 58%,
+    transparent 72%
+  );
+}
+
+/* reflejo de la linterna sobre el agua: se desvanece hacia abajo y hacia los lados */
+.entrada-reflection {
+  background: linear-gradient(
+    180deg,
+    rgba(255, 211, 122, 0.4) 0%,
+    rgba(242, 169, 59, 0.12) 50%,
+    transparent 100%
+  );
+  -webkit-mask-image: repeating-linear-gradient(180deg, #000 0 3px, rgba(0, 0, 0, 0.25) 3px 7px);
+  mask-image: repeating-linear-gradient(180deg, #000 0 3px, rgba(0, 0, 0, 0.25) 3px 7px);
+  filter: blur(2.5px);
+  border-radius: 50%;
 }
