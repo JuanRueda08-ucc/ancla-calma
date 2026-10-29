@@ -90,8 +90,8 @@ Deno.serve(async (req) => {
     }
 
     // 2. Borrar el usuario de Auth — esto SÍ cae en cascada hacia
-    //    profiles, contactos_confianza, y bitacora_entradas (ya
-    //    configurado con "on delete cascade" desde el esquema inicial).
+    //    profiles, contactos_confianza, bitacora_entradas y
+    //    herramientas_faro (todas con "on delete cascade" hacia auth.users).
     const { error: errorEliminar } = await supabaseAdmin.auth.admin.deleteUser(user.id)
 
     if (errorEliminar) {

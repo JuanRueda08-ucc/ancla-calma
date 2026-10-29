@@ -4,15 +4,15 @@ import '../styles/islaNoche.css'
 import ScreenHeader from '../components/ScreenHeader'
 import StarField from '../components/StarField'
 import { riseIn } from '../animations/transitions'
+import {
+  getHerramientas,
+  crearHerramienta,
+  actualizarHerramienta,
+  eliminarHerramienta,
+  guardarOrden,
+} from '../utils/herramientasStorage'
 
 const ICONOS_DISPONIBLES = ['🎵', '🚶', '📞', '🫁', '💧', '😴', '📝', '🎉', '🌳', '🎨']
-
-const HERRAMIENTAS_INICIALES = [
-  { id: 'h-1', icon: '🎵', label: 'Escuchar música tranquila', favorite: false },
-  { id: 'h-2', icon: '🚶', label: 'Dar un paseo', favorite: false },
-  { id: 'h-3', icon: '📞', label: 'Llamar a alguien de confianza', favorite: false },
-  { id: 'h-4', icon: '🫁', label: 'Respirar profundo', favorite: false },
-]
 
 const inputClass =
   'w-full rounded-lg border border-black/10 bg-white px-3 py-2.5 text-[14.5px] text-ink placeholder:text-ink-soft/50 focus:border-faro-1 focus:outline-none'
@@ -74,6 +74,7 @@ function HerramientaRow({
   onSolicitarEliminar,
   onConfirmarEliminar,
   onCancelarEliminar,
+  onSoltar,
 }) {
   const controls = useDragControls()
 
@@ -82,6 +83,7 @@ function HerramientaRow({
       value={item}
       dragListener={false}
       dragControls={controls}
+      onDragEnd={onSoltar}
       initial={{ opacity: 0, height: 0 }}
       animate={{ opacity: 1, height: 'auto' }}
       exit={{ opacity: 0, height: 0 }}
@@ -189,7 +191,16 @@ function HerramientaRow({
 }
 
 export default function IslaFaro() {
-  const [herramientas, setHerramientas] = useState(HERRAMIENTAS_INICIALES)
+  const [cargaEstado, setCargaEstado] = useState('cargando') // 'cargando' | 'error' | 'listo'
+  const [herramientas, setHerramientas] = useState([])
+  // espejo de `herramientas` para leer el orden final al soltar un arrastre
+  const herramientasRef = useRef(herramientas)
+  useEffect(() => {
+    herramientasRef.current = herramientas
+  }, [herramientas])
+  const [errorAccion, setErrorAccion] = useState('')
+  const errorTimeoutRef = useRef(null)
+  const [guardando, setGuardando] = useState(false)
   const [editandoId, setEditandoId] = useState(null)
   const [textoEdicion, setTextoEdicion] = useState('')
   const [confirmarEliminarId, setConfirmarEliminarId] = useState(null)
@@ -201,9 +212,45 @@ export default function IslaFaro() {
   const [nuevoIcono, setNuevoIcono] = useState(ICONOS_DISPONIBLES[0])
   const [nuevoTexto, setNuevoTexto] = useState('')
 
+  const cargarHerramientas = async () => {
+    setCargaEstado('cargando')
+    try {
+      setHerramientas(await getHerramientas())
+      setCargaEstado('listo')
+    } catch {
+      setCargaEstado('error')
+    }
+  }
+
   useEffect(() => {
-    return () => clearTimeout(confirmarTimeoutRef.current)
+    cargarHerramientas()
   }, [])
+
+  useEffect(() => {
+    return () => {
+      clearTimeout(confirmarTimeoutRef.current)
+      clearTimeout(errorTimeoutRef.current)
+    }
+  }, [])
+
+  const mostrarError = (mensaje) => {
+    setErrorAccion(mensaje)
+    clearTimeout(errorTimeoutRef.current)
+    errorTimeoutRef.current = setTimeout(() => setErrorAccion(''), 4000)
+  }
+
+  // Cambio optimista: se aplica en pantalla al instante y, si Supabase
+  // falla, se vuelve al estado anterior y se avisa.
+  const aplicarCambio = async (siguiente, persistir) => {
+    const anterior = herramientasRef.current
+    setHerramientas(siguiente)
+    try {
+      await persistir()
+    } catch (error) {
+      setHerramientas(anterior)
+      mostrarError(error.message)
+    }
+  }
 
   const favoritas = herramientas.filter((h) => h.favorite)
   const otras = herramientas.filter((h) => !h.favorite)
@@ -214,9 +261,25 @@ export default function IslaFaro() {
     setHerramientas([...favoritas, ...nuevasOtras])
   }
 
+  // onReorder se dispara en cada paso del arrastre; el orden se guarda
+  // una sola vez, al soltar.
+  const persistirOrden = async () => {
+    const lista = herramientasRef.current
+    try {
+      await guardarOrden(lista)
+      setHerramientas((prev) => prev.map((h) => ({ ...h, orden: lista.findIndex((x) => x.id === h.id) })))
+    } catch (error) {
+      mostrarError(error.message)
+      cargarHerramientas()
+    }
+  }
+
   const toggleFavorito = (id) => {
-    setHerramientas((prev) =>
-      prev.map((h) => (h.id === id ? { ...h, favorite: !h.favorite } : h)),
+    const item = herramientas.find((h) => h.id === id)
+    if (!item) return
+    aplicarCambio(
+      herramientas.map((h) => (h.id === id ? { ...h, favorite: !h.favorite } : h)),
+      () => actualizarHerramienta(id, { favorite: !item.favorite }),
     )
   }
 
@@ -228,8 +291,12 @@ export default function IslaFaro() {
 
   const confirmarEdicion = (id) => {
     const texto = textoEdicion.trim()
-    if (texto) {
-      setHerramientas((prev) => prev.map((h) => (h.id === id ? { ...h, label: texto } : h)))
+    const item = herramientas.find((h) => h.id === id)
+    if (texto && item && texto !== item.label) {
+      aplicarCambio(
+        herramientas.map((h) => (h.id === id ? { ...h, label: texto } : h)),
+        () => actualizarHerramienta(id, { label: texto }),
+      )
     }
     setEditandoId(null)
     setTextoEdicion('')
@@ -247,8 +314,10 @@ export default function IslaFaro() {
   }
 
   const confirmarEliminar = (id) => {
-    // TODO: persistir la eliminación en backend/localStorage cuando exista
-    setHerramientas((prev) => prev.filter((h) => h.id !== id))
+    aplicarCambio(
+      herramientas.filter((h) => h.id !== id),
+      () => eliminarHerramienta(id),
+    )
     setConfirmarEliminarId(null)
     clearTimeout(confirmarTimeoutRef.current)
   }
@@ -258,15 +327,21 @@ export default function IslaFaro() {
     clearTimeout(confirmarTimeoutRef.current)
   }
 
-  const agregarHerramienta = () => {
+  const agregarHerramienta = async () => {
     const texto = nuevoTexto.trim()
-    if (!texto) return
-    // TODO: persistir la nueva herramienta en backend/localStorage cuando exista
-    setHerramientas((prev) => [
-      ...prev,
-      { id: `h-${Date.now()}`, icon: nuevoIcono, label: texto, favorite: false },
-    ])
-    cancelarNuevo()
+    if (!texto || guardando) return
+    // la nueva va al final de la lista completa
+    const orden = herramientas.reduce((max, h) => Math.max(max, h.orden), -1) + 1
+    setGuardando(true)
+    try {
+      const nueva = await crearHerramienta({ icon: nuevoIcono, label: texto, orden })
+      setHerramientas((prev) => [...prev, nueva])
+      cancelarNuevo()
+    } catch (error) {
+      mostrarError(error.message)
+    } finally {
+      setGuardando(false)
+    }
   }
 
   const cancelarNuevo = () => {
@@ -297,142 +372,184 @@ export default function IslaFaro() {
           </p>
         </motion.div>
 
-        {favoritas.length > 0 && !administrando && (
-          <motion.section {...riseIn(0.06)} className="mb-8">
-            <h2 className="mb-3 text-[15px] font-semibold text-white">Tus favoritas</h2>
-            <div className="grid grid-cols-2 gap-3">
-              <AnimatePresence initial={false}>
-                {favoritas.map((item) => (
-                  <motion.div
-                    key={item.id}
-                    layout
-                    initial={{ opacity: 0, scale: 0.95 }}
-                    animate={{ opacity: 1, scale: 1 }}
-                    exit={{ opacity: 0, scale: 0.95 }}
-                    transition={{ duration: 0.2 }}
-                    className="relative rounded-xl border border-faro-2/40 bg-faro-1/[0.22] p-4 pr-10"
-                  >
-                    <span className="block text-[28px] leading-none">{item.icon}</span>
-                    <span className="mt-3 block text-[14.5px] font-semibold leading-snug text-white">
-                      {item.label}
-                    </span>
-                    <BotonFavorito item={item} onToggleFavorito={toggleFavorito} className="absolute right-1.5 top-1.5" />
-                  </motion.div>
-                ))}
-              </AnimatePresence>
-            </div>
-          </motion.section>
+        {cargaEstado === 'cargando' && (
+          <div className="flex justify-center py-10">
+            <span
+              aria-hidden="true"
+              className="h-8 w-8 animate-spin rounded-full border-2 border-white/30 border-t-white"
+            />
+          </div>
         )}
 
-        <motion.div {...riseIn(0.1)} className="mb-3 flex items-center justify-between">
-          <h2 className="text-[15px] font-semibold text-white">
-            {favoritas.length > 0 && !administrando ? 'Otras herramientas' : 'Tus herramientas'}
-          </h2>
-          {herramientas.length > 0 && (
-            <button
-              type="button"
-              onClick={alternarAdministrar}
-              aria-pressed={administrando}
-              className="rounded-full px-3 py-1.5 text-sm font-semibold text-white underline decoration-white/50 underline-offset-4"
-            >
-              {administrando ? 'Listo' : 'Administrar'}
-            </button>
-          )}
-        </motion.div>
-
-        {otras.length === 0 && favoritas.length > 0 && !administrando && (
-          <p className="mb-4 text-sm text-white/60">Todas tus herramientas están en favoritas.</p>
-        )}
-
-        {/* en modo Administrar la lista muestra todas (también las favoritas) y la
-            cuadrícula de favoritas se oculta para no repetirlas */}
-        <Reorder.Group
-          axis="y"
-          values={administrando ? herramientas : otras}
-          onReorder={administrando ? setHerramientas : reordenarOtras}
-          className="mb-4"
-        >
-          <AnimatePresence initial={false}>
-            {(administrando ? herramientas : otras).map((item) => (
-              <HerramientaRow
-                key={item.id}
-                item={item}
-                administrando={administrando}
-                isEditing={editandoId === item.id}
-                textoEdicion={textoEdicion}
-                setTextoEdicion={setTextoEdicion}
-                confirmandoEliminar={confirmarEliminarId === item.id}
-                onToggleFavorito={toggleFavorito}
-                onIniciarEdicion={iniciarEdicion}
-                onConfirmarEdicion={confirmarEdicion}
-                onCancelarEdicion={cancelarEdicion}
-                onSolicitarEliminar={solicitarEliminar}
-                onConfirmarEliminar={confirmarEliminar}
-                onCancelarEliminar={cancelarEliminar}
-              />
-            ))}
-          </AnimatePresence>
-        </Reorder.Group>
-
-        {formAbierto ? (
+        {cargaEstado === 'error' && (
           <motion.div
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
-            className="rounded-lg bg-white/95 p-4 shadow-[0_8px_22px_rgba(0,0,0,0.06)]"
+            className="mb-4 rounded-lg bg-white/95 p-4 text-center shadow-[0_8px_22px_rgba(0,0,0,0.06)]"
           >
-            <p className="mb-3 text-sm font-semibold text-ink">Agregar herramienta</p>
-            <div className="mb-3 flex gap-2">
-              <select
-                value={nuevoIcono}
-                onChange={(e) => setNuevoIcono(e.target.value)}
-                aria-label="Ícono de la herramienta"
-                className="rounded-lg border border-black/10 bg-white px-2 py-2 text-lg"
-              >
-                {ICONOS_DISPONIBLES.map((icono) => (
-                  <option key={icono} value={icono}>
-                    {icono}
-                  </option>
-                ))}
-              </select>
-              <input
-                type="text"
-                autoFocus
-                value={nuevoTexto}
-                onChange={(e) => setNuevoTexto(e.target.value)}
-                onKeyDown={(e) => {
-                  if (e.key === 'Enter') agregarHerramienta()
-                }}
-                aria-label="Nombre de la herramienta"
-                placeholder="Ej: escuchar música, caminar..."
-                className={inputClass}
-              />
-            </div>
-            <div className="flex gap-2">
-              <button
-                type="button"
-                onClick={agregarHerramienta}
-                className="flex-1 rounded-full bg-gradient-to-br from-faro-1 to-faro-2 py-2.5 text-sm font-bold text-brand-navyDeep shadow-[0_10px_20px_rgba(242,169,59,0.25)]"
-              >
-                Agregar
-              </button>
-              <button
-                type="button"
-                onClick={cancelarNuevo}
-                className="flex-1 rounded-full bg-black/10 py-2.5 text-sm font-semibold text-ink"
-              >
-                Cancelar
-              </button>
-            </div>
+            <p className="mb-3 text-sm text-ink-soft">
+              No pudimos cargar tus herramientas. Intenta de nuevo.
+            </p>
+            <button
+              type="button"
+              onClick={cargarHerramientas}
+              className="rounded-full bg-gradient-to-br from-faro-1 to-faro-2 px-6 py-3 text-sm font-bold text-brand-navyDeep"
+            >
+              Reintentar
+            </button>
           </motion.div>
-        ) : (
-          <motion.button
-            {...riseIn(0.14)}
-            type="button"
-            onClick={() => setFormAbierto(true)}
-            className="w-full rounded-full border-[1.5px] border-dashed border-white/50 py-3 text-sm font-semibold text-white"
-          >
-            + Agregar herramienta
-          </motion.button>
+        )}
+
+        <div aria-live="polite">
+          {errorAccion && (
+            <p role="alert" className="mb-4 rounded-lg bg-auxilio-1/20 px-3 py-2 text-sm text-white">
+              {errorAccion}
+            </p>
+          )}
+        </div>
+
+        {cargaEstado === 'listo' && (
+          <>
+            {favoritas.length > 0 && !administrando && (
+              <motion.section {...riseIn(0.06)} className="mb-8">
+                <h2 className="mb-3 text-[15px] font-semibold text-white">Tus favoritas</h2>
+                <div className="grid grid-cols-2 gap-3">
+                  <AnimatePresence initial={false}>
+                    {favoritas.map((item) => (
+                      <motion.div
+                        key={item.id}
+                        layout
+                        initial={{ opacity: 0, scale: 0.95 }}
+                        animate={{ opacity: 1, scale: 1 }}
+                        exit={{ opacity: 0, scale: 0.95 }}
+                        transition={{ duration: 0.2 }}
+                        className="relative rounded-xl border border-faro-2/40 bg-faro-1/[0.22] p-4 pr-10"
+                      >
+                        <span className="block text-[28px] leading-none">{item.icon}</span>
+                        <span className="mt-3 block text-[14.5px] font-semibold leading-snug text-white">
+                          {item.label}
+                        </span>
+                        <BotonFavorito item={item} onToggleFavorito={toggleFavorito} className="absolute right-1.5 top-1.5" />
+                      </motion.div>
+                    ))}
+                  </AnimatePresence>
+                </div>
+              </motion.section>
+            )}
+
+            <motion.div {...riseIn(0.1)} className="mb-3 flex items-center justify-between">
+              <h2 className="text-[15px] font-semibold text-white">
+                {favoritas.length > 0 && !administrando ? 'Otras herramientas' : 'Tus herramientas'}
+              </h2>
+              {herramientas.length > 0 && (
+                <button
+                  type="button"
+                  onClick={alternarAdministrar}
+                  aria-pressed={administrando}
+                  className="rounded-full px-3 py-1.5 text-sm font-semibold text-white underline decoration-white/50 underline-offset-4"
+                >
+                  {administrando ? 'Listo' : 'Administrar'}
+                </button>
+              )}
+            </motion.div>
+
+            {otras.length === 0 && favoritas.length > 0 && !administrando && (
+              <p className="mb-4 text-sm text-white/60">Todas tus herramientas están en favoritas.</p>
+            )}
+
+            {/* en modo Administrar la lista muestra todas (también las favoritas) y la
+                cuadrícula de favoritas se oculta para no repetirlas */}
+            <Reorder.Group
+              axis="y"
+              values={administrando ? herramientas : otras}
+              onReorder={administrando ? setHerramientas : reordenarOtras}
+              className="mb-4"
+            >
+              <AnimatePresence initial={false}>
+                {(administrando ? herramientas : otras).map((item) => (
+                  <HerramientaRow
+                    key={item.id}
+                    item={item}
+                    administrando={administrando}
+                    isEditing={editandoId === item.id}
+                    textoEdicion={textoEdicion}
+                    setTextoEdicion={setTextoEdicion}
+                    confirmandoEliminar={confirmarEliminarId === item.id}
+                    onToggleFavorito={toggleFavorito}
+                    onIniciarEdicion={iniciarEdicion}
+                    onConfirmarEdicion={confirmarEdicion}
+                    onCancelarEdicion={cancelarEdicion}
+                    onSolicitarEliminar={solicitarEliminar}
+                    onConfirmarEliminar={confirmarEliminar}
+                    onCancelarEliminar={cancelarEliminar}
+                    onSoltar={persistirOrden}
+                  />
+                ))}
+              </AnimatePresence>
+            </Reorder.Group>
+
+            {formAbierto ? (
+              <motion.div
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="rounded-lg bg-white/95 p-4 shadow-[0_8px_22px_rgba(0,0,0,0.06)]"
+              >
+                <p className="mb-3 text-sm font-semibold text-ink">Agregar herramienta</p>
+                <div className="mb-3 flex gap-2">
+                  <select
+                    value={nuevoIcono}
+                    onChange={(e) => setNuevoIcono(e.target.value)}
+                    aria-label="Ícono de la herramienta"
+                    className="rounded-lg border border-black/10 bg-white px-2 py-2 text-lg"
+                  >
+                    {ICONOS_DISPONIBLES.map((icono) => (
+                      <option key={icono} value={icono}>
+                        {icono}
+                      </option>
+                    ))}
+                  </select>
+                  <input
+                    type="text"
+                    autoFocus
+                    value={nuevoTexto}
+                    onChange={(e) => setNuevoTexto(e.target.value)}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter') agregarHerramienta()
+                    }}
+                    aria-label="Nombre de la herramienta"
+                    placeholder="Ej: escuchar música, caminar..."
+                    className={inputClass}
+                  />
+                </div>
+                <div className="flex gap-2">
+                  <button
+                    type="button"
+                    onClick={agregarHerramienta}
+                    disabled={guardando}
+                    className="flex-1 rounded-full disabled:opacity-60 bg-gradient-to-br from-faro-1 to-faro-2 py-2.5 text-sm font-bold text-brand-navyDeep shadow-[0_10px_20px_rgba(242,169,59,0.25)]"
+                  >
+                    Agregar
+                  </button>
+                  <button
+                    type="button"
+                    onClick={cancelarNuevo}
+                    className="flex-1 rounded-full bg-black/10 py-2.5 text-sm font-semibold text-ink"
+                  >
+                    Cancelar
+                  </button>
+                </div>
+              </motion.div>
+            ) : (
+              <motion.button
+                {...riseIn(0.14)}
+                type="button"
+                onClick={() => setFormAbierto(true)}
+                className="w-full rounded-full border-[1.5px] border-dashed border-white/50 py-3 text-sm font-semibold text-white"
+              >
+                + Agregar herramienta
+              </motion.button>
+            )}
+          </>
         )}
       </div>
     </div>

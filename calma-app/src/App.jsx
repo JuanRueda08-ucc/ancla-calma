@@ -59,7 +59,14 @@ export default function App() {
               </RequireAuth>
             }
           />
-          <Route path="/islas/faro" element={<IslaFaro />} />
+          <Route
+            path="/islas/faro"
+            element={
+              <RequireAuth>
+                <IslaFaro />
+              </RequireAuth>
+            }
+          />
           <Route path="/islas/senales" element={<IslaSenales />} />
           <Route path="/acompanamiento" element={<PanelAcompanamiento />} />
           <Route path="/login" element={<Login />} />
