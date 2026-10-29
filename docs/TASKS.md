@@ -6,10 +6,27 @@ tarea grande, revisar qué está "en progreso" acá para no pisar trabajo del
 otro agente. Al terminar una tarea significativa, actualizar este archivo.
 
 ## En progreso / pendiente ahora mismo
-- Reestructuración de documentación multi-agente (este mismo cambio:
-  AGENTS.md/CLAUDE.md anidados + carpeta docs/) — recién creada, falta
-  hacer commit y verificar que Claude Code efectivamente concatena los
-  CLAUDE.md anidados de calma-app/ y supabase/ como se espera.
+- Nada en curso.
+
+## Completado (diseño y documentación)
+- Rediseño de la pantalla Entrada (PR #2, ya en main): escena nocturna
+  asimétrica — wordmark y frase alineados a la izquierda, botón
+  "Comenzar" abajo sobre el mar, faro nuevo (torre esbelta crema con
+  franjas ámbar) sobre un acantilado que sale por el borde derecho, haz
+  que barre el cielo por detrás del wordmark, mar a todo el ancho con
+  reflejo de la linterna. Se quitó `OceanShaderBackground` de esta
+  pantalla (sigue en `EjercicioSensorial`). Ver DECISIONS.md → Animaciones
+  para el posicionamiento del haz.
+- Reestructuración de documentación multi-agente (AGENTS.md/CLAUDE.md
+  anidados + carpeta docs/) — commiteada y verificada: Claude Code carga
+  los CLAUDE.md anidados de calma-app/ y supabase/ al trabajar en esas
+  carpetas.
+- READMEs (raíz y `calma-app/`) reescritos en español e inglés y puestos
+  al día: ya no describen como "placeholder" funciones reales, mapa de
+  rutas completo (incluye `/perfil`, `/login`, `/registro`,
+  `/privacidad`, `/bitacora/historial`) y estructura de carpetas actual.
+- Rama `main` protegida en GitHub: sin force push ni borrado, y el check
+  de Vercel debe pasar antes de fusionar.
 
 ## Completado (backend real, rama feature/supabase-backend, ya en main)
 - Proyecto Supabase creado (región São Paulo), CLI vinculado
@@ -104,6 +121,3 @@ otro agente. Al terminar una tarea significativa, actualizar este archivo.
 - Revisión legal profesional del texto de `/privacidad` — el contenido ya
   no es placeholder, pero falta que alguien con criterio legal lo valide
   antes de considerarlo definitivo
-- Actualizar el README del repo para que ya no describa funciones como
-  "placeholder" que dejaron de serlo (llamadas, compartir ubicación, nota
-  de voz, transcripción ya son reales)

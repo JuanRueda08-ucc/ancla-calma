@@ -70,6 +70,15 @@ algo que parecía un bug era en realidad una decisión deliberada. Antes de
   chroma-key adicional con riesgo de bordes sucios en una ilustración con
   textura granulada. Si se retoma la idea de video en el futuro, resolver
   primero el problema de transparencia.
+- **El haz del faro en Entrada se posiciona con un contenedor, no con
+  `translate`** — un contenedor de tamaño cero se ubica en la linterna
+  (`left`/`top` en %) y el `motion.div` interior solo rota
+  (`transform-origin` en su borde izquierdo). Framer Motion escribe la
+  propiedad `transform` completa al animar `rotate`, así que cualquier
+  clase `-translate-x-1/2` en el mismo elemento se descarta en silencio:
+  así se desplazó el haz ~190px en una versión anterior. No mover el
+  centrado al elemento animado. El haz sí respeta `prefers-reduced-motion`
+  (queda quieto), a diferencia del círculo de respiración.
 
 ## Librerías / decisiones de stack
 - **OGL, no Three.js**, para el shader de agua interactivo en Ejercicios
