@@ -35,9 +35,16 @@ otro agente. Al terminar una tarea significativa, actualizar este archivo.
   emoji. Corregido: las líneas profesionales ahora llaman de verdad
   (`tel:`; antes era un toast "simulado") y "+ Agregar otro contacto" ya
   no es texto blanco sobre fondo blanco.
-- Pendiente de confirmar: que los números de las líneas profesionales
-  (Bienestar Te Escucha 01 8000 113 113, Línea de la Vida 106) sean los
-  correctos, ahora que llaman de verdad.
+- Números de las líneas profesionales (Bienestar Te Escucha
+  01 8000 113 113, Línea de la Vida 106) confirmados por el equipo antes
+  de fusionar el PR #6.
+- Rediseño de Isla del Aire: misma noche con resplandor turquesa.
+  "Respira como las olas" es la opción principal (tarjeta grande con una
+  ola dibujada); Puerto seguro y Bitácora van debajo como filas
+  translúcidas, con el mismo estilo que las filas de Puerto Seguro. El
+  fondo nocturno y los resplandores por isla viven en
+  `styles/islaNoche.css` (`.isla-noche-bg` + `.isla-resplandor--{isla}`),
+  compartido con la Isla del Auxilio.
 - Reestructuración de documentación multi-agente (AGENTS.md/CLAUDE.md
   anidados + carpeta docs/) — commiteada y verificada: Claude Code carga
   los CLAUDE.md anidados de calma-app/ y supabase/ al trabajar en esas
