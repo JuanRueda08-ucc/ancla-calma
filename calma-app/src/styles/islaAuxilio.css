@@ -1,0 +1,17 @@
+/* misma noche de Entrada/ElegirCamino/Islas */
+.auxilio-noche-bg {
+  background: linear-gradient(180deg, #030b1e 0%, #001b44 40%, #002e6b 100%);
+}
+
+/* luz coral que baja desde arriba: es la isla de auxilio. Con "screen" la luz
+   se suma al navy; con mezcla normal el coral semitransparente se vuelve marrón */
+.auxilio-resplandor {
+  mix-blend-mode: screen;
+  background: radial-gradient(
+    ellipse 90% 75% at 50% -5%,
+    rgba(255, 177, 153, 0.75) 0%,
+    rgba(255, 122, 89, 0.5) 30%,
+    rgba(255, 122, 89, 0.12) 60%,
+    transparent 80%
+  );
+}

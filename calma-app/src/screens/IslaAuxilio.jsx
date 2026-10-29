@@ -1,11 +1,12 @@
 import { useEffect, useRef, useState } from 'react'
 import { motion } from 'framer-motion'
 import ScreenHeader from '../components/ScreenHeader'
+import StarField from '../components/StarField'
+import '../styles/islaAuxilio.css'
 import { riseIn } from '../animations/transitions'
 import { getContactos, guardarContacto, eliminarContacto, normalizarTelefono } from '../utils/contactosStorage'
 import { obtenerUbicacion, construirLinkMapa, construirLinkWhatsApp } from '../utils/compartirUbicacion'
 
-const BLOB_RADIUS = '42% 58% 63% 37% / 41% 44% 56% 59%'
 const MAX_CONTACTOS = 3
 const LOCAL_STORAGE_KEY = 'calma:contactos'
 
@@ -15,6 +16,27 @@ const LINEAS_APOYO = [
 ]
 
 const cardClass = 'rounded-lg bg-white p-5 shadow-[0_8px_22px_rgba(0,0,0,0.04)]'
+const botonPrincipal =
+  'rounded-full bg-gradient-to-br from-auxilio-1 to-auxilio-2 text-sm font-bold text-white shadow-[0_10px_20px_rgba(255,122,89,0.25)] disabled:opacity-70'
+const botonSecundario = 'rounded-full bg-black/10 text-sm font-semibold text-ink disabled:opacity-70'
+const inputClass =
+  'mb-3 w-full rounded-lg border border-black/10 bg-white px-3 py-2.5 text-[14.5px] text-ink placeholder:text-ink-soft/50 focus:border-auxilio-1 focus:outline-none'
+
+function TelefonoIcon({ className }) {
+  return (
+    <svg viewBox="0 0 24 24" className={className} fill="currentColor" aria-hidden="true">
+      <path d="M6.6 10.8a15.1 15.1 0 0 0 6.6 6.6l2.2-2.2a1 1 0 0 1 1-.25 11.4 11.4 0 0 0 3.6.57 1 1 0 0 1 1 1V20a1 1 0 0 1-1 1A17 17 0 0 1 3 4a1 1 0 0 1 1-1h3.5a1 1 0 0 1 1 1c0 1.25.2 2.45.57 3.57a1 1 0 0 1-.25 1z" />
+    </svg>
+  )
+}
+
+function UbicacionIcon({ className }) {
+  return (
+    <svg viewBox="0 0 24 24" className={className} fill="currentColor" aria-hidden="true">
+      <path d="M12 2a7 7 0 0 0-7 7c0 5.25 7 13 7 13s7-7.75 7-13a7 7 0 0 0-7-7zm0 9.5A2.5 2.5 0 1 1 12 6.5a2.5 2.5 0 0 1 0 5z" />
+    </svg>
+  )
+}
 
 function obtenerIniciales(nombre) {
   const partes = nombre.trim().split(/\s+/).filter(Boolean)
@@ -55,6 +77,8 @@ export default function IslaAuxilio() {
   const [telefonoForm, setTelefonoForm] = useState('')
   const [errorForm, setErrorForm] = useState('')
   const [guardando, setGuardando] = useState(false)
+  // Editar/eliminar quedan detrás de "Administrar" para que no compitan con Llamar.
+  const [administrando, setAdministrando] = useState(false)
 
   const [confirmarEliminarId, setConfirmarEliminarId] = useState(null)
   const [eliminandoId, setEliminandoId] = useState(null)
@@ -281,20 +305,19 @@ export default function IslaAuxilio() {
     if (contacto) iniciarEdicion(contacto)
   }
 
+  const mostrarAcciones = administrando && contactos.length > 0
+
   return (
-    <div className="relative min-h-screen bg-gradient-to-b from-auxilio-1 to-auxilio-2">
-      <div className="mx-auto max-w-[620px] px-5 pb-20 pt-10">
+    <div className="auxilio-noche-bg relative min-h-[100dvh] overflow-hidden">
+      {/* resplandor cálido: marca la isla de auxilio dentro de la misma noche */}
+      <div className="auxilio-resplandor pointer-events-none absolute inset-x-0 top-0 h-[55vh]" aria-hidden="true" />
+      <StarField />
+      <div className="relative z-[2] mx-auto max-w-[620px] px-5 pb-20 pt-10">
         <ScreenHeader backTo="/islas" accountButtonClassName="bg-white/20 text-white" />
 
-        <motion.div {...riseIn(0)} className="mb-8 text-center">
-          <div
-            className="mx-auto mb-3.5 flex h-16 w-16 items-center justify-center bg-white/70 text-[26px]"
-            style={{ borderRadius: BLOB_RADIUS }}
-          >
-            🤝
-          </div>
-          <h1 className="mb-1.5 text-[26px] font-semibold text-white">Isla del Auxilio</h1>
-          <p className="text-sm text-white/[0.85]">Tu red de apoyo está aquí</p>
+        <motion.div {...riseIn(0)} className="mb-8">
+          <h1 className="text-[30px] font-semibold leading-tight text-white">Isla del Auxilio</h1>
+          <p className="mt-1.5 text-[15px] text-white/75">Tu red de apoyo está aquí</p>
         </motion.div>
 
         {cargaEstado === 'cargando' && (
@@ -315,11 +338,7 @@ export default function IslaAuxilio() {
             <p className="mb-3 text-sm text-ink-soft">
               No pudimos cargar tus contactos. Intenta de nuevo.
             </p>
-            <button
-              type="button"
-              onClick={cargarContactos}
-              className="rounded-full bg-gradient-to-br from-auxilio-1 to-auxilio-2 px-6 py-3 text-sm font-bold text-white shadow-[0_10px_20px_rgba(255,122,89,0.25)]"
-            >
+            <button type="button" onClick={cargarContactos} className={`px-6 py-3 ${botonPrincipal}`}>
               Reintentar
             </button>
           </motion.div>
@@ -340,7 +359,7 @@ export default function IslaAuxilio() {
                 type="button"
                 disabled={migrando}
                 onClick={migrarContactosLocales}
-                className="rounded-full bg-gradient-to-br from-auxilio-1 to-auxilio-2 px-5 py-2.5 text-sm font-bold text-white shadow-[0_10px_20px_rgba(255,122,89,0.25)] disabled:opacity-70"
+                className={`px-5 py-2.5 ${botonPrincipal}`}
               >
                 {migrando ? 'Migrando…' : 'Sí, migrarlos'}
               </button>
@@ -348,11 +367,30 @@ export default function IslaAuxilio() {
                 type="button"
                 disabled={migrando}
                 onClick={descartarMigracion}
-                className="rounded-full bg-black/10 px-5 py-2.5 text-sm font-semibold text-ink disabled:opacity-70"
+                className={`px-5 py-2.5 ${botonSecundario}`}
               >
                 No, descartar
               </button>
             </div>
+          </motion.div>
+        )}
+
+        {cargaEstado === 'listo' && (
+          <motion.div {...riseIn(0.06)} className="mb-3 flex items-center justify-between">
+            <h2 className="text-[15px] font-semibold text-white">Tus personas de confianza</h2>
+            {contactos.length > 0 && !formAbierto && (
+              <button
+                type="button"
+                onClick={() => {
+                  setAdministrando((valor) => !valor)
+                  cancelarEliminar()
+                }}
+                aria-pressed={administrando}
+                className="rounded-full px-3 py-1.5 text-sm font-semibold text-white underline decoration-white/50 underline-offset-4"
+              >
+                {administrando ? 'Listo' : 'Administrar'}
+              </button>
+            )}
           </motion.div>
         )}
 
@@ -361,11 +399,7 @@ export default function IslaAuxilio() {
             <p className="mb-3 text-sm text-ink-soft">
               Agrega a alguien en quien confíes, para tenerlo a un toque de distancia
             </p>
-            <button
-              type="button"
-              onClick={abrirFormularioNuevo}
-              className="rounded-full bg-gradient-to-br from-auxilio-1 to-auxilio-2 px-6 py-3 text-sm font-bold text-white shadow-[0_10px_20px_rgba(255,122,89,0.25)]"
-            >
+            <button type="button" onClick={abrirFormularioNuevo} className={`px-6 py-3 ${botonPrincipal}`}>
               Agregar contacto de confianza
             </button>
           </motion.div>
@@ -375,67 +409,69 @@ export default function IslaAuxilio() {
           <motion.div
             key={contacto.id}
             {...riseIn(0.08 + index * 0.06)}
-            className={`mb-4 ${cardClass}`}
+            className={`mb-3 ${cardClass}`}
           >
-            <div className="flex items-center gap-4">
-              <div className="flex h-14 w-14 flex-shrink-0 items-center justify-center rounded-full bg-auxilio-bg text-base font-bold text-auxilio-1">
+            <div className="flex items-center gap-3.5">
+              <div className="flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-full bg-auxilio-bg text-base font-bold text-auxilio-1">
                 {obtenerIniciales(contacto.nombre)}
               </div>
-              <div className="flex-1">
-                <p className="font-semibold text-ink">{contacto.nombre}</p>
-                <p className="text-xs text-ink-soft">Persona de confianza</p>
-                <div className="mt-1.5 flex items-center gap-3">
-                  <span className="text-xs text-ink-soft">{contacto.telefono}</span>
-                  {confirmarEliminarId === contacto.id ? (
-                    <>
-                      <button
-                        type="button"
-                        disabled={eliminandoId === contacto.id}
-                        onClick={() => confirmarEliminar(contacto.id)}
-                        className="whitespace-nowrap rounded-full bg-auxilio-1 px-3 py-1 text-xs font-semibold text-white disabled:opacity-70"
-                      >
-                        {eliminandoId === contacto.id ? 'Eliminando…' : '¿Eliminar?'}
-                      </button>
-                      <button
-                        type="button"
-                        disabled={eliminandoId === contacto.id}
-                        onClick={cancelarEliminar}
-                        aria-label="Cancelar eliminación"
-                        className="text-base text-ink-soft disabled:opacity-70"
-                      >
-                        ✕
-                      </button>
-                    </>
-                  ) : (
-                    <>
-                      <button
-                        type="button"
-                        onClick={() => iniciarEdicion(contacto)}
-                        aria-label={`Editar a ${contacto.nombre}`}
-                        className="text-sm text-ink-soft/60"
-                      >
-                        ✏️
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => solicitarEliminar(contacto.id)}
-                        aria-label={`Eliminar a ${contacto.nombre}`}
-                        className="text-sm text-ink-soft/60"
-                      >
-                        🗑️
-                      </button>
-                    </>
-                  )}
-                </div>
+              <div className="min-w-0 flex-1">
+                <p className="truncate text-[16px] font-semibold text-ink">{contacto.nombre}</p>
+                <p className="text-[13px] text-ink-soft">{contacto.telefono}</p>
               </div>
-              <a
-                href={`tel:${normalizarTelefono(contacto.telefono)}`}
-                className="flex h-11 w-11 flex-shrink-0 items-center justify-center rounded-full bg-auxilio-bg text-lg text-auxilio-1"
-                aria-label={`Llamar a ${contacto.nombre}`}
-              >
-                📞
-              </a>
             </div>
+
+            <a
+              href={`tel:${normalizarTelefono(contacto.telefono)}`}
+              className="mt-4 flex w-full items-center justify-center gap-2.5 rounded-full bg-brand-navy py-3.5 text-[15px] font-bold text-white shadow-[0_10px_20px_rgba(0,46,107,0.22)] focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-auxilio-2"
+            >
+              <TelefonoIcon className="h-5 w-5" />
+              Llamar a {contacto.nombre.trim().split(/\s+/)[0]}
+            </a>
+
+            {mostrarAcciones && (
+              <div className="mt-3 flex items-center justify-end gap-2 border-t border-black/5 pt-3">
+                {confirmarEliminarId === contacto.id ? (
+                  <>
+                    <button
+                      type="button"
+                      disabled={eliminandoId === contacto.id}
+                      onClick={() => confirmarEliminar(contacto.id)}
+                      className="whitespace-nowrap rounded-full bg-auxilio-1 px-4 py-2 text-sm font-semibold text-white disabled:opacity-70"
+                    >
+                      {eliminandoId === contacto.id ? 'Eliminando…' : '¿Eliminar?'}
+                    </button>
+                    <button
+                      type="button"
+                      disabled={eliminandoId === contacto.id}
+                      onClick={cancelarEliminar}
+                      className={`px-4 py-2 ${botonSecundario}`}
+                    >
+                      Cancelar
+                    </button>
+                  </>
+                ) : (
+                  <>
+                    <button
+                      type="button"
+                      onClick={() => iniciarEdicion(contacto)}
+                      aria-label={`Editar a ${contacto.nombre}`}
+                      className={`px-4 py-2 ${botonSecundario}`}
+                    >
+                      Editar
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => solicitarEliminar(contacto.id)}
+                      aria-label={`Eliminar a ${contacto.nombre}`}
+                      className="rounded-full px-4 py-2 text-sm font-semibold text-red-600"
+                    >
+                      Eliminar
+                    </button>
+                  </>
+                )}
+              </div>
+            )}
           </motion.div>
         ))}
 
@@ -444,7 +480,7 @@ export default function IslaAuxilio() {
             {...riseIn(0.1 + contactos.length * 0.06)}
             type="button"
             onClick={abrirFormularioNuevo}
-            className="mb-4 w-full rounded-full bg-white/70 py-3 text-sm font-semibold text-white/95 shadow-[0_8px_22px_rgba(0,0,0,0.04)]"
+            className="mb-3 w-full rounded-full border-[1.5px] border-dashed border-white/50 py-3 text-sm font-semibold text-white"
           >
             + Agregar otro contacto
           </motion.button>
@@ -460,22 +496,28 @@ export default function IslaAuxilio() {
               {editandoId ? 'Editar contacto' : 'Agregar contacto de confianza'}
             </p>
 
-            <label className="mb-1 block text-xs font-semibold text-ink-soft">Nombre</label>
+            <label htmlFor="auxilio-nombre" className="mb-1 block text-xs font-semibold text-ink-soft">
+              Nombre
+            </label>
             <input
+              id="auxilio-nombre"
               type="text"
               value={nombreForm}
               onChange={(e) => setNombreForm(e.target.value)}
               placeholder="Ej: Ana Torres"
-              className="mb-3 w-full rounded-lg border border-black/10 bg-white px-3 py-2 text-[14.5px] text-ink placeholder:text-[#B7B0A4] focus:outline-none"
+              className={inputClass}
             />
 
-            <label className="mb-1 block text-xs font-semibold text-ink-soft">Teléfono</label>
+            <label htmlFor="auxilio-telefono" className="mb-1 block text-xs font-semibold text-ink-soft">
+              Teléfono
+            </label>
             <input
+              id="auxilio-telefono"
               type="tel"
               value={telefonoForm}
               onChange={(e) => setTelefonoForm(e.target.value)}
               placeholder="+57 300 1234567"
-              className="mb-3 w-full rounded-lg border border-black/10 bg-white px-3 py-2 text-[14.5px] text-ink placeholder:text-[#B7B0A4] focus:outline-none"
+              className={inputClass}
             />
 
             {errorForm && <p className="mb-3 text-xs font-medium text-red-500">{errorForm}</p>}
@@ -485,7 +527,7 @@ export default function IslaAuxilio() {
                 type="button"
                 disabled={guardando}
                 onClick={handleGuardarContacto}
-                className="flex-1 rounded-full bg-gradient-to-br from-auxilio-1 to-auxilio-2 py-2.5 text-sm font-bold text-white shadow-[0_10px_20px_rgba(255,122,89,0.25)] disabled:opacity-70"
+                className={`flex-1 py-2.5 ${botonPrincipal}`}
               >
                 {guardando ? 'Guardando…' : 'Guardar'}
               </button>
@@ -493,7 +535,7 @@ export default function IslaAuxilio() {
                 type="button"
                 disabled={guardando}
                 onClick={cerrarFormulario}
-                className="flex-1 rounded-full bg-black/10 py-2.5 text-sm font-semibold text-ink disabled:opacity-70"
+                className={`flex-1 py-2.5 ${botonSecundario}`}
               >
                 Cancelar
               </button>
@@ -507,19 +549,19 @@ export default function IslaAuxilio() {
             type="button"
             disabled={compartirEstado === 'cargando'}
             onClick={iniciarCompartirUbicacion}
-            className="mb-8 flex w-full items-center gap-3 rounded-full bg-white py-3.5 pl-4 pr-5 text-left shadow-[0_8px_22px_rgba(0,0,0,0.04)] disabled:opacity-70"
+            className="mb-9 mt-3 flex w-full items-center gap-3 rounded-full bg-white py-3.5 pl-3.5 pr-5 text-left shadow-[0_10px_24px_rgba(0,0,0,0.08)] disabled:opacity-70"
           >
-            <span className="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-full bg-senales-bg text-base text-senales-1">
+            <span className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-full bg-senales-bg text-senales-1">
               {compartirEstado === 'cargando' ? (
                 <span
                   aria-hidden="true"
                   className="h-4 w-4 animate-spin rounded-full border-2 border-senales-1/30 border-t-senales-1"
                 />
               ) : (
-                '📍'
+                <UbicacionIcon className="h-5 w-5" />
               )}
             </span>
-            <span className="text-sm font-semibold text-ink-soft">
+            <span className="text-[15px] font-semibold text-ink">
               {compartirEstado === 'cargando' ? 'Obteniendo tu ubicación…' : 'Compartir mi ubicación'}
             </span>
           </motion.button>
@@ -529,7 +571,7 @@ export default function IslaAuxilio() {
           <motion.div
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
-            className={`mb-8 text-center ${cardClass}`}
+            className={`mb-9 mt-3 text-center ${cardClass}`}
           >
             <p className="mb-3 text-sm text-ink-soft">
               Agrega un contacto de confianza primero para poder compartir tu ubicación
@@ -541,15 +583,11 @@ export default function IslaAuxilio() {
                   cerrarPanelCompartir()
                   abrirFormularioNuevo()
                 }}
-                className="rounded-full bg-gradient-to-br from-auxilio-1 to-auxilio-2 px-5 py-2.5 text-sm font-bold text-white shadow-[0_10px_20px_rgba(255,122,89,0.25)]"
+                className={`px-5 py-2.5 ${botonPrincipal}`}
               >
                 Agregar contacto de confianza
               </button>
-              <button
-                type="button"
-                onClick={cerrarPanelCompartir}
-                className="rounded-full bg-black/10 px-5 py-2.5 text-sm font-semibold text-ink"
-              >
+              <button type="button" onClick={cerrarPanelCompartir} className={`px-5 py-2.5 ${botonSecundario}`}>
                 Cancelar
               </button>
             </div>
@@ -560,7 +598,7 @@ export default function IslaAuxilio() {
           <motion.div
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
-            className={`mb-8 ${cardClass}`}
+            className={`mb-9 mt-3 ${cardClass}`}
           >
             <p className="mb-3 text-sm font-semibold text-ink">
               ¿A quién le compartes tu ubicación?
@@ -571,7 +609,7 @@ export default function IslaAuxilio() {
                   key={contacto.id}
                   type="button"
                   onClick={() => compartirConContacto(contacto)}
-                  className="rounded-lg bg-auxilio-bg px-4 py-2.5 text-left text-[14.5px] font-semibold text-ink"
+                  className="rounded-lg bg-auxilio-bg px-4 py-3 text-left text-[14.5px] font-semibold text-ink"
                 >
                   {contacto.nombre}
                 </button>
@@ -580,7 +618,7 @@ export default function IslaAuxilio() {
             <button
               type="button"
               onClick={cerrarPanelCompartir}
-              className="mt-3 w-full rounded-full bg-black/10 py-2.5 text-sm font-semibold text-ink"
+              className={`mt-3 w-full py-2.5 ${botonSecundario}`}
             >
               Cancelar
             </button>
@@ -591,25 +629,17 @@ export default function IslaAuxilio() {
           <motion.div
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
-            className={`mb-8 text-center ${cardClass}`}
+            className={`mb-9 mt-3 text-center ${cardClass}`}
           >
             <p className="mb-3 text-sm text-ink-soft">
               Este contacto no tiene código de país guardado. Edítalo primero para poder
               compartir por WhatsApp.
             </p>
             <div className="flex justify-center gap-2">
-              <button
-                type="button"
-                onClick={editarContactoProblema}
-                className="rounded-full bg-gradient-to-br from-auxilio-1 to-auxilio-2 px-5 py-2.5 text-sm font-bold text-white shadow-[0_10px_20px_rgba(255,122,89,0.25)]"
-              >
+              <button type="button" onClick={editarContactoProblema} className={`px-5 py-2.5 ${botonPrincipal}`}>
                 Editar contacto
               </button>
-              <button
-                type="button"
-                onClick={cerrarPanelCompartir}
-                className="rounded-full bg-black/10 px-5 py-2.5 text-sm font-semibold text-ink"
-              >
+              <button type="button" onClick={cerrarPanelCompartir} className={`px-5 py-2.5 ${botonSecundario}`}>
                 Cancelar
               </button>
             </div>
@@ -620,43 +650,37 @@ export default function IslaAuxilio() {
           <motion.div
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
-            className={`mb-8 text-center ${cardClass}`}
+            className={`mb-9 mt-3 text-center ${cardClass}`}
           >
             <p className="mb-3 text-sm font-medium text-red-500">{compartirErrorMsg}</p>
-            <button
-              type="button"
-              onClick={cerrarPanelCompartir}
-              className="rounded-full bg-black/10 px-5 py-2.5 text-sm font-semibold text-ink"
-            >
+            <button type="button" onClick={cerrarPanelCompartir} className={`px-5 py-2.5 ${botonSecundario}`}>
               Cerrar
             </button>
           </motion.div>
         )}
 
-        <motion.p {...riseIn(0.22)} className="mb-3 text-sm font-semibold text-white/80">
+        <motion.h2 {...riseIn(0.22)} className="mb-3 text-[15px] font-semibold text-white">
           Líneas de apoyo profesional
-        </motion.p>
+        </motion.h2>
 
-        {LINEAS_APOYO.map((linea, index) => (
-          <motion.div
-            key={linea.nombre}
-            {...riseIn(0.28 + index * 0.06)}
-            className={`mb-3 flex items-center justify-between ${cardClass}`}
-          >
-            <div>
-              <p className="font-semibold text-ink">{linea.nombre}</p>
-              <p className="text-sm font-semibold text-auxilio-1">{linea.telefono}</p>
-            </div>
-            <button
-              type="button"
-              onClick={() => showToast(`Llamando a ${linea.nombre}… (simulado)`)}
-              className="flex h-11 w-11 flex-shrink-0 items-center justify-center rounded-full bg-auxilio-bg text-lg text-auxilio-1"
-              aria-label={`Llamar a ${linea.nombre}`}
+        <motion.div {...riseIn(0.28)} className="divide-y divide-black/5 rounded-lg bg-white px-5 py-1 shadow-[0_8px_22px_rgba(0,0,0,0.04)]">
+          {LINEAS_APOYO.map((linea) => (
+            <a
+              key={linea.nombre}
+              href={`tel:${linea.telefono.replace(/\s/g, '')}`}
+              aria-label={`Llamar a ${linea.nombre}, ${linea.telefono}`}
+              className="flex items-center justify-between gap-3 py-3.5"
             >
-              📞
-            </button>
-          </motion.div>
-        ))}
+              <span>
+                <span className="block font-semibold text-ink">{linea.nombre}</span>
+                <span className="block text-sm font-semibold text-auxilio-1">{linea.telefono}</span>
+              </span>
+              <span className="flex h-11 w-11 flex-shrink-0 items-center justify-center rounded-full bg-auxilio-bg text-auxilio-1">
+                <TelefonoIcon className="h-5 w-5" />
+              </span>
+            </a>
+          ))}
+        </motion.div>
       </div>
 
       {toast && (

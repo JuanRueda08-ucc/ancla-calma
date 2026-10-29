@@ -26,6 +26,18 @@ otro agente. Al terminar una tarea significativa, actualizar este archivo.
   (boya, remolinos de viento, faro con su haz, banderas de señales),
   alternando lado y unidas por una ruta punteada. Reemplaza las 4
   tarjetas apiladas con emoji.
+- Rediseño de Isla del Auxilio: misma noche que las pantallas anteriores
+  con un resplandor coral arriba (mezcla `screen`; con mezcla normal el
+  coral sobre navy se ve marrón). Orden pensado para crisis: botón grande
+  "Llamar a {nombre}" por contacto, luego "Compartir mi ubicación", luego
+  líneas profesionales. Editar/eliminar quedan detrás de "Administrar"
+  (confirmación inline de dos pasos sin cambios). Íconos SVG en vez de
+  emoji. Corregido: las líneas profesionales ahora llaman de verdad
+  (`tel:`; antes era un toast "simulado") y "+ Agregar otro contacto" ya
+  no es texto blanco sobre fondo blanco.
+- Pendiente de confirmar: que los números de las líneas profesionales
+  (Bienestar Te Escucha 01 8000 113 113, Línea de la Vida 106) sean los
+  correctos, ahora que llaman de verdad.
 - Reestructuración de documentación multi-agente (AGENTS.md/CLAUDE.md
   anidados + carpeta docs/) — commiteada y verificada: Claude Code carga
   los CLAUDE.md anidados de calma-app/ y supabase/ al trabajar en esas
