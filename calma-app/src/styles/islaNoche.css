@@ -20,6 +20,16 @@
   );
 }
 
+.isla-resplandor--faro {
+  background: radial-gradient(
+    ellipse 90% 75% at 50% -5%,
+    rgba(255, 248, 234, 0.6) 0%,
+    rgba(255, 211, 122, 0.5) 28%,
+    rgba(242, 169, 59, 0.14) 60%,
+    transparent 80%
+  );
+}
+
 .isla-resplandor--aire {
   background: radial-gradient(
     ellipse 90% 75% at 50% -5%,

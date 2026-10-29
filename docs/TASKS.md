@@ -45,6 +45,13 @@ otro agente. Al terminar una tarea significativa, actualizar este archivo.
   fondo nocturno y los resplandores por isla viven en
   `styles/islaNoche.css` (`.isla-noche-bg` + `.isla-resplandor--{isla}`),
   compartido con la Isla del Auxilio.
+- Rediseño de Isla del Faro: misma noche con resplandor ámbar. Las
+  herramientas favoritas se muestran arriba como tarjetas; el resto va en
+  una lista debajo. Editar, eliminar y reordenar quedan detrás de
+  "Administrar" (que muestra la lista completa y oculta la cuadrícula de
+  favoritas); el formulario de agregar se abre con "+ Agregar
+  herramienta". Íconos de interfaz en SVG; los emoji de cada herramienta
+  se mantienen porque son contenido elegido por la persona.
 - Reestructuración de documentación multi-agente (AGENTS.md/CLAUDE.md
   anidados + carpeta docs/) — commiteada y verificada: Claude Code carga
   los CLAUDE.md anidados de calma-app/ y supabase/ al trabajar en esas
@@ -141,6 +148,11 @@ otro agente. Al terminar una tarea significativa, actualizar este archivo.
   función real detrás, no un placeholder a reemplazar por algo nuevo.
 
 ## Pendiente / ideas anotadas para retomar (sin fecha)
+- Persistir las herramientas de la Isla del Faro: hoy viven solo en
+  `useState` (hay `TODO` en `IslaFaro.jsx`), así que al recargar la
+  página se pierden las que la persona agregó, editó, marcó como
+  favoritas o reordenó. Requiere tabla en Supabase con RLS + GRANT
+  (ver `supabase/AGENTS.md`).
 - Rediseño estructural grande: layouts distintos por tipo de pantalla en
   vez de la misma plantilla (header + tarjetas apiladas + botón) repetida
   — quedó en pausa antes de la ronda de backend
