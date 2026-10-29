@@ -1,0 +1,6 @@
+/* mar nocturno visto desde arriba: más profundo en los bordes, más claro al centro */
+.islas-bg {
+  background:
+    radial-gradient(ellipse 90% 60% at 50% 45%, rgba(10, 75, 148, 0.55) 0%, transparent 70%),
+    linear-gradient(180deg, #001b44 0%, #002e6b 55%, #001b44 100%);
+}

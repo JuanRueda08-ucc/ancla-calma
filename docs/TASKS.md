@@ -17,6 +17,15 @@ otro agente. Al terminar una tarea significativa, actualizar este archivo.
   reflejo de la linterna. Se quitó `OceanShaderBackground` de esta
   pantalla (sigue en `EjercicioSensorial`). Ver DECISIONS.md → Animaciones
   para el posicionamiento del haz.
+- Rediseño de ElegirCamino (PR #4, ya en main): continúa el cielo
+  nocturno de Entrada; dos franjas de luz en vez de tarjetas con emoji
+  ("Necesito ayuda" coral→ámbar con salvavidas, "Quiero ayudar"
+  verde→azul con farol de mano), botón "← Volver" a `/`.
+- Rediseño de Islas: mapa del archipiélago visto desde arriba, como una
+  carta náutica. Las 4 islas dibujadas en SVG con su color y un símbolo
+  (boya, remolinos de viento, faro con su haz, banderas de señales),
+  alternando lado y unidas por una ruta punteada. Reemplaza las 4
+  tarjetas apiladas con emoji.
 - Reestructuración de documentación multi-agente (AGENTS.md/CLAUDE.md
   anidados + carpeta docs/) — commiteada y verificada: Claude Code carga
   los CLAUDE.md anidados de calma-app/ y supabase/ al trabajar en esas
