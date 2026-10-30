@@ -58,6 +58,13 @@ otro agente. Al terminar una tarea significativa, actualizar este archivo.
   primera vez que alguien entra se siembran las 4 herramientas iniciales.
   `/islas/faro` pasa a ser ruta protegida (`RequireAuth`), como Auxilio y
   Bitácora.
+- Rediseño de Isla de las Señales: misma noche con resplandor menta. Las
+  cuatro categorías son acordeones translúcidos con íconos SVG y cada
+  señal es una etiqueta; los textos de las señales no cambian. Nueva
+  sección final "¿Te reconoces en algunas?" con accesos a Respirar un
+  momento (`/islas/aire/respiracion`) y Buscar apoyo (`/islas/auxilio`).
+  El acordeón nocturno vive dentro de `IslaSenales.jsx`;
+  `components/Accordion` queda igual para el Panel de Acompañamiento.
 - Reestructuración de documentación multi-agente (AGENTS.md/CLAUDE.md
   anidados + carpeta docs/) — commiteada y verificada: Claude Code carga
   los CLAUDE.md anidados de calma-app/ y supabase/ al trabajar en esas
