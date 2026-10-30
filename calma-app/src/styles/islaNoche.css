@@ -30,6 +30,16 @@
   );
 }
 
+.isla-resplandor--senales {
+  background: radial-gradient(
+    ellipse 90% 75% at 50% -5%,
+    rgba(234, 247, 243, 0.5) 0%,
+    rgba(63, 167, 150, 0.5) 30%,
+    rgba(63, 167, 150, 0.12) 60%,
+    transparent 80%
+  );
+}
+
 .isla-resplandor--aire {
   background: radial-gradient(
     ellipse 90% 75% at 50% -5%,
