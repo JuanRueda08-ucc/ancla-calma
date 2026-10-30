@@ -1,14 +1,14 @@
 import { useEffect, useRef, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { motion } from 'framer-motion'
+import '../styles/islaNoche.css'
 import ScreenHeader from '../components/ScreenHeader'
+import StarField from '../components/StarField'
 import VoiceNoteRecorder from '../components/VoiceNoteRecorder'
 import TranscribeMicButton from '../components/TranscribeMicButton'
 import { riseIn } from '../animations/transitions'
 import { guardarEntrada } from '../utils/bitacoraStorage'
 import { guardarAudio } from '../utils/audioStorage'
-
-const BLOB_RADIUS = '42% 58% 63% 37% / 41% 44% 56% 59%'
 
 const TAGS = [
   { emoji: '😌', label: 'Tranquilidad' },
@@ -47,7 +47,10 @@ const CAMPOS_CONFIG = [
   { key: 'ayudoHoy', label: '¿Qué me ayudó hoy?', placeholder: 'Algo positivo o que te reconfortó...' },
 ]
 
-const fieldClass = 'relative mb-4 rounded-lg bg-white px-5 py-[18px] shadow-[0_8px_22px_rgba(0,0,0,0.04)]'
+// Las preguntas van en tarjetas blancas, como hojas de diario sobre la noche:
+// así escribir sigue siendo cómodo y el micrófono/grabadora no cambian.
+const fieldClass =
+  'relative mb-4 rounded-lg bg-white px-5 py-[18px] shadow-[0_8px_22px_rgba(0,0,0,0.12)] focus-within:ring-4 focus-within:ring-white/30'
 
 export default function Bitacora() {
   const [tagsActivos, setTagsActivos] = useState(new Set())
@@ -143,30 +146,31 @@ export default function Bitacora() {
   }
 
   return (
-    <div className="relative min-h-screen bg-sand">
-      <div className="mx-auto max-w-[620px] px-5 pb-20 pt-10">
-        <ScreenHeader backTo="/islas" />
+    <div className="isla-noche-bg relative min-h-[100dvh] overflow-hidden">
+      <StarField />
 
-        <motion.div {...riseIn(0)} className="mb-8 text-center">
-          <div
-            className="mx-auto mb-3.5 flex h-16 w-16 items-center justify-center bg-auxilio-bg text-[26px]"
-            style={{ borderRadius: BLOB_RADIUS }}
-          >
-            📖
+      <div className="relative z-[2] mx-auto max-w-[620px] px-5 pb-20 pt-10">
+        <ScreenHeader backTo="/islas" accountButtonClassName="bg-white/20 text-white" />
+
+        <motion.div {...riseIn(0)} className="mb-8">
+          <h1 className="text-[30px] font-semibold leading-tight text-white">Tu bitácora emocional</h1>
+          <div className="mt-1.5 flex flex-wrap items-baseline justify-between gap-x-4 gap-y-2">
+            <p className="text-[15px] text-white/75">Un espacio para reflexionar y registrar</p>
+            <Link
+              to="/bitacora/historial"
+              className="inline-flex items-center gap-1 text-sm font-semibold text-white underline decoration-white/50 underline-offset-4"
+            >
+              Ver historial
+              <svg viewBox="0 0 24 24" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                <path d="M5 12h14" />
+                <path d="M13 6l6 6-6 6" />
+              </svg>
+            </Link>
           </div>
-          <h1 className="mb-1.5 text-[26px] font-semibold text-ink">Tu bitácora emocional</h1>
-          <p className="text-sm text-ink-soft">Un espacio para reflexionar y registrar</p>
-          <Link
-            to="/bitacora/historial"
-            className="mt-4 inline-flex items-center gap-1.5 rounded-full border-[1.5px] border-black/[0.07] bg-white px-[15px] py-[9px] text-[13.5px] font-semibold text-ink-soft shadow-[0_8px_22px_rgba(0,0,0,0.04)]"
-          >
-            <span>🕰️</span>
-            <span>Ver historial</span>
-          </Link>
         </motion.div>
 
         <motion.div {...riseIn(0.08)}>
-          <p className="mb-3 text-[15px] font-semibold text-ink">
+          <p className="mb-3 text-[15px] font-semibold text-white">
             ¿Cómo te sientes? (puedes elegir varias)
           </p>
           <div className="mb-4 flex flex-wrap gap-2">
@@ -180,11 +184,11 @@ export default function Bitacora() {
                   aria-pressed={activo}
                   className={
                     activo
-                      ? 'inline-flex items-center gap-1.5 rounded-full border-[1.5px] border-transparent bg-gradient-to-br from-auxilio-1 to-auxilio-2 px-[15px] py-[9px] text-[13.5px] font-semibold text-white shadow-[0_8px_18px_rgba(255,122,89,0.22)]'
-                      : 'inline-flex items-center gap-1.5 rounded-full border-[1.5px] border-black/[0.07] bg-white px-[15px] py-[9px] text-[13.5px] font-semibold text-ink-soft'
+                      ? 'inline-flex items-center gap-1.5 rounded-full border-[1.5px] border-transparent bg-gradient-to-br from-auxilio-1 to-auxilio-2 px-[15px] py-[9px] text-[13.5px] font-semibold text-white shadow-[0_8px_18px_rgba(255,122,89,0.3)]'
+                      : 'inline-flex items-center gap-1.5 rounded-full border-[1.5px] border-white/15 bg-white/[0.06] px-[15px] py-[9px] text-[13.5px] font-semibold text-white/85'
                   }
                 >
-                  <span>{tag.emoji}</span>
+                  <span aria-hidden="true">{tag.emoji}</span>
                   <span>{tag.label}</span>
                 </button>
               )
@@ -200,7 +204,7 @@ export default function Bitacora() {
               value={emocionLibre}
               onChange={(e) => setEmocionLibre(e.target.value)}
               placeholder="Ej: esperanzado, perdido, inspirado..."
-              className="w-full border-none bg-transparent pr-9 text-[14.5px] text-ink placeholder:text-[#B7B0A4] focus:outline-none"
+              className="w-full border-none bg-transparent pr-9 text-[14.5px] text-ink placeholder:text-ink-soft/50 focus:outline-none"
             />
             <div className="absolute right-4 top-3.5">
               <TranscribeMicButton value={emocionLibre} onTranscript={setEmocionLibre} />
@@ -210,7 +214,7 @@ export default function Bitacora() {
 
         <motion.div
           {...riseIn(0.14)}
-          className="mb-[22px] rounded-[18px] bg-senales-bg px-[18px] py-3.5 text-[13.5px] leading-[1.5] text-[#1F5C51]"
+          className="mb-[22px] rounded-xl border border-senales-1/30 bg-senales-1/[0.12] px-[18px] py-3.5 text-[13.5px] leading-[1.5] text-senales-bg"
         >
           No tienes que escribirlo todo. Puedes registrar solo lo que necesites en este momento.
         </motion.div>
@@ -224,7 +228,7 @@ export default function Bitacora() {
               value={campos[campo.key]}
               onChange={(e) => handleCampoChange(campo.key, e.target.value)}
               placeholder={campo.placeholder}
-              className="h-11 w-full resize-none border-none bg-transparent pr-9 text-[14.5px] text-ink placeholder:text-[#B7B0A4] focus:outline-none"
+              className="h-11 w-full resize-none border-none bg-transparent pr-9 text-[14.5px] text-ink placeholder:text-ink-soft/50 focus:outline-none"
             />
             <div className="absolute right-4 top-3.5">
               <TranscribeMicButton
@@ -243,7 +247,7 @@ export default function Bitacora() {
               setNotaVozDuracion(duracion)
             }}
           />
-          <p className="mt-2 px-1 text-xs text-ink-soft">
+          <p className="mt-2 px-1 text-xs text-white/60">
             Cualquier otra cosa que quieras decirte a ti mismo/a más adelante
           </p>
         </motion.div>
@@ -253,9 +257,9 @@ export default function Bitacora() {
             type="button"
             disabled={!hayContenido}
             onClick={handleGuardar}
-            className="w-full rounded-full bg-gradient-to-br from-faro-1 to-[#FF9C4A] py-[17px] text-center text-[15.5px] font-bold text-white shadow-[0_14px_28px_rgba(242,169,59,0.25)] disabled:cursor-not-allowed disabled:opacity-50 disabled:shadow-none"
+            className="w-full rounded-full bg-gradient-to-br from-faro-1 to-faro-2 py-[17px] text-center text-[15.5px] font-bold text-brand-navyDeep shadow-[0_14px_28px_rgba(242,169,59,0.25)] disabled:cursor-not-allowed disabled:opacity-50 disabled:shadow-none"
           >
-            💾 Guardar entrada
+            Guardar entrada
           </button>
         </motion.div>
       </div>
@@ -268,8 +272,9 @@ export default function Bitacora() {
           className="pointer-events-none fixed inset-x-0 bottom-8 flex justify-center px-5"
         >
           <div
-            className={`rounded-full px-5 py-3 text-sm font-medium text-white shadow-lg ${
-              toastEsError ? 'bg-red-500' : 'bg-ink'
+            className={`rounded-full px-5 py-3 text-sm font-medium shadow-lg ${
+              // sobre la noche un toast oscuro se pierde: el de éxito va en blanco
+              toastEsError ? 'bg-red-500 text-white' : 'bg-white text-ink'
             }`}
           >
             {toastMensaje}
