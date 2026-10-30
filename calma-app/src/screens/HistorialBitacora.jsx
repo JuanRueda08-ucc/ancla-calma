@@ -1,16 +1,18 @@
 import { useEffect, useRef, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { AnimatePresence, motion } from 'framer-motion'
+import '../styles/islaNoche.css'
 import ScreenHeader from '../components/ScreenHeader'
+import StarField from '../components/StarField'
 import { riseIn } from '../animations/transitions'
 import { getEntradas, guardarEntrada, eliminarEntrada } from '../utils/bitacoraStorage'
 import { obtenerAudio, guardarAudio } from '../utils/audioStorage'
 
-const BLOB_RADIUS = '42% 58% 63% 37% / 41% 44% 56% 59%'
 const LOCAL_STORAGE_KEY = 'calma:bitacora'
 const LEGACY_AUDIO_DB_NAME = 'calma-audio'
 const LEGACY_AUDIO_STORE_NAME = 'notas'
-const cardClass = 'rounded-lg bg-white p-5 text-center shadow-[0_8px_22px_rgba(0,0,0,0.04)]'
+// Las entradas y avisos van en tarjetas blancas, como hojas sobre la noche.
+const cardClass = 'rounded-lg bg-white p-5 text-center shadow-[0_8px_22px_rgba(0,0,0,0.12)]'
 
 const TAG_EMOJIS = {
   Tranquilidad: '😌',
@@ -166,13 +168,13 @@ function EntradaCard({ entrada, delay, onEliminar }) {
   return (
     <motion.div
       {...riseIn(delay)}
-      className="mb-4 overflow-hidden rounded-lg bg-white shadow-[0_8px_22px_rgba(0,0,0,0.04)]"
+      className="mb-4 overflow-hidden rounded-lg bg-white shadow-[0_8px_22px_rgba(0,0,0,0.12)]"
     >
       <button
         type="button"
         onClick={() => setAbierto((prev) => !prev)}
         aria-expanded={abierto}
-        className="w-full px-5 py-[18px] text-left"
+        className="w-full px-5 py-[18px] text-left focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-inset focus-visible:ring-brand-navy/20"
       >
         <div className="mb-2 flex items-start justify-between gap-3">
           <span className="text-[13px] font-semibold text-ink-soft">
@@ -181,9 +183,11 @@ function EntradaCard({ entrada, delay, onEliminar }) {
           <motion.span
             animate={{ rotate: abierto ? 180 : 0 }}
             transition={{ duration: 0.2 }}
-            className="flex-shrink-0 text-[#B7B0A4]"
+            className="flex-shrink-0 text-ink-soft/50"
           >
-            ⌄
+            <svg viewBox="0 0 24 24" className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+              <path d="M6 9l6 6 6-6" />
+            </svg>
           </motion.span>
         </div>
 
@@ -194,7 +198,7 @@ function EntradaCard({ entrada, delay, onEliminar }) {
                 key={tag}
                 className="inline-flex items-center gap-1 rounded-full border-[1.5px] border-black/[0.07] bg-white px-2.5 py-1 text-xs font-semibold text-ink-soft"
               >
-                {TAG_EMOJIS[tag] && <span>{TAG_EMOJIS[tag]}</span>}
+                {TAG_EMOJIS[tag] && <span aria-hidden="true">{TAG_EMOJIS[tag]}</span>}
                 <span>{tag}</span>
               </span>
             ))}
@@ -205,7 +209,11 @@ function EntradaCard({ entrada, delay, onEliminar }) {
 
         {entrada.tieneNotaDeVoz && (
           <div className="mt-2 inline-flex items-center gap-1.5 text-xs text-ink-soft">
-            <span>🎙️</span>
+            <svg viewBox="0 0 24 24" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+              <rect x="9" y="3" width="6" height="11" rx="3" />
+              <path d="M5 11a7 7 0 0 0 14 0" />
+              <path d="M12 18v3" />
+            </svg>
             <span>Nota de voz • {formatDuracion(entrada.notaVozDuracion)}</span>
           </div>
         )}
@@ -303,10 +311,9 @@ function EntradaCard({ entrada, delay, onEliminar }) {
                       e.stopPropagation()
                       setConfirmando(true)
                     }}
-                    aria-label="Eliminar entrada"
-                    className="flex h-8 w-8 items-center justify-center rounded-full bg-ink/10 text-sm text-ink"
+                    className="rounded-full px-3.5 py-1.5 text-xs font-semibold text-red-500"
                   >
-                    🗑️
+                    Eliminar entrada
                   </button>
                 )}
               </div>
@@ -405,26 +412,22 @@ export default function HistorialBitacora() {
   }
 
   return (
-    <div className="relative min-h-screen bg-sand">
-      <div className="mx-auto max-w-[620px] px-5 pb-20 pt-10">
-        <ScreenHeader backTo="/bitacora" />
+    <div className="isla-noche-bg relative min-h-[100dvh] overflow-hidden">
+      <StarField />
 
-        <motion.div {...riseIn(0)} className="mb-8 text-center">
-          <div
-            className="mx-auto mb-3.5 flex h-16 w-16 items-center justify-center bg-auxilio-bg text-[26px]"
-            style={{ borderRadius: BLOB_RADIUS }}
-          >
-            🕰️
-          </div>
-          <h1 className="mb-1.5 text-[26px] font-semibold text-ink">Tu historial</h1>
-          <p className="text-sm text-ink-soft">Todo lo que has registrado hasta ahora</p>
+      <div className="relative z-[2] mx-auto max-w-[620px] px-5 pb-20 pt-10">
+        <ScreenHeader backTo="/bitacora" accountButtonClassName="bg-white/20 text-white" />
+
+        <motion.div {...riseIn(0)} className="mb-8">
+          <h1 className="text-[30px] font-semibold leading-tight text-white">Tu historial</h1>
+          <p className="mt-1.5 text-[15px] text-white/75">Todo lo que has registrado hasta ahora</p>
         </motion.div>
 
         {cargaEstado === 'cargando' && (
           <div className="flex justify-center py-10">
             <span
               aria-hidden="true"
-              className="h-8 w-8 animate-spin rounded-full border-2 border-ink/15 border-t-ink/60"
+              className="h-8 w-8 animate-spin rounded-full border-2 border-white/20 border-t-white/80"
             />
           </div>
         )}
@@ -441,7 +444,7 @@ export default function HistorialBitacora() {
             <button
               type="button"
               onClick={cargarEntradas}
-              className="rounded-full bg-gradient-to-br from-faro-1 to-[#FF9C4A] px-6 py-3 text-sm font-bold text-white shadow-[0_10px_20px_rgba(242,169,59,0.25)]"
+              className="rounded-full bg-gradient-to-br from-faro-1 to-faro-2 px-6 py-3 text-sm font-bold text-brand-navyDeep shadow-[0_10px_20px_rgba(242,169,59,0.25)]"
             >
               Reintentar
             </button>
@@ -463,7 +466,7 @@ export default function HistorialBitacora() {
                 type="button"
                 disabled={migrando}
                 onClick={migrarEntradasLocales}
-                className="rounded-full bg-gradient-to-br from-faro-1 to-[#FF9C4A] px-5 py-2.5 text-sm font-bold text-white shadow-[0_10px_20px_rgba(242,169,59,0.25)] disabled:opacity-70"
+                className="rounded-full bg-gradient-to-br from-faro-1 to-faro-2 px-5 py-2.5 text-sm font-bold text-brand-navyDeep shadow-[0_10px_20px_rgba(242,169,59,0.25)] disabled:opacity-70"
               >
                 {migrando ? 'Migrando…' : 'Sí, migrarlas'}
               </button>
@@ -481,13 +484,13 @@ export default function HistorialBitacora() {
 
         {cargaEstado === 'listo' && entradas.length === 0 && (
           <motion.div {...riseIn(0.1)} className="mt-6 text-center">
-            <p className="mx-auto max-w-[380px] text-[15px] leading-[1.6] text-ink-soft">
+            <p className="mx-auto max-w-[380px] text-[15px] leading-[1.6] text-white/75">
               Todavía no tienes entradas guardadas. Cuando registres algo en tu bitácora,
               aparecerá aquí.
             </p>
             <Link
               to="/bitacora"
-              className="mt-5 inline-block rounded-full bg-gradient-to-br from-faro-1 to-[#FF9C4A] px-8 py-3.5 text-sm font-bold text-white shadow-[0_14px_28px_rgba(242,169,59,0.25)]"
+              className="mt-5 inline-block rounded-full bg-gradient-to-br from-faro-1 to-faro-2 px-8 py-3.5 text-sm font-bold text-brand-navyDeep shadow-[0_14px_28px_rgba(242,169,59,0.25)]"
             >
               Ir a la bitácora
             </Link>

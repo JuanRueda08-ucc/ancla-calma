@@ -70,6 +70,13 @@ otro agente. Al terminar una tarea significativa, actualizar este archivo.
   un anillo de foco visible y el ✉️ de "revisa tu correo" pasa a SVG.
   Nuevo botón "Volver" a `/islas` (no "atrás"), porque a estas pantallas
   se llega redirigido desde rutas protegidas.
+- Bitácora e Historial con la noche estrellada. Las preguntas, la nota de
+  voz y las entradas del historial siguen en tarjetas blancas ("hojas
+  sobre la noche"), así que `VoiceNoteRecorder` y `TranscribeMicButton`
+  no cambiaron. Las etiquetas de emoción son translúcidas, mantienen su
+  emoji y se iluminan en coral al marcarlas. "Ver historial" pasa a enlace
+  junto al título; el toast de éxito es blanco para leerse sobre la noche;
+  🗑️ del historial pasa a "Eliminar entrada" (misma confirmación inline).
 - Reestructuración de documentación multi-agente (AGENTS.md/CLAUDE.md
   anidados + carpeta docs/) — commiteada y verificada: Claude Code carga
   los CLAUDE.md anidados de calma-app/ y supabase/ al trabajar en esas
