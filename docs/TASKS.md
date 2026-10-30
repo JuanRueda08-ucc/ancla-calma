@@ -52,6 +52,12 @@ otro agente. Al terminar una tarea significativa, actualizar este archivo.
   favoritas); el formulario de agregar se abre con "+ Agregar
   herramienta". Íconos de interfaz en SVG; los emoji de cada herramienta
   se mantienen porque son contenido elegido por la persona.
+- Herramientas de la Isla del Faro guardadas por cuenta en Supabase
+  (tabla `herramientas_faro`, `utils/herramientasStorage.js`). Agregar,
+  editar, eliminar, favoritas y el orden sobreviven a la recarga. La
+  primera vez que alguien entra se siembran las 4 herramientas iniciales.
+  `/islas/faro` pasa a ser ruta protegida (`RequireAuth`), como Auxilio y
+  Bitácora.
 - Reestructuración de documentación multi-agente (AGENTS.md/CLAUDE.md
   anidados + carpeta docs/) — commiteada y verificada: Claude Code carga
   los CLAUDE.md anidados de calma-app/ y supabase/ al trabajar en esas
@@ -148,11 +154,6 @@ otro agente. Al terminar una tarea significativa, actualizar este archivo.
   función real detrás, no un placeholder a reemplazar por algo nuevo.
 
 ## Pendiente / ideas anotadas para retomar (sin fecha)
-- Persistir las herramientas de la Isla del Faro: hoy viven solo en
-  `useState` (hay `TODO` en `IslaFaro.jsx`), así que al recargar la
-  página se pierden las que la persona agregó, editó, marcó como
-  favoritas o reordenó. Requiere tabla en Supabase con RLS + GRANT
-  (ver `supabase/AGENTS.md`).
 - Rediseño estructural grande: layouts distintos por tipo de pantalla en
   vez de la misma plantilla (header + tarjetas apiladas + botón) repetida
   — quedó en pausa antes de la ronda de backend

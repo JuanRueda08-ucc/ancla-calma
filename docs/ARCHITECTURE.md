@@ -18,7 +18,7 @@
 /islas/aire/puerto-seguro/grounding            → EjercicioGrounding (vuelve a puerto-seguro)
 /islas/aire/puerto-seguro/relajacion-muscular  → EjercicioRelajacionMuscular (vuelve a puerto-seguro)
 /islas/aire/puerto-seguro/sensorial            → EjercicioSensorial (vuelve a puerto-seguro)
-/islas/faro                                    → IslaFaro (vuelve a /islas)
+/islas/faro           [protegida]              → IslaFaro (vuelve a /islas)
 /islas/senales                                 → IslaSenales (vuelve a /islas)
 /bitacora             [protegida]              → Bitacora (vuelve a /islas)
 /bitacora/historial   [protegida]              → HistorialBitacora (vuelve a /bitacora)
@@ -46,6 +46,13 @@ que_necesito, que_ayudo, tiene_nota_voz, nota_voz_duracion, created_at`.
 RLS: select/insert/delete `auth.uid() = user_id`. **Sin policy de UPDATE a
 propósito** — ver DECISIONS.md.
 
+**herramientas_faro**: `id, user_id, icon, label, favorite, orden, created_at,
+updated_at`. Herramientas de la Isla del Faro; `orden` es la posición en la
+lista completa (el frontend la reescribe al soltar un arrastre). Si la
+persona no tiene ninguna, `getHerramientas()` siembra las 4 iniciales.
+`label` de 1 a 120 caracteres (check). RLS: select/insert/update/delete
+todos `auth.uid() = user_id`.
+
 **storage.buckets 'notas-voz'**: privado, no público. Convención de ruta:
 `{user_id}/{entrada_id}.webm`. Políticas de RLS en `storage.objects` usan
 `(storage.foldername(name))[1] = auth.uid()::text`.
@@ -64,7 +71,8 @@ policies de RLS — ver DECISIONS.md para el bug que motivó esta regla.
   (fondo StarField, barra superior pausa/cerrar, temporizador real con barra
   de progreso ligada a `durationSeconds`, independiente del avance manual
   por pasos)
-- `contactosStorage.js`, `bitacoraStorage.js`, `audioStorage.js`: capa de
+- `contactosStorage.js`, `bitacoraStorage.js`, `audioStorage.js`,
+  `herramientasStorage.js`: capa de
   acceso a datos (Supabase), todas async, todas confían en RLS para el
   filtrado por usuario en vez de filtrar manualmente
 - `compartirUbicacion.js`: ubicación puntual vía `navigator.geolocation`,
