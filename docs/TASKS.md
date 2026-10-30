@@ -65,6 +65,11 @@ otro agente. Al terminar una tarea significativa, actualizar este archivo.
   momento (`/islas/aire/respiracion`) y Buscar apoyo (`/islas/auxilio`).
   El acordeón nocturno vive dentro de `IslaSenales.jsx`;
   `components/Accordion` queda igual para el Panel de Acompañamiento.
+- Login y Registro con la misma noche estrellada (sin resplandor de
+  isla). El formulario sigue en tarjeta blanca; los campos ahora muestran
+  un anillo de foco visible y el ✉️ de "revisa tu correo" pasa a SVG.
+  Nuevo botón "Volver" a `/islas` (no "atrás"), porque a estas pantallas
+  se llega redirigido desde rutas protegidas.
 - Reestructuración de documentación multi-agente (AGENTS.md/CLAUDE.md
   anidados + carpeta docs/) — commiteada y verificada: Claude Code carga
   los CLAUDE.md anidados de calma-app/ y supabase/ al trabajar en esas
