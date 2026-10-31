@@ -93,6 +93,15 @@ otro agente. Al terminar una tarea significativa, actualizar este archivo.
 - `components/Accordion` pasa a ser el acordeón nocturno compartido
   (contenido como children, `acento` senales/acomp) y lo usan Señales y el
   Panel. Los íconos de línea compartidos viven en `components/Iconos.jsx`.
+- Isla del Auxilio abierta sin iniciar sesión: las líneas de ayuda
+  profesional se ven siempre. Sin sesión, el bloque de "Tus personas de
+  confianza" invita a iniciar sesión o crear cuenta (y vuelve a la isla
+  después). "Buscar apoyo" de Señales ya no pasa por el login. Ver
+  DECISIONS.md → Cuenta y sesión.
+- Arreglo: después de iniciar sesión (o registrarse) se vuelve a la
+  pantalla de origen. Antes Login/Registro tenían un `<Navigate to="/islas">`
+  que corría antes del `navigate(from)` en cuanto llegaba la sesión, así que
+  siempre terminaban en /islas aunque se viniera de Auxilio, Faro o Bitácora.
 - Reestructuración de documentación multi-agente (AGENTS.md/CLAUDE.md
   anidados + carpeta docs/) — commiteada y verificada: Claude Code carga
   los CLAUDE.md anidados de calma-app/ y supabase/ al trabajar en esas

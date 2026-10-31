@@ -30,8 +30,12 @@ export default function Login() {
 
   const from = location.state?.from ?? '/islas'
 
+  // Al iniciar sesión, onAuthStateChange actualiza `user` y este redirect
+  // corre antes que el navigate(from) de handleSubmit: por eso también debe
+  // respetar `from`, o la persona termina en /islas en vez de volver a la
+  // pantalla desde la que vino (ej. la Isla del Auxilio).
   if (!authLoading && user) {
-    return <Navigate to="/islas" replace />
+    return <Navigate to={from} replace />
   }
 
   const handleSubmit = async (e) => {
