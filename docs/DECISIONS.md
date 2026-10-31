@@ -125,6 +125,30 @@ algo que parecía un bug era en realidad una decisión deliberada. Antes de
   conocida mientras no haya presupuesto/necesidad de un servicio de STT de
   pago con mejor cobertura de navegadores.
 
+## App instalable (PWA) y modo sin conexión
+- **PWA, no app nativa ni reescritura.** Con el mismo código se instala en
+  Android (diálogo "Instalar") y en iPhone (Compartir → "Agregar a pantalla
+  de inicio", que Apple no ofrece con un botón automático: por eso
+  `InstalarApp.jsx` lo explica en `/elegir`). Si algún día se necesita estar
+  en Play Store / App Store o enviar ubicación en segundo plano, el camino
+  es envolver esta misma app con Capacitor, no reescribirla.
+- **Service worker propio (`public/sw.js`), no `vite-plugin-pwa`**: el
+  proyecto usa Vite 8 y el plugin aún no lo soporta de forma confiable. Un
+  plugin mínimo en `vite.config.js` escribe `/precache.json` con todos los
+  archivos del build, y cada build registra `/sw.js?v=<id>` para que cada
+  despliegue instale un service worker nuevo y borre la copia anterior.
+- **Qué se guarda y qué no:** se guarda la app completa (JS, CSS,
+  imágenes, íconos) y las tipografías; la navegación va primero a la red y
+  usa la copia solo sin conexión. **Nunca** se guardan respuestas de
+  Supabase, teselas de mapas ni WhatsApp: datos personales y en vivo
+  siempre vienen del servidor. No cambiar eso sin revisar esta nota.
+- Sin conexión funcionan las líneas de ayuda (llamar no necesita internet),
+  la respiración, Puerto Seguro, Señales y el Panel; lo que necesita
+  servidor muestra su propio error o pide sesión, y `AvisoSinConexion`
+  avisa arriba de la pantalla.
+- El service worker solo se registra en producción (`import.meta.env.PROD`)
+  para no interferir con la recarga en caliente de desarrollo.
+
 ## Privacidad
 - **La política de privacidad declara explícitamente que la transcripción
   de voz usa el reconocimiento de voz nativo del navegador**, lo cual

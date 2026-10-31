@@ -1,0 +1,20 @@
+{
+  "name": "Calma — Proyecto ANCLA",
+  "short_name": "Calma",
+  "description": "Acompañamiento emocional: herramientas de calma, contactos de confianza, bitácora y líneas de ayuda.",
+  "lang": "es",
+  "dir": "ltr",
+  "id": "/",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#001B44",
+  "theme_color": "#001B44",
+  "categories": ["health", "lifestyle"],
+  "icons": [
+    { "src": "/icons/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "/icons/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "/icons/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ]
+}

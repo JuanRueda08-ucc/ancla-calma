@@ -4,6 +4,10 @@
 - Frontend: React + Vite + Tailwind CSS + Framer Motion
 - Backend: Supabase (Postgres + Auth + Storage), plan Free, región São Paulo (sa-east-1)
 - Hosting: Vercel (deploy automático por rama; main = producción)
+- App instalable (PWA): `public/manifest.webmanifest`, íconos en
+  `public/icons/` (fuente `calma-icon.svg`), service worker `public/sw.js`
+  con la lista `/precache.json` que genera `vite.config.js` en cada build.
+  Ver DECISIONS.md → App instalable
 
 ## Rutas y jerarquía de navegación
 

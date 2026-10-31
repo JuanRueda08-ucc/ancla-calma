@@ -126,6 +126,12 @@ otro agente. Al terminar una tarea significativa, actualizar este archivo.
   `ubicacion_en_vivo` (tabla, RLS, triggers y función
   `ver_ubicacion_en_vivo`). Política de privacidad actualizada. Diseño y
   límites en DECISIONS.md → Ubicación.
+- Calma instalable y sin conexión (PWA): ícono propio (ancla sobre el
+  cielo nocturno; reemplaza el logo de Vite que quedaba de la plantilla),
+  manifiesto, etiquetas para iPhone, service worker que guarda la app
+  completa y las tipografías, aviso global de "sin conexión" e invitación a
+  instalar en `/elegir` (botón en Android, instrucciones en iPhone). Sin
+  conexión abren las líneas de ayuda, la respiración y Puerto Seguro.
 - Reestructuración de documentación multi-agente (AGENTS.md/CLAUDE.md
   anidados + carpeta docs/) — commiteada y verificada: Claude Code carga
   los CLAUDE.md anidados de calma-app/ y supabase/ al trabajar en esas
