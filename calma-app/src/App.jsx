@@ -19,6 +19,7 @@ import Login from './screens/Login'
 import Registro from './screens/Registro'
 import Privacidad from './screens/Privacidad'
 import Perfil from './screens/Perfil'
+import AvisoSinConexion from './components/AvisoSinConexion'
 import RequireAuth from './components/RequireAuth'
 import { AuthProvider } from './context/AuthContext'
 
@@ -30,6 +31,7 @@ export default function App() {
   return (
     <AuthProvider>
       <BrowserRouter>
+        <AvisoSinConexion />
         <Routes>
           <Route path="/" element={<Entrada />} />
           <Route path="/elegir" element={<ElegirCamino />} />

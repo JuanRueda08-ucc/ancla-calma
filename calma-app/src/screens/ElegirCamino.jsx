@@ -2,6 +2,7 @@ import { useNavigate, useSearchParams } from 'react-router-dom'
 import { motion } from 'framer-motion'
 import '../styles/elegirCamino.css'
 import { riseIn } from '../animations/transitions'
+import InstalarApp from '../components/InstalarApp'
 import ScreenHeader from '../components/ScreenHeader'
 import StarField from '../components/StarField'
 
@@ -116,6 +117,8 @@ export default function ElegirCamino() {
             <CaminoBand key={camino.to} {...camino} />
           ))}
         </div>
+
+        <InstalarApp />
       </div>
 
       {/* el mar de Entrada, visto más de cerca */}
