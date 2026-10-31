@@ -26,6 +26,7 @@
 /login                                         → Login
 /registro                                      → Registro
 /privacidad                                    → Privacidad (stub, pendiente texto legal real)
+/ubicacion/:token     [pública, sin cuenta]    → UbicacionCompartida (enlace de ubicación en vivo)
 ```
 
 `[protegida]` = envuelta en `RequireAuth`, redirige a `/login` si no hay sesión.
@@ -77,6 +78,13 @@ policies de RLS — ver DECISIONS.md para el bug que motivó esta regla.
   filtrado por usuario en vez de filtrar manualmente
 - `compartirUbicacion.js`: ubicación puntual vía `navigator.geolocation`,
   nunca persistida — ver DECISIONS.md
+- `ubicacionEnVivo.js` + `useUbicacionEnVivo.js`: ubicación en vivo. La tabla
+  `ubicaciones_en_vivo` (solo el último punto por sesión, RLS por dueño) la
+  escribe el teléfono de quien comparte; `UbicacionEnVivoPanel.jsx` es el
+  bloque de la Isla del Auxilio. Los contactos leen vía la función
+  `ver_ubicacion_en_vivo(token)` desde `UbicacionCompartida.jsx`
+  (`/ubicacion/:token`, pública, mapa Leaflet cargado de forma diferida) —
+  ver DECISIONS.md → Ubicación
 - `OceanShaderBackground.jsx`: shader WebGL (librería OGL) con ripples
   interactivos, usado solo en `EjercicioSensorial` (contenido dentro de la
   tarjeta de instrucción, no a pantalla completa)

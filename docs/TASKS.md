@@ -116,6 +116,14 @@ otro agente. Al terminar una tarea significativa, actualizar este archivo.
   - Botón de cuenta y su menú con íconos SVG en vez de 👤 🚪 🔑; Perfil usa
     los íconos compartidos de `components/Iconos.jsx`.
   - Enlaces "Regístrate" / "Inicia sesión" con área táctil más alta.
+- Compartir ubicación en vivo (Isla del Auxilio, con sesión): 15 min, 1 h
+  o 4 h; el contacto recibe por WhatsApp un enlace `/ubicacion/:token` sin
+  cuenta, con mapa (Leaflet + OpenStreetMap), "actualizada hace X", aviso si
+  los datos se quedan viejos, botón a Google Maps y la línea 123. Solo se
+  guarda el último punto y se borra al detener o vencer. Migración
+  `ubicacion_en_vivo` (tabla, RLS, triggers y función
+  `ver_ubicacion_en_vivo`). Política de privacidad actualizada. Diseño y
+  límites en DECISIONS.md → Ubicación.
 - Reestructuración de documentación multi-agente (AGENTS.md/CLAUDE.md
   anidados + carpeta docs/) — commiteada y verificada: Claude Code carga
   los CLAUDE.md anidados de calma-app/ y supabase/ al trabajar en esas
@@ -215,8 +223,9 @@ otro agente. Al terminar una tarea significativa, actualizar este archivo.
 - Rediseño estructural grande: layouts distintos por tipo de pantalla en
   vez de la misma plantilla (header + tarjetas apiladas + botón) repetida
   — quedó en pausa antes de la ronda de backend
-- Ubicación en tiempo real (requiere backend adicional: Supabase Realtime
-  + página propia de mapa en vivo) — pospuesto, ver DECISIONS.md
+- Ubicación en vivo en segundo plano (seguir enviando con el teléfono
+  bloqueado o con otra app abierta): no es posible en una app web; requeriría
+  una app nativa. Ver DECISIONS.md → Ubicación.
 - Revisión legal profesional del texto de `/privacidad` — el contenido ya
   no es placeholder, pero falta que alguien con criterio legal lo valide
   antes de considerarlo definitivo

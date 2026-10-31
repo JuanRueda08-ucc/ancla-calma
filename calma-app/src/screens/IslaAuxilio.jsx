@@ -3,6 +3,7 @@ import { useLocation, useNavigate } from 'react-router-dom'
 import { motion } from 'framer-motion'
 import ScreenHeader from '../components/ScreenHeader'
 import StarField from '../components/StarField'
+import UbicacionEnVivoPanel from '../components/UbicacionEnVivoPanel'
 import '../styles/islaNoche.css'
 import { riseIn } from '../animations/transitions'
 import { useAuth } from '../context/AuthContext'
@@ -594,7 +595,7 @@ export default function IslaAuxilio() {
             type="button"
             disabled={compartirEstado === 'cargando'}
             onClick={iniciarCompartirUbicacion}
-            className="mb-9 mt-3 flex w-full items-center gap-3 rounded-full bg-white py-3.5 pl-3.5 pr-5 text-left shadow-[0_10px_24px_rgba(0,0,0,0.08)] disabled:opacity-70"
+            className="mb-3 mt-3 flex w-full items-center gap-3 rounded-full bg-white py-3.5 pl-3.5 pr-5 text-left shadow-[0_10px_24px_rgba(0,0,0,0.08)] disabled:opacity-70"
           >
             <span className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-full bg-senales-bg text-senales-1">
               {compartirEstado === 'cargando' ? (
@@ -702,6 +703,15 @@ export default function IslaAuxilio() {
               Cerrar
             </button>
           </motion.div>
+        )}
+
+        {/* La ubicación puntual (arriba) es una foto; esta es en vivo, con enlace */}
+        {cargaEstado === 'listo' && (
+          <UbicacionEnVivoPanel
+            contactos={contactos}
+            onAgregarContacto={abrirFormularioNuevo}
+            onEditarContacto={iniciarEdicion}
+          />
         )}
 
         <motion.h2 {...riseIn(0.22)} className="mb-3 text-[15px] font-semibold text-white">
