@@ -1,20 +1,28 @@
 import { useEffect, useRef, useState } from 'react'
 import { useLocation, useNavigate } from 'react-router-dom'
 import { motion } from 'framer-motion'
-import ScreenHeader from '../components/ScreenHeader'
+import '../styles/islaNoche.css'
 import Accordion from '../components/Accordion'
+import ScreenHeader from '../components/ScreenHeader'
+import StarField from '../components/StarField'
+import {
+  CorazonIcon,
+  CuerpoIcon,
+  FlechaIcon,
+  MensajeIcon,
+  MenteIcon,
+  OjoIcon,
+  TelefonoIcon,
+} from '../components/Iconos'
 import { riseIn } from '../animations/transitions'
 import { useAuth } from '../context/AuthContext'
 import { getContactos, normalizarTelefono } from '../utils/contactosStorage'
 import { construirLinkWhatsApp } from '../utils/compartirUbicacion'
 
-const BLOB_RADIUS = '42% 58% 63% 37% / 41% 44% 56% 59%'
-
 const CATEGORIAS = [
   {
     id: 'emocionales',
-    icono: '❤️',
-    iconBg: '#FDEAF0',
+    Icon: CorazonIcon,
     titulo: 'Señales emocionales',
     senales: [
       'Expresiones de angustia o malestar',
@@ -25,8 +33,7 @@ const CATEGORIAS = [
   },
   {
     id: 'fisicas',
-    icono: '🧍',
-    iconBg: '#EAF2FD',
+    Icon: CuerpoIcon,
     titulo: 'Señales físicas',
     senales: [
       'Tensión visible en el cuerpo',
@@ -37,8 +44,7 @@ const CATEGORIAS = [
   },
   {
     id: 'cognitivas',
-    icono: '🧠',
-    iconBg: '#F3EAFD',
+    Icon: MenteIcon,
     titulo: 'Señales cognitivas',
     senales: [
       'Dificultad para seguir conversaciones',
@@ -48,8 +54,7 @@ const CATEGORIAS = [
   },
   {
     id: 'conductuales',
-    icono: '👁️',
-    iconBg: '#FFF8EA',
+    Icon: OjoIcon,
     titulo: 'Señales conductuales',
     senales: [
       'Evitación de interacciones',
@@ -98,13 +103,28 @@ const HERRAMIENTAS_APOYO = [
   { icon: '🫁', label: 'Respirar profundo' },
 ]
 
-const boxClass = 'mb-4 rounded-[20px] bg-white px-5 py-[18px] shadow-[0_8px_20px_rgba(0,0,0,0.04)]'
+const GUIA_LISTAS = [
+  { id: 'principios', titulo: 'Principios clave', items: PRINCIPIOS_CLAVE, marcador: 'marker:text-acomp-1' },
+  {
+    id: 'como-acompanar',
+    titulo: 'Cómo acompañar',
+    subtitulo: 'Principios de primeros auxilios psicológicos',
+    items: COMO_ACOMPANAR,
+    marcador: 'marker:text-acomp-1',
+  },
+  { id: 'que-evitar', titulo: 'Qué evitar', items: QUE_EVITAR, marcador: 'marker:text-faro-2' },
+]
+
+const botonClaroClass =
+  'rounded-full bg-white px-5 py-2.5 text-sm font-bold text-brand-navyDeep focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-white/40'
+const botonSecundarioClass =
+  'rounded-full bg-white/10 px-5 py-2.5 text-sm font-semibold text-white focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-white/30'
 
 export default function PanelAcompanamiento() {
   const navigate = useNavigate()
   const location = useLocation()
   const { user, loading: authLoading } = useAuth()
-  const [abiertos, setAbiertos] = useState(new Set(['emocionales']))
+  const [abierto, setAbierto] = useState('emocionales')
   const [toast, setToast] = useState(null)
   const toastTimeoutRef = useRef(null)
 
@@ -152,16 +172,9 @@ export default function PanelAcompanamiento() {
     toastTimeoutRef.current = setTimeout(() => setToast(null), duracion)
   }
 
+  // Solo una sección abierta a la vez: abrir otra cierra la anterior.
   const toggleAcordeon = (id) => {
-    setAbiertos((prev) => {
-      const next = new Set(prev)
-      if (next.has(id)) {
-        next.delete(id)
-      } else {
-        next.add(id)
-      }
-      return next
-    })
+    setAbierto((actual) => (actual === id ? null : id))
   }
 
   const copiarMensaje = async (texto) => {
@@ -173,7 +186,7 @@ export default function PanelAcompanamiento() {
     showToast('Copiado', 1500)
   }
 
-  const handleContactar = () => {
+  const irAContactos = () => {
     navigate('/islas/auxilio')
   }
 
@@ -224,246 +237,251 @@ export default function PanelAcompanamiento() {
   }
 
   return (
-    <div className="relative min-h-screen bg-acomp-bg">
-      <div className="mx-auto max-w-[620px] px-5 pb-20 pt-10">
-        <ScreenHeader backTo="/elegir" />
+    <div className="isla-noche-bg relative min-h-[100dvh] overflow-hidden">
+      {/* luz verde-azul: el color de acompañamiento */}
+      <div className="isla-resplandor isla-resplandor--acomp pointer-events-none absolute inset-x-0 top-0 h-[55vh]" aria-hidden="true" />
+      <StarField />
 
-        <motion.div {...riseIn(nextDelay())} className="mb-8 text-center">
-          <div
-            className="mx-auto mb-3.5 flex h-16 w-16 items-center justify-center bg-white text-[26px]"
-            style={{ borderRadius: BLOB_RADIUS }}
-          >
-            💚
-          </div>
-          <h1 className="mb-1.5 text-[26px] font-semibold text-ink">Panel de Acompañamiento</h1>
-          <p className="text-sm text-ink-soft">Guía para apoyar a tu persona</p>
+      <div className="relative z-[2] mx-auto max-w-[620px] px-5 pb-20 pt-10">
+        <ScreenHeader backTo="/elegir" accountButtonClassName="bg-white/20 text-white" />
+
+        <motion.div {...riseIn(nextDelay())} className="mb-6">
+          <h1 className="text-[30px] font-semibold leading-tight text-white">Panel de Acompañamiento</h1>
+          <p className="mt-1.5 text-[15px] text-white/75">Guía para apoyar a tu persona</p>
         </motion.div>
 
-        <motion.div {...riseIn(nextDelay())} className="mb-4 flex items-start gap-3">
-          <span className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-full bg-senales-bg text-lg text-senales-1">
-            👁️
-          </span>
-          <div>
-            <p className="mb-1 font-bold text-ink">Entender las señales</p>
-            <p className="text-[13.5px] leading-[1.55] text-ink-soft">
-              No todas las personas expresan el malestar emocional de la misma manera. Estas son
-              algunas posibles señales para acompañar desde la empatía y el cuidado.
-            </p>
-          </div>
-        </motion.div>
-
-        {CATEGORIAS.map((categoria) => (
-          <Accordion
-            key={categoria.id}
-            icono={categoria.icono}
-            iconBg={categoria.iconBg}
-            titulo={categoria.titulo}
-            items={categoria.senales}
-            abierto={abiertos.has(categoria.id)}
-            onToggle={() => toggleAcordeon(categoria.id)}
-            delay={nextDelay()}
-          />
-        ))}
-
-        <motion.div {...riseIn(nextDelay())} className={boxClass}>
-          <p className="mb-3 font-bold text-ink">Principios clave</p>
-          <ul className="list-disc space-y-2 pl-5 text-[13.5px] leading-[1.6] text-ink-soft marker:text-acomp-2">
-            {PRINCIPIOS_CLAVE.map((item) => (
-              <li key={item}>{item}</li>
-            ))}
-          </ul>
-        </motion.div>
-
-        <motion.div {...riseIn(nextDelay())} className={boxClass}>
-          <p className="mb-0.5 font-bold text-ink">👂 Cómo acompañar</p>
-          <p className="mb-3 text-xs italic text-ink-soft">
-            Principios de primeros auxilios psicológicos
-          </p>
-          <ul className="list-disc space-y-2 pl-5 text-[13.5px] leading-[1.6] text-ink-soft marker:text-acomp-2">
-            {COMO_ACOMPANAR.map((item) => (
-              <li key={item}>{item}</li>
-            ))}
-          </ul>
-        </motion.div>
-
-        <motion.div {...riseIn(nextDelay())} className={boxClass}>
-          <p className="mb-3 font-bold text-ink">🛡️ Qué evitar</p>
-          <ul className="list-disc space-y-2 pl-5 text-[13.5px] leading-[1.6] text-ink-soft marker:text-faro-1">
-            {QUE_EVITAR.map((item) => (
-              <li key={item}>{item}</li>
-            ))}
-          </ul>
-        </motion.div>
-
-        <motion.div {...riseIn(nextDelay())} className={boxClass}>
-          <p className="mb-3 font-bold text-ink">💬 Mensajes de apoyo rápido</p>
-          <div className="flex flex-col gap-2">
-            {MENSAJES_RAPIDOS.map((mensaje) => (
-              <button
-                key={mensaje}
-                type="button"
-                onClick={() => copiarMensaje(mensaje)}
-                className="rounded-2xl bg-sand px-4 py-3 text-left text-[13.5px] italic text-ink"
-              >
-                "{mensaje}"
-              </button>
-            ))}
-          </div>
-        </motion.div>
-
-        <motion.div {...riseIn(nextDelay())} className={`${boxClass} bg-faro-bg`}>
-          <p className="mb-0.5 font-bold text-ink">💡 Herramientas de apoyo</p>
-          <p className="mb-3 text-xs text-ink-soft">
-            Estas son algunas herramientas que suelen ayudarle en momentos difíciles.
-          </p>
-          <div className="flex flex-col gap-2">
-            {HERRAMIENTAS_APOYO.map((herramienta) => (
-              <div
-                key={herramienta.label}
-                className="rounded-2xl bg-white px-4 py-3 text-[13.5px] text-ink"
-              >
-                {herramienta.icon} {herramienta.label}
-              </div>
-            ))}
-          </div>
-        </motion.div>
-
-        <motion.div
-          initial={{ opacity: 0, y: 40 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true, amount: 0.3 }}
-          transition={{ duration: 0.5, ease: 'easeOut' }}
+        {/* Contactar va primero: en un momento difícil es lo que más urge */}
+        <motion.section
+          {...riseIn(nextDelay())}
+          aria-labelledby="panel-tu-persona"
+          className="mb-10 rounded-xl border border-acomp-1/30 bg-acomp-1/[0.1] p-4"
         >
-          <button
-            type="button"
-            onClick={handleContactar}
-            className="mb-3 flex w-full items-center justify-center gap-2 rounded-full bg-gradient-to-br from-acomp-1 to-[#22A78C] py-4 text-[15px] font-bold text-white shadow-[0_14px_26px_rgba(47,191,159,0.2)]"
-          >
-            👤 Contactar a tu persona
-          </button>
+          <div className="mb-3 flex items-baseline justify-between gap-3">
+            <h2 id="panel-tu-persona" className="text-[17px] font-semibold text-white">
+              Tu persona
+            </h2>
+            {cargaEstado === 'listo' && (
+              <button
+                type="button"
+                onClick={irAContactos}
+                className="inline-flex items-center gap-1 text-sm font-semibold text-white underline decoration-white/50 underline-offset-4"
+              >
+                Editar contactos
+                <FlechaIcon className="h-4 w-4" />
+              </button>
+            )}
+          </div>
+
+          {cargaEstado === 'cargando' && (
+            <div className="flex justify-center py-3">
+              <span
+                aria-hidden="true"
+                className="h-7 w-7 animate-spin rounded-full border-2 border-white/20 border-t-white/80"
+              />
+            </div>
+          )}
 
           {cargaEstado === 'sin-sesion' && (
-            <div className={`${boxClass} text-center`}>
-              <p className="mb-3 text-sm text-ink-soft">
+            <div className="text-center">
+              <p className="mb-3 text-sm text-white/75">
                 Se requiere inicio de sesión para añadir contactos.
               </p>
-              <button
-                type="button"
-                onClick={irAIniciarSesion}
-                className="rounded-full bg-gradient-to-br from-acomp-1 to-[#22A78C] px-5 py-2.5 text-sm font-bold text-white"
-              >
+              <button type="button" onClick={irAIniciarSesion} className={botonClaroClass}>
                 Iniciar sesión
               </button>
             </div>
           )}
 
           {cargaEstado === 'sin-contacto' && (
-            <div className={`${boxClass} text-center`}>
-              <p className="mb-3 text-sm text-ink-soft">Agrega un contacto de confianza</p>
-              <button
-                type="button"
-                onClick={handleContactar}
-                className="rounded-full bg-gradient-to-br from-acomp-1 to-[#22A78C] px-5 py-2.5 text-sm font-bold text-white"
-              >
+            <div className="text-center">
+              <p className="mb-3 text-sm text-white/75">Agrega un contacto de confianza</p>
+              <button type="button" onClick={irAContactos} className={botonClaroClass}>
                 Agregar contacto de confianza
               </button>
             </div>
           )}
 
           {cargaEstado === 'error' && (
-            <div className={`${boxClass} text-center`}>
-              <p className="mb-3 text-sm text-ink-soft">
+            <div className="text-center">
+              <p className="mb-3 text-sm text-white/75">
                 No pudimos cargar tus contactos de confianza.
               </p>
-              <button
-                type="button"
-                onClick={cargarContactos}
-                className="rounded-full bg-gradient-to-br from-acomp-1 to-[#22A78C] px-5 py-2.5 text-sm font-bold text-white"
-              >
+              <button type="button" onClick={cargarContactos} className={botonClaroClass}>
                 Reintentar
               </button>
             </div>
           )}
 
-          <div className="mb-4 flex gap-3">
-            <button
-              type="button"
-              disabled={cargaEstado !== 'listo'}
-              onClick={() => iniciarAccion('llamar')}
-              className="flex flex-1 items-center justify-center gap-2 rounded-full bg-gradient-to-br from-acomp-2 to-[#3E6FC4] py-3.5 text-sm font-bold text-white disabled:opacity-60"
-            >
-              📞 Llamar
-            </button>
-            <button
-              type="button"
-              disabled={cargaEstado !== 'listo'}
-              onClick={() => iniciarAccion('mensaje')}
-              className="flex flex-1 items-center justify-center gap-2 rounded-full bg-gradient-to-br from-[#48C97A] to-[#2FA968] py-3.5 text-sm font-bold text-white disabled:opacity-60"
-            >
-              💬 Mensaje
-            </button>
-          </div>
-        </motion.div>
-
-        {accionEstado === 'seleccion' && (
-          <motion.div
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            className={boxClass}
-          >
-            <p className="mb-3 text-sm font-semibold text-ink">
-              {accionTipo === 'llamar' ? '¿A quién quieres llamar?' : '¿A quién quieres escribirle?'}
-            </p>
-            <div className="flex flex-col gap-2">
-              {contactos.map((contacto) => (
-                <button
-                  key={contacto.id}
-                  type="button"
-                  onClick={() => ejecutarAccion(accionTipo, contacto)}
-                  className="rounded-lg bg-acomp-bg px-4 py-2.5 text-left text-[14.5px] font-semibold text-ink"
-                >
-                  {contacto.nombre}
-                </button>
-              ))}
-            </div>
-            <button
-              type="button"
-              onClick={cerrarPanelAccion}
-              className="mt-3 w-full rounded-full bg-black/10 py-2.5 text-sm font-semibold text-ink"
-            >
-              Cancelar
-            </button>
-          </motion.div>
-        )}
-
-        {accionEstado === 'sin-codigo-pais' && (
-          <motion.div
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            className={`${boxClass} text-center`}
-          >
-            <p className="mb-3 text-sm text-ink-soft">
-              {contactoProblema?.nombre} no tiene código de país guardado. Edítalo primero para
-              poder escribirle por WhatsApp.
-            </p>
-            <div className="flex justify-center gap-2">
+          {cargaEstado === 'listo' && (
+            <div className="flex gap-3">
               <button
                 type="button"
-                onClick={irAAgregarContacto}
-                className="rounded-full bg-gradient-to-br from-acomp-1 to-[#22A78C] px-5 py-2.5 text-sm font-bold text-white"
+                onClick={() => iniciarAccion('llamar')}
+                className="flex flex-1 items-center justify-center gap-2 rounded-full bg-acomp-2 py-3.5 text-sm font-bold text-brand-navyDeep focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-acomp-2/50"
               >
-                Editar contacto
+                <TelefonoIcon className="h-[18px] w-[18px]" />
+                Llamar
               </button>
               <button
                 type="button"
-                onClick={cerrarPanelAccion}
-                className="rounded-full bg-black/10 px-5 py-2.5 text-sm font-semibold text-ink"
+                onClick={() => iniciarAccion('mensaje')}
+                className="flex flex-1 items-center justify-center gap-2 rounded-full bg-acomp-1 py-3.5 text-sm font-bold text-brand-navyDeep focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-acomp-1/50"
               >
+                <MensajeIcon className="h-[18px] w-[18px]" />
+                Mensaje
+              </button>
+            </div>
+          )}
+
+          {accionEstado === 'seleccion' && (
+            <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="mt-4">
+              <p className="mb-3 text-sm font-semibold text-white">
+                {accionTipo === 'llamar' ? '¿A quién quieres llamar?' : '¿A quién quieres escribirle?'}
+              </p>
+              <div className="flex flex-col gap-2">
+                {contactos.map((contacto) => (
+                  <button
+                    key={contacto.id}
+                    type="button"
+                    onClick={() => ejecutarAccion(accionTipo, contacto)}
+                    className="rounded-lg bg-white/10 px-4 py-2.5 text-left text-[14.5px] font-semibold text-white focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-white/30"
+                  >
+                    {contacto.nombre}
+                  </button>
+                ))}
+              </div>
+              <button type="button" onClick={cerrarPanelAccion} className={`mt-3 w-full ${botonSecundarioClass}`}>
                 Cancelar
               </button>
-            </div>
-          </motion.div>
-        )}
+            </motion.div>
+          )}
+
+          {accionEstado === 'sin-codigo-pais' && (
+            <motion.div
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="mt-4 text-center"
+            >
+              <p className="mb-3 text-sm text-white/75">
+                {contactoProblema?.nombre} no tiene código de país guardado. Edítalo primero para
+                poder escribirle por WhatsApp.
+              </p>
+              <div className="flex justify-center gap-2">
+                <button type="button" onClick={irAAgregarContacto} className={botonClaroClass}>
+                  Editar contacto
+                </button>
+                <button type="button" onClick={cerrarPanelAccion} className={botonSecundarioClass}>
+                  Cancelar
+                </button>
+              </div>
+            </motion.div>
+          )}
+        </motion.section>
+
+        <motion.div {...riseIn(nextDelay())} className="mb-4">
+          <h2 className="mb-1.5 text-[17px] font-semibold text-white">Entender las señales</h2>
+          <p className="text-[13.5px] leading-[1.55] text-white/70">
+            No todas las personas expresan el malestar emocional de la misma manera. Estas son
+            algunas posibles señales para acompañar desde la empatía y el cuidado.
+          </p>
+        </motion.div>
+
+        {CATEGORIAS.map((categoria) => (
+          <Accordion
+            key={categoria.id}
+            id={`panel-${categoria.id}`}
+            Icon={categoria.Icon}
+            titulo={categoria.titulo}
+            detalle={`${categoria.senales.length} señales`}
+            abierto={abierto === categoria.id}
+            onToggle={() => toggleAcordeon(categoria.id)}
+            delay={nextDelay()}
+            acento="acomp"
+          >
+            <ul className="flex flex-wrap gap-2">
+              {categoria.senales.map((senal) => (
+                <li
+                  key={senal}
+                  className="rounded-full border border-acomp-1/30 bg-acomp-1/[0.14] px-3.5 py-1.5 text-[13.5px] text-acomp-bg"
+                >
+                  {senal}
+                </li>
+              ))}
+            </ul>
+          </Accordion>
+        ))}
+
+        <motion.h2 {...riseIn(nextDelay())} className="mb-3 mt-8 text-[17px] font-semibold text-white">
+          Cómo apoyar
+        </motion.h2>
+
+        {GUIA_LISTAS.map((seccion) => (
+          <Accordion
+            key={seccion.id}
+            id={`panel-${seccion.id}`}
+            titulo={seccion.titulo}
+            abierto={abierto === seccion.id}
+            onToggle={() => toggleAcordeon(seccion.id)}
+            delay={nextDelay()}
+            acento="acomp"
+          >
+            {seccion.subtitulo && (
+              <p className="mb-3 text-xs italic text-white/60">{seccion.subtitulo}</p>
+            )}
+            <ul className={`list-disc space-y-2 pl-5 text-[13.5px] leading-[1.6] text-white/80 ${seccion.marcador}`}>
+              {seccion.items.map((item) => (
+                <li key={item}>{item}</li>
+              ))}
+            </ul>
+          </Accordion>
+        ))}
+
+        <Accordion
+          id="panel-mensajes"
+          titulo="Mensajes de apoyo rápido"
+          detalle="Toca para copiar"
+          abierto={abierto === 'mensajes'}
+          onToggle={() => toggleAcordeon('mensajes')}
+          delay={nextDelay()}
+          acento="acomp"
+        >
+          <div className="flex flex-col gap-2">
+            {MENSAJES_RAPIDOS.map((mensaje) => (
+              <button
+                key={mensaje}
+                type="button"
+                onClick={() => copiarMensaje(mensaje)}
+                aria-label={`Copiar: ${mensaje}`}
+                className="rounded-2xl bg-white/10 px-4 py-3 text-left text-[13.5px] italic text-white focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-white/30"
+              >
+                "{mensaje}"
+              </button>
+            ))}
+          </div>
+        </Accordion>
+
+        <Accordion
+          id="panel-herramientas"
+          titulo="Herramientas de apoyo"
+          abierto={abierto === 'herramientas'}
+          onToggle={() => toggleAcordeon('herramientas')}
+          delay={nextDelay()}
+          acento="acomp"
+        >
+          <p className="mb-3 text-xs text-white/60">
+            Estas son algunas herramientas que suelen ayudarle en momentos difíciles.
+          </p>
+          <ul className="flex flex-col gap-2">
+            {HERRAMIENTAS_APOYO.map((herramienta) => (
+              <li
+                key={herramienta.label}
+                className="rounded-2xl bg-white/10 px-4 py-3 text-[13.5px] text-white"
+              >
+                <span aria-hidden="true">{herramienta.icon}</span> {herramienta.label}
+              </li>
+            ))}
+          </ul>
+        </Accordion>
       </div>
 
       {toast && (
@@ -473,7 +491,8 @@ export default function PanelAcompanamiento() {
           exit={{ opacity: 0 }}
           className="pointer-events-none fixed inset-x-0 bottom-8 flex justify-center px-5"
         >
-          <div className="rounded-full bg-ink px-5 py-3 text-sm font-medium text-white shadow-lg">
+          {/* sobre la noche un toast oscuro se pierde */}
+          <div className="rounded-full bg-white px-5 py-3 text-sm font-medium text-ink shadow-lg">
             {toast}
           </div>
         </motion.div>

@@ -1,50 +1,69 @@
 import { AnimatePresence, motion } from 'framer-motion'
 import { riseIn } from '../animations/transitions'
+import { ChevronIcon } from './Iconos'
+
+// Acordeón translúcido para las pantallas nocturnas (Isla de las Señales y
+// Panel de Acompañamiento). El contenido va como children; `acento` define
+// el color del ícono y del anillo de foco con clases fijas de Tailwind.
+const ACENTOS = {
+  senales: {
+    icono: 'bg-senales-1/20 text-senales-bg',
+    foco: 'focus-visible:ring-senales-1/60',
+  },
+  acomp: {
+    icono: 'bg-acomp-1/20 text-acomp-bg',
+    foco: 'focus-visible:ring-acomp-1/60',
+  },
+}
 
 export default function Accordion({
-  icono,
-  iconBg,
+  id,
+  Icon,
   titulo,
-  items,
+  detalle,
   abierto,
   onToggle,
   delay = 0,
-  pillBg = 'bg-acomp-bg',
-  pillText = 'text-[#175C4A]',
+  acento = 'senales',
+  children,
 }) {
+  const estilos = ACENTOS[acento]
+  const panelId = `acordeon-${id}`
+
   return (
     <motion.div
       {...riseIn(delay)}
-      className="mb-3 overflow-hidden rounded-[22px] bg-white shadow-[0_8px_20px_rgba(0,0,0,0.04)]"
+      className="mb-3 overflow-hidden rounded-xl border border-white/10 bg-white/[0.06]"
     >
       <button
         type="button"
         onClick={onToggle}
         aria-expanded={abierto}
-        className="flex w-full items-center gap-3.5 px-[18px] py-4 text-left"
+        aria-controls={panelId}
+        className={`flex w-full items-center gap-3.5 px-4 py-4 text-left focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-inset ${estilos.foco}`}
       >
-        <span
-          className="flex h-11 w-11 flex-shrink-0 items-center justify-center rounded-full text-xl"
-          style={{ background: iconBg }}
-        >
-          {icono}
-        </span>
-        <span className="flex-1 text-[15px] font-bold text-ink">{titulo}</span>
-        <span className="whitespace-nowrap text-xs font-semibold text-ink-soft">
-          {items.length} señales
-        </span>
+        {Icon && (
+          <span className={`flex h-11 w-11 flex-shrink-0 items-center justify-center rounded-full ${estilos.icono}`}>
+            <Icon className="h-5 w-5" />
+          </span>
+        )}
+        <span className="flex-1 text-[15px] font-semibold text-white">{titulo}</span>
+        {detalle && (
+          <span className="whitespace-nowrap text-xs font-semibold text-white/55">{detalle}</span>
+        )}
         <motion.span
           animate={{ rotate: abierto ? 180 : 0 }}
           transition={{ duration: 0.2 }}
-          className="text-[#B7B0A4]"
+          className="text-white/50"
         >
-          ⌄
+          <ChevronIcon className="h-5 w-5" />
         </motion.span>
       </button>
 
       <AnimatePresence initial={false}>
         {abierto && (
           <motion.div
+            id={panelId}
             key="content"
             initial={{ height: 0, opacity: 0 }}
             animate={{ height: 'auto', opacity: 1 }}
@@ -52,13 +71,7 @@ export default function Accordion({
             transition={{ duration: 0.25, ease: 'easeInOut' }}
             className="overflow-hidden"
           >
-            <div className="flex flex-col gap-2 px-[18px] pb-4 pl-[68px]">
-              {items.map((item) => (
-                <div key={item} className={`rounded-[14px] px-3.5 py-2.5 text-[13.5px] ${pillBg} ${pillText}`}>
-                  {item}
-                </div>
-              ))}
-            </div>
+            <div className={`px-4 pb-4 ${Icon ? 'pl-[74px]' : ''}`}>{children}</div>
           </motion.div>
         )}
       </AnimatePresence>

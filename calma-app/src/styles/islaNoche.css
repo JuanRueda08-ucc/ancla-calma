@@ -40,6 +40,18 @@
   );
 }
 
+/* El Panel de Acompañamiento no es una isla, pero usa la misma noche con
+   la luz verde-azul de acompañamiento. */
+.isla-resplandor--acomp {
+  background: radial-gradient(
+    ellipse 90% 75% at 50% -5%,
+    rgba(241, 251, 247, 0.5) 0%,
+    rgba(47, 191, 159, 0.45) 28%,
+    rgba(78, 143, 224, 0.14) 60%,
+    transparent 80%
+  );
+}
+
 .isla-resplandor--aire {
   background: radial-gradient(
     ellipse 90% 75% at 50% -5%,
