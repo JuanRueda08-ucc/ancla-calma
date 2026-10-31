@@ -31,13 +31,37 @@ algo que parecía un bug era en realidad una decisión deliberada. Antes de
   como solución interina antes de tener backend — ya migrado).
 
 ## Ubicación
-- **"Compartir ubicación" es un snapshot puntual, nunca tracking en vivo.**
-  Se calcula la posición una vez, se arma un link de Google Maps, se envía
-  por WhatsApp (`wa.me`), y el dato se descarta de inmediato — no se
-  persiste en ningún lado (ni localStorage, ni Supabase). Ubicación en vivo
-  requeriría un backend de tiempo real (Supabase Realtime + página propia de
-  mapa) y fue pospuesta explícitamente a una fecha futura sin definir — no
-  implementarla sin retomar esa conversación primero.
+- **"Compartir mi ubicación" es un snapshot puntual.** Se calcula la
+  posición una vez, se arma un link de Google Maps, se envía por WhatsApp
+  (`wa.me`), y el dato se descarta de inmediato — no se persiste en ningún
+  lado (ni localStorage, ni Supabase).
+- **"Compartir ubicación en vivo" (octubre 2026) es aparte y opcional**,
+  decidida con el usuario al retomar el tema que antes estaba pospuesto:
+  - Los contactos de confianza no tienen cuenta, así que ven la ubicación
+    con un **enlace secreto** (`/ubicacion/:token`, token de 64 hex) que no
+    pide sesión. Quien comparte sí necesita sesión.
+  - **Sin Supabase Realtime**: para que anon recibiera cambios habría que
+    abrir la tabla a anon y se expondrían todas las sesiones. En su lugar,
+    la página consulta cada 10 s la función `ver_ubicacion_en_vivo(token)`
+    (`security definer`), que solo responde a ese token exacto. `anon` no
+    tiene acceso a la tabla `ubicaciones_en_vivo`.
+  - **Solo el último punto**, sobrescrito en cada envío (cada ~15 s o al
+    moverse > 25 m, y un latido cada 30 s estando quieto); nunca un
+    recorrido. Al detener o vencer, las coordenadas se borran y el enlace
+    muestra "Ya no se está compartiendo".
+  - **Duraciones fijas de 15 min, 1 h o 4 h**; el vencimiento lo calcula la
+    base de datos y no se puede alargar desde el cliente. Una sola sesión
+    activa por persona.
+  - La página muestra el **nombre de usuario** de quien comparte ("Alguien
+    de confianza" si no tiene) — decisión explícita del usuario.
+  - Mapa con **Leaflet + OpenStreetMap** (sin clave) y botón "Abrir en
+    Google Maps". Leaflet se carga de forma diferida, solo en esa página.
+  - **Limitación aceptada:** una app web solo envía la ubicación mientras
+    Calma está abierta en pantalla (no hay seguimiento en segundo plano en
+    el navegador). Se mitiga con Wake Lock (pantalla encendida), avisando a
+    quien comparte, y mostrando al contacto "actualizada hace X" con una
+    alerta si pasan más de 2 min sin datos. El seguimiento en segundo plano
+    real requeriría una app nativa.
 - **WhatsApp (`wa.me`), no Web Share API**, para compartir ubicación —
   decisión explícita del usuario. Requiere que el contacto tenga el
   teléfono guardado CON código de país (`+57...`), si no se bloquea con un

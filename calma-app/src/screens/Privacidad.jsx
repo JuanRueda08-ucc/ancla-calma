@@ -30,7 +30,7 @@ export default function Privacidad() {
         >
           <h1 className="mb-1.5 text-[22px] font-semibold text-ink">Política de privacidad</h1>
           <p className="mb-6 text-sm text-ink-soft/70">
-            Última actualización: 12 de septiembre de 2026
+            Última actualización: 31 de octubre de 2026
           </p>
 
           <div className="mx-auto max-w-[52ch] space-y-7 text-[15px] leading-relaxed text-ink-soft">
@@ -78,6 +78,16 @@ export default function Privacidad() {
                   él — ocurre entre tu navegador y esas empresas. Si prefieres no usar esta
                   función, puedes escribir directamente en cada campo sin usar el micrófono.
                 </p>
+                <p>
+                  <strong className="text-ink">Ubicación en vivo (solo si la activas)</strong>:
+                  cuando usas "Compartir ubicación en vivo", guardamos tu posición más reciente
+                  —solo el último punto, nunca un recorrido— durante el tiempo que elijas (15
+                  minutos, 1 hora o 4 horas), para que las personas a las que les envíes el
+                  enlace puedan verla junto con tu nombre de usuario. Cualquiera que tenga ese
+                  enlace puede verla mientras esté activa, así que envíalo solo a personas de
+                  confianza. Al detenerla o cuando se acaba el tiempo, tu ubicación se borra y el
+                  enlace deja de funcionar.
+                </p>
               </div>
             </section>
 
@@ -87,10 +97,14 @@ export default function Privacidad() {
               </h2>
               <div className="space-y-3">
                 <p>
-                  <strong className="text-ink">Tu ubicación nunca se guarda.</strong> Cuando usas
-                  "Compartir mi ubicación", la calculamos una sola vez, armamos el link para
-                  enviarte a WhatsApp, y la descartamos de inmediato — no queda registrada en
-                  ningún lugar, ni en tu dispositivo ni en nuestros servidores.
+                  <strong className="text-ink">
+                    "Compartir mi ubicación" (una sola vez) no guarda tu ubicación.
+                  </strong>{' '}
+                  La calculamos una sola vez, armamos el link para enviarte a WhatsApp, y la
+                  descartamos de inmediato — no queda registrada en ningún lugar, ni en tu
+                  dispositivo ni en nuestros servidores. Tampoco seguimos tu ubicación en segundo
+                  plano: la ubicación en vivo solo funciona mientras tú la activas y Calma está
+                  abierta.
                 </p>
                 <p>
                   No mostramos publicidad ni vendemos, alquilamos o compartimos tu información con

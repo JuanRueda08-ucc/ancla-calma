@@ -1,3 +1,4 @@
+import { Suspense, lazy } from 'react'
 import { BrowserRouter, Navigate, Routes, Route } from 'react-router-dom'
 import Entrada from './screens/Entrada'
 import ElegirCamino from './screens/ElegirCamino'
@@ -20,6 +21,10 @@ import Privacidad from './screens/Privacidad'
 import Perfil from './screens/Perfil'
 import RequireAuth from './components/RequireAuth'
 import { AuthProvider } from './context/AuthContext'
+
+// Carga diferida: solo esta página usa Leaflet (el mapa), así el resto de la
+// app no descarga la librería.
+const UbicacionCompartida = lazy(() => import('./screens/UbicacionCompartida'))
 
 export default function App() {
   return (
@@ -70,6 +75,15 @@ export default function App() {
           <Route path="/privacidad" element={<Privacidad />} />
           {/* Una dirección que no existe (enlace viejo o mal escrito) dejaba la
               página en blanco y sin salida: se manda al inicio. */}
+          {/* Pública: la abren contactos de confianza sin cuenta desde WhatsApp */}
+          <Route
+            path="/ubicacion/:token"
+            element={
+              <Suspense fallback={<div className="min-h-[100dvh] bg-brand-navyDeep" />}>
+                <UbicacionCompartida />
+              </Suspense>
+            }
+          />
           <Route path="*" element={<Navigate to="/" replace />} />
           <Route
             path="/perfil"

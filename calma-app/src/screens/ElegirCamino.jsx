@@ -69,9 +69,9 @@ function CaminoBand({ to, title, description, Icon, band, delay }) {
       onClick={() => navigate(to)}
       whileHover={{ x: -4, transition: { duration: 0.15 } }}
       whileTap={{ scale: 0.98, transition: { duration: 0.15 } }}
-      // En móvil la franja sale por el borde derecho, como un haz de luz;
-      // desde sm queda contenida y redondeada por completo.
-      className={`-mr-6 flex w-[calc(100%+1.5rem)] items-center gap-4 rounded-l-xl py-6 pl-6 pr-8 text-left text-brand-navyDeep focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-white/70 sm:mr-0 sm:w-full sm:rounded-xl sm:px-8 ${band}`}
+      // Contenida y redondeada en todos los tamaños: en móvil la franja que
+      // salía por el borde derecho se veía cortada, no como un haz de luz.
+      className={`flex w-full items-center gap-4 rounded-xl px-6 py-6 text-left text-brand-navyDeep focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-white/70 sm:px-8 ${band}`}
     >
       <div className="min-w-0 flex-1">
         <h2 className="text-[22px] font-semibold leading-tight">{title}</h2>
