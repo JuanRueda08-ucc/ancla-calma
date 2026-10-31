@@ -83,6 +83,16 @@ otro agente. Al terminar una tarea significativa, actualizar este archivo.
   formularios), "Cerrar sesión" es una fila, y "Eliminar mi cuenta" es una
   fila roja plegada que abre la misma confirmación de escribir ELIMINAR.
   Sin cambios de lógica (Supabase, cierre de sesión, Edge Function).
+- Panel de Acompañamiento con la noche y una luz verde-azul
+  (`.isla-resplandor--acomp`). La tarjeta "Tu persona" con Llamar/Mensaje
+  sube arriba (antes estaba al final de la guía); el botón duplicado
+  "Contactar a tu persona" se reemplaza por el enlace "Editar contactos".
+  La guía (señales, principios, cómo acompañar, qué evitar, mensajes
+  para copiar, herramientas) va en secciones plegables; los textos no
+  cambian. Con esto ya no queda ninguna pantalla con el estilo claro.
+- `components/Accordion` pasa a ser el acordeón nocturno compartido
+  (contenido como children, `acento` senales/acomp) y lo usan Señales y el
+  Panel. Los íconos de línea compartidos viven en `components/Iconos.jsx`.
 - Reestructuración de documentación multi-agente (AGENTS.md/CLAUDE.md
   anidados + carpeta docs/) — commiteada y verificada: Claude Code carga
   los CLAUDE.md anidados de calma-app/ y supabase/ al trabajar en esas
