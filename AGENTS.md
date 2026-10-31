@@ -24,7 +24,8 @@ solo un punto de entrada único):
   rechazados, no cambia nada): `npm run test:seguridad` — correrla después de
   cada migración que cree o cambie tablas, políticas o funciones
 - CI (GitHub Actions, `.github/workflows/ci.yml`): lint + pruebas + build en
-  cada PR. Un PR no se fusiona con el CI en rojo
+  cada PR. El ruleset de `main` exige los checks `calma-app` (CI) y `Vercel`:
+  GitHub no deja fusionar con cualquiera de los dos en rojo
 
 ## Convenciones
 - Commits en inglés, formato Conventional Commits (`feat:`, `fix:`, `chore:`, `docs:`)

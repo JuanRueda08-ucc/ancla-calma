@@ -151,8 +151,9 @@ otro agente. Al terminar una tarea significativa, actualizar este archivo.
   al día: ya no describen como "placeholder" funciones reales, mapa de
   rutas completo (incluye `/perfil`, `/login`, `/registro`,
   `/privacidad`, `/bitacora/historial`) y estructura de carpetas actual.
-- Rama `main` protegida en GitHub: sin force push ni borrado, y el check
-  de Vercel debe pasar antes de fusionar.
+- Rama `main` protegida en GitHub (ruleset "main"): sin force push ni
+  borrado, y los checks `Vercel` y `calma-app` (CI: lint + pruebas + build)
+  deben pasar antes de fusionar. El de CI se agregó en octubre 2026.
 
 ## Completado (backend real, rama feature/supabase-backend, ya en main)
 - Proyecto Supabase creado (región São Paulo), CLI vinculado
@@ -243,8 +244,6 @@ otro agente. Al terminar una tarea significativa, actualizar este archivo.
   sesión de verdad con una cuenta de prueba, ubicación en vivo entre dos
   pestañas, modo sin conexión. Pospuesto por espacio en disco (los
   navegadores ocupan varios cientos de MB); podría correr solo en CI.
-- Proteger `main` en GitHub para exigir el check "CI" además de Vercel
-  (Settings → Branches), ahora que existe.
 - Rediseño estructural grande: layouts distintos por tipo de pantalla en
   vez de la misma plantilla (header + tarjetas apiladas + botón) repetida
   — quedó en pausa antes de la ronda de backend
