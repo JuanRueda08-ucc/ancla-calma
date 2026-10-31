@@ -47,6 +47,11 @@ const CAMPOS_CONFIG = [
   { key: 'ayudoHoy', label: '¿Qué me ayudó hoy?', placeholder: 'Algo positivo o que te reconfortó...' },
 ]
 
+// Una pregunta a la vez: emociones, las 4 preguntas y la nota de voz.
+const PASO_EMOCIONES = 0
+const PASO_NOTA = CAMPOS_CONFIG.length + 1
+const TOTAL_PASOS = CAMPOS_CONFIG.length + 2
+
 // Las preguntas van en tarjetas blancas, como hojas de diario sobre la noche:
 // así escribir sigue siendo cómodo y el micrófono/grabadora no cambian.
 const fieldClass =
@@ -66,6 +71,10 @@ export default function Bitacora() {
   // URL) en vez de intentar resetearlo de forma imperativa.
   const [formResetKey, setFormResetKey] = useState(0)
   const toastTimeout = useRef(null)
+  // Todos los pasos quedan montados (solo se oculta el resto) para no perder
+  // lo escrito ni la grabación de VoiceNoteRecorder al ir y volver.
+  const [paso, setPaso] = useState(PASO_EMOCIONES)
+  const titulosRef = useRef([])
 
   useEffect(() => {
     return () => {
@@ -94,6 +103,19 @@ export default function Bitacora() {
     emocionLibre.trim() !== '' ||
     Object.values(campos).some((valor) => valor.trim() !== '') ||
     notaVozBlob !== null
+
+  const pasoTieneContenido = (indice) => {
+    if (indice === PASO_EMOCIONES) return tagsActivos.size > 0 || emocionLibre.trim() !== ''
+    if (indice === PASO_NOTA) return notaVozBlob !== null
+    return campos[CAMPOS_CONFIG[indice - 1].key].trim() !== ''
+  }
+
+  // Al cambiar de paso, el foco va al título nuevo (lectores de pantalla y
+  // teclado empiezan donde empieza la pregunta).
+  const irAPaso = (indice) => {
+    setPaso(indice)
+    setTimeout(() => titulosRef.current[indice]?.focus(), 0)
+  }
 
   const handleGuardar = async () => {
     if (!hayContenido) return
@@ -143,6 +165,7 @@ export default function Bitacora() {
     setNotaVozBlob(null)
     setNotaVozDuracion(null)
     setFormResetKey((prev) => prev + 1)
+    setPaso(PASO_EMOCIONES)
   }
 
   return (
@@ -169,10 +192,35 @@ export default function Bitacora() {
           </div>
         </motion.div>
 
-        <motion.div {...riseIn(0.08)}>
-          <p className="mb-3 text-[15px] font-semibold text-white">
-            ¿Cómo te sientes? (puedes elegir varias)
+        {/* Progreso: un segmento por paso */}
+        <motion.div {...riseIn(0.06)} className="mb-5">
+          <div className="flex gap-1.5" aria-hidden="true">
+            {Array.from({ length: TOTAL_PASOS }, (_, indice) => (
+              <span
+                key={indice}
+                className={`h-1 flex-1 rounded-full transition-colors ${
+                  indice <= paso ? 'bg-faro-2' : 'bg-white/15'
+                }`}
+              />
+            ))}
+          </div>
+          <p className="mt-2 text-[13px] text-white/60">
+            Paso {paso + 1} de {TOTAL_PASOS}
+            {paso === PASO_EMOCIONES && ' · No tienes que responder todo'}
           </p>
+        </motion.div>
+
+        {/* Paso 1: emociones */}
+        <section hidden={paso !== PASO_EMOCIONES} aria-labelledby="bitacora-paso-0">
+          <h2
+            id="bitacora-paso-0"
+            ref={(el) => (titulosRef.current[PASO_EMOCIONES] = el)}
+            tabIndex={-1}
+            className="mb-1 text-[22px] font-semibold leading-tight text-white focus:outline-none"
+          >
+            ¿Cómo te sientes?
+          </h2>
+          <p className="mb-4 text-[14px] text-white/65">Puedes elegir varias, o describirlo con tus palabras.</p>
           <div className="mb-4 flex flex-wrap gap-2">
             {TAGS.map((tag) => {
               const activo = tagsActivos.has(tag.label)
@@ -196,10 +244,11 @@ export default function Bitacora() {
           </div>
 
           <div className={fieldClass}>
-            <label className="mb-2 block text-[15.5px] font-semibold text-ink">
+            <label htmlFor="bitacora-emocion" className="mb-2 block text-[15.5px] font-semibold text-ink">
               O describe tu emoción:
             </label>
             <input
+              id="bitacora-emocion"
               type="text"
               value={emocionLibre}
               onChange={(e) => setEmocionLibre(e.target.value)}
@@ -210,36 +259,56 @@ export default function Bitacora() {
               <TranscribeMicButton value={emocionLibre} onTranscript={setEmocionLibre} />
             </div>
           </div>
-        </motion.div>
+        </section>
 
-        <motion.div
-          {...riseIn(0.14)}
-          className="mb-[22px] rounded-xl border border-senales-1/30 bg-senales-1/[0.12] px-[18px] py-3.5 text-[13.5px] leading-[1.5] text-senales-bg"
-        >
-          No tienes que escribirlo todo. Puedes registrar solo lo que necesites en este momento.
-        </motion.div>
+        {/* Pasos 2 a 5: una pregunta cada uno, con más espacio para escribir */}
+        {CAMPOS_CONFIG.map((campo, indice) => {
+          const numero = indice + 1
+          return (
+            <section key={campo.key} hidden={paso !== numero} aria-labelledby={`bitacora-paso-${numero}`}>
+              <h2
+                id={`bitacora-paso-${numero}`}
+                ref={(el) => (titulosRef.current[numero] = el)}
+                tabIndex={-1}
+                className="mb-4 text-[22px] font-semibold leading-tight text-white focus:outline-none"
+              >
+                {campo.label}
+              </h2>
+              <div className={fieldClass}>
+                <label htmlFor={`bitacora-${campo.key}`} className="sr-only">
+                  {campo.label}
+                </label>
+                <textarea
+                  id={`bitacora-${campo.key}`}
+                  value={campos[campo.key]}
+                  onChange={(e) => handleCampoChange(campo.key, e.target.value)}
+                  placeholder={campo.placeholder}
+                  className="h-40 w-full resize-none border-none bg-transparent pr-9 text-[15px] leading-relaxed text-ink placeholder:text-ink-soft/50 focus:outline-none"
+                />
+                <div className="absolute right-4 top-3.5">
+                  <TranscribeMicButton
+                    value={campos[campo.key]}
+                    onTranscript={(nuevoValor) => handleCampoChange(campo.key, nuevoValor)}
+                  />
+                </div>
+              </div>
+            </section>
+          )
+        })}
 
-        {CAMPOS_CONFIG.map((campo, index) => (
-          <motion.div key={campo.key} {...riseIn(0.18 + index * 0.04)} className={fieldClass}>
-            <label className="mb-2 block text-[15.5px] font-semibold text-ink">
-              {campo.label}
-            </label>
-            <textarea
-              value={campos[campo.key]}
-              onChange={(e) => handleCampoChange(campo.key, e.target.value)}
-              placeholder={campo.placeholder}
-              className="h-11 w-full resize-none border-none bg-transparent pr-9 text-[14.5px] text-ink placeholder:text-ink-soft/50 focus:outline-none"
-            />
-            <div className="absolute right-4 top-3.5">
-              <TranscribeMicButton
-                value={campos[campo.key]}
-                onTranscript={(nuevoValor) => handleCampoChange(campo.key, nuevoValor)}
-              />
-            </div>
-          </motion.div>
-        ))}
-
-        <motion.div {...riseIn(0.34)} className="mb-[22px]">
+        {/* Último paso: nota de voz (opcional) */}
+        <section hidden={paso !== PASO_NOTA} aria-labelledby={`bitacora-paso-${PASO_NOTA}`}>
+          <h2
+            id={`bitacora-paso-${PASO_NOTA}`}
+            ref={(el) => (titulosRef.current[PASO_NOTA] = el)}
+            tabIndex={-1}
+            className="mb-1 text-[22px] font-semibold leading-tight text-white focus:outline-none"
+          >
+            ¿Algo más que quieras decirte?
+          </h2>
+          <p className="mb-4 text-[14px] text-white/65">
+            Una nota de voz para escucharte más adelante. Es opcional.
+          </p>
           <VoiceNoteRecorder
             key={formResetKey}
             onRecordingChange={(blob, duracion) => {
@@ -247,21 +316,55 @@ export default function Bitacora() {
               setNotaVozDuracion(duracion)
             }}
           />
-          <p className="mt-2 px-1 text-xs text-white/60">
-            Cualquier otra cosa que quieras decirte a ti mismo/a más adelante
-          </p>
-        </motion.div>
+        </section>
 
-        <motion.div {...riseIn(0.38)}>
-          <button
-            type="button"
-            disabled={!hayContenido}
-            onClick={handleGuardar}
-            className="w-full rounded-full bg-gradient-to-br from-faro-1 to-faro-2 py-[17px] text-center text-[15.5px] font-bold text-brand-navyDeep shadow-[0_14px_28px_rgba(242,169,59,0.25)] disabled:cursor-not-allowed disabled:opacity-50 disabled:shadow-none"
-          >
-            Guardar entrada
-          </button>
-        </motion.div>
+        {/* Navegación entre pasos */}
+        <div className="mt-6 flex items-center gap-3">
+          {paso > PASO_EMOCIONES && (
+            <button
+              type="button"
+              onClick={() => irAPaso(paso - 1)}
+              className="rounded-full px-5 py-3.5 text-[15px] font-semibold text-white/80 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-white/30"
+            >
+              Atrás
+            </button>
+          )}
+          {paso < PASO_NOTA ? (
+            <button
+              type="button"
+              onClick={() => irAPaso(paso + 1)}
+              className={`ml-auto rounded-full px-8 py-3.5 text-[15px] font-bold focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-white/40 ${
+                pasoTieneContenido(paso)
+                  ? 'bg-white text-brand-navyDeep'
+                  : 'border border-white/30 text-white'
+              }`}
+            >
+              {pasoTieneContenido(paso) ? 'Siguiente' : 'Saltar'}
+            </button>
+          ) : (
+            <button
+              type="button"
+              disabled={!hayContenido}
+              onClick={handleGuardar}
+              className="ml-auto flex-1 rounded-full bg-gradient-to-br from-faro-1 to-faro-2 py-[15px] text-center text-[15.5px] font-bold text-brand-navyDeep shadow-[0_14px_28px_rgba(242,169,59,0.25)] disabled:cursor-not-allowed disabled:opacity-50 disabled:shadow-none"
+            >
+              Guardar entrada
+            </button>
+          )}
+        </div>
+
+        {/* Para dejarla a medias: guardar desde cualquier paso */}
+        {paso < PASO_NOTA && hayContenido && (
+          <div className="mt-4 text-center">
+            <button
+              type="button"
+              onClick={handleGuardar}
+              className="rounded-full px-4 py-2 text-sm font-semibold text-white underline decoration-white/50 underline-offset-4"
+            >
+              Guardar ahora
+            </button>
+          </div>
+        )}
       </div>
 
       {toastVisible && (
