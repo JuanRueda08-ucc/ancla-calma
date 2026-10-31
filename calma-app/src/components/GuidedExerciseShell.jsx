@@ -38,7 +38,7 @@ export default function GuidedExerciseShell({
     <div className={`relative min-h-screen overflow-hidden ${NIGHT_SKY_BG} text-white`}>
       <StarField />
 
-      <div className="relative z-[3] mx-auto flex min-h-screen max-w-[620px] flex-col px-5 pb-10 pt-10">
+      <div className="relative z-[3] mx-auto flex min-h-screen max-w-[620px] flex-col px-5 pb-10 pt-[calc(2.5rem+env(safe-area-inset-top))]">
         {/* título para lectores de pantalla; en pantalla manda cada paso */}
         <h1 className="sr-only">{title}</h1>
 

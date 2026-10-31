@@ -23,7 +23,7 @@ export default function EjercicioRespiracion() {
 
   return (
     <div className="relative min-h-screen overflow-hidden bg-[radial-gradient(120%_100%_at_50%_0%,#0A4B94_0%,#002E6B_62%)] text-white">
-      <div className="relative z-[3] mx-auto max-w-[620px] px-5 pb-20 pt-10">
+      <div className="relative z-[3] mx-auto max-w-[620px] px-5 pb-20 pt-[calc(2.5rem+env(safe-area-inset-top))]">
         <div className="flex items-center justify-between px-1 pt-1">
           <button
             type="button"

@@ -140,7 +140,7 @@ export default function UbicacionCompartida() {
       <div className="isla-resplandor isla-resplandor--auxilio pointer-events-none absolute inset-x-0 top-0 h-[45vh]" aria-hidden="true" />
       <StarField />
 
-      <div className="relative z-[2] mx-auto max-w-[620px] px-5 pb-16 pt-8">
+      <div className="relative z-[2] mx-auto max-w-[620px] px-5 pb-16 pt-[calc(2rem+env(safe-area-inset-top))]">
         <p className="mb-6 font-display text-[18px] uppercase tracking-[2px] text-white/80">Calma</p>
 
         {estado === 'cargando' && (

@@ -133,7 +133,7 @@ export default function Entrada() {
         </div>
       </motion.div>
 
-      <motion.div {...riseIn(0)} className="absolute right-6 top-6 z-[4]">
+      <motion.div {...riseIn(0)} className="absolute right-6 top-[calc(1.5rem+env(safe-area-inset-top))] z-[4]">
         <AccountMenu buttonClassName="bg-white/20 text-white" />
       </motion.div>
 
