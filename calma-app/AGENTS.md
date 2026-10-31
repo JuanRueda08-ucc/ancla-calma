@@ -25,6 +25,17 @@ Ver también: ../AGENTS.md (raíz), ../docs/ARCHITECTURE.md, ../docs/DECISIONS.m
   que las use necesita manejar estados de carga/error, no asumir que
   resuelven de forma síncrona.
 
+## Pruebas
+- Vitest + Testing Library (jsdom). Archivos `*.test.js(x)` junto al código.
+- Supabase siempre simulado con `src/test/supabaseFalso.js` (ver
+  `App.test.jsx` para montar la app en una ruta con o sin sesión). Nunca
+  apuntar las pruebas a la base real.
+- Todo arreglo de un error real agrega una prueba que falle con el error y
+  pase con el arreglo (comprobarlo reintroduciendo el error una vez), como la
+  de "volver a la pantalla de origen después de iniciar sesión".
+- Una tabla, política o función nueva en Supabase se agrega a
+  `scripts/seguridad.mjs` (`npm run test:seguridad`).
+
 ## Antes de escribir CSS/posicionamiento a mano
 Si el cambio involucra posicionar overlays o elementos sobre una imagen
 (como los resaltados del personaje pirata), usar SIEMPRE porcentajes

@@ -32,4 +32,16 @@ export default defineConfig({
   define: {
     'import.meta.env.VITE_BUILD_ID': JSON.stringify(BUILD_ID),
   },
+  // Pruebas (Vitest): DOM simulado con jsdom. Las variables de Supabase son
+  // de mentira a propósito: las pruebas nunca hablan con la base real (eso
+  // lo hace aparte `npm run test:seguridad`).
+  test: {
+    environment: 'jsdom',
+    setupFiles: ['./src/test/setup.js'],
+    include: ['src/**/*.test.{js,jsx}'],
+    env: {
+      VITE_SUPABASE_URL: 'http://supabase.prueba.local',
+      VITE_SUPABASE_ANON_KEY: 'clave-de-prueba',
+    },
+  },
 })

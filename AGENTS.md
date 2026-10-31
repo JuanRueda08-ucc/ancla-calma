@@ -18,6 +18,13 @@ solo un punto de entrada único):
 - Build: `npm run build`
 - Nueva migración de Supabase: `npm run db:migration nombre_descriptivo`
 - Aplicar migraciones: `npm run db:push` (requiere `supabase link` ya hecho una vez)
+- Lint: `npm run lint`
+- Pruebas (Vitest, Supabase simulado, no tocan la base real): `npm test`
+- Prueba de seguridad contra la base REAL como anónimo (solo lectura/intentos
+  rechazados, no cambia nada): `npm run test:seguridad` — correrla después de
+  cada migración que cree o cambie tablas, políticas o funciones
+- CI (GitHub Actions, `.github/workflows/ci.yml`): lint + pruebas + build en
+  cada PR. Un PR no se fusiona con el CI en rojo
 
 ## Convenciones
 - Commits en inglés, formato Conventional Commits (`feat:`, `fix:`, `chore:`, `docs:`)

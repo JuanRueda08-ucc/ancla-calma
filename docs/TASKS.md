@@ -132,6 +132,17 @@ otro agente. Al terminar una tarea significativa, actualizar este archivo.
   completa y las tipografías, aviso global de "sin conexión" e invitación a
   instalar en `/elegir` (botón en Android, instrucciones en iPhone). Sin
   conexión abren las líneas de ayuda, la respiración y Puerto Seguro.
+- Pruebas automáticas y CI:
+  - Vitest + Testing Library (26 pruebas): utilidades (WhatsApp, teléfonos,
+    distancias, duraciones), flujos con la app completa y Supabase simulado
+    (ruta inexistente → inicio, login vuelve a la pantalla de origen con red
+    lenta, Auxilio abierta sin sesión con sus líneas, acordeones de a una en
+    Señales y el Panel), aviso sin conexión e invitación a instalar.
+  - `npm run test:seguridad`: 29 comprobaciones contra la base real como
+    anónimo (ninguna tabla se lee/crea/cambia/borra sin cuenta, la función
+    de ubicación no entrega nada sin el token exacto, funciones internas y
+    notas de voz cerradas).
+  - GitHub Actions: lint + pruebas + build en cada PR.
 - Reestructuración de documentación multi-agente (AGENTS.md/CLAUDE.md
   anidados + carpeta docs/) — commiteada y verificada: Claude Code carga
   los CLAUDE.md anidados de calma-app/ y supabase/ al trabajar en esas
@@ -228,6 +239,12 @@ otro agente. Al terminar una tarea significativa, actualizar este archivo.
   función real detrás, no un placeholder a reemplazar por algo nuevo.
 
 ## Pendiente / ideas anotadas para retomar (sin fecha)
+- Pruebas de punta a punta en un navegador real (Playwright): iniciar
+  sesión de verdad con una cuenta de prueba, ubicación en vivo entre dos
+  pestañas, modo sin conexión. Pospuesto por espacio en disco (los
+  navegadores ocupan varios cientos de MB); podría correr solo en CI.
+- Proteger `main` en GitHub para exigir el check "CI" además de Vercel
+  (Settings → Branches), ahora que existe.
 - Rediseño estructural grande: layouts distintos por tipo de pantalla en
   vez de la misma plantilla (header + tarjetas apiladas + botón) repetida
   — quedó en pausa antes de la ronda de backend
