@@ -126,6 +126,14 @@ describe('Isla del Auxilio con sesión: marcación rápida', () => {
     expect(screen.getByRole('button', { name: '¿Eliminar?' })).toBeInTheDocument()
   })
 
+  it('todo lo que llama muestra el ícono de teléfono (contactos y líneas de ayuda)', async () => {
+    await abrirApp('/islas/auxilio', conContactos([contacto('1', 'Mamá', '+573001112233')]))
+    await screen.findByRole('link', { name: 'Llamar a Mamá' })
+    const enlacesQueLlaman = screen.getAllByRole('link').filter((a) => a.getAttribute('href')?.startsWith('tel:'))
+    expect(enlacesQueLlaman).toHaveLength(3)
+    for (const enlace of enlacesQueLlaman) expect(enlace.querySelector('svg')).not.toBeNull()
+  })
+
   it('las líneas de ayuda van en una barra fija abajo, también con sesión', async () => {
     await abrirApp('/islas/auxilio', conContactos([]))
     const linea = await screen.findByRole('link', { name: /Línea de la Vida/ })

@@ -25,6 +25,16 @@ const botonSecundario = 'rounded-full bg-black/10 text-sm font-semibold text-ink
 const inputClass =
   'mb-3 w-full rounded-lg border border-black/10 bg-white px-3 py-2.5 text-[14.5px] text-ink placeholder:text-ink-soft/50 focus:border-auxilio-1 focus:outline-none'
 
+// El teléfono es lo que dice "esto llama": se mantiene en los círculos de
+// contactos y en las líneas de ayuda aunque se simplifique lo demás.
+function TelefonoIcon({ className }) {
+  return (
+    <svg viewBox="0 0 24 24" className={className} fill="currentColor" aria-hidden="true">
+      <path d="M6.6 10.8a15.1 15.1 0 0 0 6.6 6.6l2.2-2.2a1 1 0 0 1 1-.25 11.4 11.4 0 0 0 3.6.57 1 1 0 0 1 1 1V20a1 1 0 0 1-1 1A17 17 0 0 1 3 4a1 1 0 0 1 1-1h3.5a1 1 0 0 1 1 1c0 1.25.2 2.45.57 3.57a1 1 0 0 1-.25 1z" />
+    </svg>
+  )
+}
+
 function UbicacionIcon({ className }) {
   return (
     <svg viewBox="0 0 24 24" className={className} fill="currentColor" aria-hidden="true">
@@ -456,8 +466,11 @@ export default function IslaAuxilio() {
                   aria-label={`Llamar a ${contacto.nombre}`}
                   className="group flex flex-col items-center gap-2 rounded-xl py-1 focus-visible:outline-none"
                 >
-                  <span className="flex h-16 w-16 items-center justify-center rounded-full bg-auxilio-1 text-xl font-bold text-white transition-transform group-active:scale-95 group-focus-visible:ring-4 group-focus-visible:ring-white/60">
+                  <span className="relative flex h-16 w-16 items-center justify-center rounded-full bg-auxilio-1 text-xl font-bold text-white transition-transform group-active:scale-95 group-focus-visible:ring-4 group-focus-visible:ring-white/60">
                     {obtenerIniciales(contacto.nombre)}
+                    <span className="absolute -bottom-0.5 -right-0.5 flex h-6 w-6 items-center justify-center rounded-full bg-white text-auxilio-1" aria-hidden="true">
+                      <TelefonoIcon className="h-3.5 w-3.5" />
+                    </span>
                   </span>
                   <span className="w-full truncate text-center text-[13px] font-semibold text-white">
                     {contacto.nombre.trim().split(/\s+/)[0]}
@@ -744,7 +757,10 @@ export default function IslaAuxilio() {
                 aria-label={`Llamar a ${linea.nombre}, ${linea.telefono}`}
                 className="flex min-h-[60px] flex-col items-center justify-center rounded-xl bg-white px-2 py-2 text-center focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-auxilio-2"
               >
-                <span className="whitespace-nowrap text-[16px] font-bold leading-tight text-ink">{linea.telefono}</span>
+                <span className="flex items-center gap-1.5 whitespace-nowrap text-[16px] font-bold leading-tight text-ink">
+                  <TelefonoIcon className="h-3.5 w-3.5 flex-shrink-0 text-auxilio-1" />
+                  {linea.telefono}
+                </span>
                 <span className="mt-0.5 whitespace-nowrap text-[12px] leading-tight text-ink-soft">{linea.nombre}</span>
               </a>
             ))}
