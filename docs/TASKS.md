@@ -20,7 +20,9 @@ otro agente. Al terminar una tarea significativa, actualizar este archivo.
 - Rediseño de ElegirCamino (PR #4, ya en main): continúa el cielo
   nocturno de Entrada; dos franjas de luz en vez de tarjetas con emoji
   ("Necesito ayuda" coral→ámbar con salvavidas, "Quiero ayudar"
-  verde→azul con farol de mano), botón "← Volver" a `/`.
+  verde→azul con farol de mano), botón "← Volver" a `/`. En móvil las
+  franjas salían por el borde derecho y en el celular se veían cortadas;
+  desde octubre 2026 son tarjetas completas con margen a ambos lados.
 - Rediseño de Islas: mapa del archipiélago visto desde arriba, como una
   carta náutica. Las 4 islas dibujadas en SVG con su color y un símbolo
   (boya, remolinos de viento, faro con su haz, banderas de señales),
