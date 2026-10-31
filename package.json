@@ -6,6 +6,9 @@
     "dev": "npm run dev --prefix calma-app",
     "build": "npm run build --prefix calma-app",
     "install:app": "npm install --prefix calma-app",
+    "lint": "npm run lint --prefix calma-app",
+    "test": "npm run test --prefix calma-app",
+    "test:seguridad": "npm run test:seguridad --prefix calma-app",
     "db:push": "supabase db push",
     "db:migration": "supabase migration new"
   }

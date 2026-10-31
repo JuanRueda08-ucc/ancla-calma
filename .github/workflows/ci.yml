@@ -1,0 +1,45 @@
+# Revisa cada PR (y cada push a main): lint, pruebas y compilación.
+# Las pruebas usan un Supabase falso; no necesitan secretos ni tocan la base
+# real. La prueba de seguridad contra la base (npm run test:seguridad) se
+# corre a mano, no aquí.
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  calma-app:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    defaults:
+      run:
+        working-directory: calma-app
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+          cache-dependency-path: calma-app/package-lock.json
+
+      - run: npm ci
+
+      - name: Lint
+        run: npm run lint
+
+      - name: Pruebas
+        run: npm test
+
+      - name: Compilación
+        run: npm run build
+        env:
+          # el build exige estas variables; en CI basta con valores de relleno
+          VITE_SUPABASE_URL: https://ci.supabase.invalid
+          VITE_SUPABASE_ANON_KEY: clave-de-ci
