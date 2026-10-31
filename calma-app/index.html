@@ -9,7 +9,9 @@
     <meta name="description" content="Calma: acompañamiento emocional del Proyecto ANCLA." />
     <!-- App instalable (PWA): Android usa el manifiesto; iPhone usa las
          etiquetas apple-* al "Agregar a pantalla de inicio". -->
-    <link rel="manifest" href="/manifest.webmanifest" />
+    <!-- use-credentials: en los previews protegidos de Vercel el manifiesto
+         solo carga con la cookie de acceso; en producción no cambia nada -->
+    <link rel="manifest" href="/manifest.webmanifest" crossorigin="use-credentials" />
     <link rel="apple-touch-icon" href="/icons/apple-touch-icon.png" />
     <meta name="apple-mobile-web-app-capable" content="yes" />
     <meta name="mobile-web-app-capable" content="yes" />
