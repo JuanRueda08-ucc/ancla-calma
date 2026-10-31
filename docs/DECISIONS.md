@@ -148,6 +148,14 @@ algo que parecía un bug era en realidad una decisión deliberada. Antes de
   avisa arriba de la pantalla.
 - El service worker solo se registra en producción (`import.meta.env.PROD`)
   para no interferir con la recarga en caliente de desarrollo.
+- **Barra de estado en iPhone (app instalada): `black-translucent` +
+  `viewport-fit=cover`.** El fondo de cada pantalla llega hasta arriba,
+  detrás de la hora y la batería (los fondos no empiezan todos con el mismo
+  color, así que no sirve pintar esa franja con un color fijo). Lo que va
+  arriba se baja con `env(safe-area-inset-top)`: `ScreenHeader`, el botón de
+  cuenta de Entrada, la respiración, `GuidedExerciseShell`,
+  `UbicacionCompartida` y `AvisoSinConexion`. Una pantalla nueva que no use
+  `ScreenHeader` necesita ese mismo margen.
 
 ## Privacidad
 - **La política de privacidad declara explícitamente que la transcripción

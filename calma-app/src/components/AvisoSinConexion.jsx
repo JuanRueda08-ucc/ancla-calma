@@ -22,7 +22,7 @@ export default function AvisoSinConexion() {
   // Franja dentro del flujo de la página (no flotante): empuja la pantalla
   // hacia abajo en vez de tapar "Volver" y el botón de cuenta.
   return (
-    <div role="status" className="bg-white">
+    <div role="status" className="bg-white pt-[env(safe-area-inset-top)]">
       <p className="mx-auto max-w-[620px] px-5 py-2 text-center text-[13px] font-medium leading-snug text-ink">
         Sin conexión: las líneas de ayuda y los ejercicios funcionan; lo demás vuelve al
         reconectarte.
