@@ -77,6 +77,12 @@ otro agente. Al terminar una tarea significativa, actualizar este archivo.
   emoji y se iluminan en coral al marcarlas. "Ver historial" pasa a enlace
   junto al título; el toast de éxito es blanco para leerse sobre la noche;
   🗑️ del historial pasa a "Eliminar entrada" (misma confirmación inline).
+- Perfil con la noche estrellada. Arriba, el avatar guardado en grande con
+  el nombre y el correo; debajo, la tarjeta blanca de avatar y nombre.
+  "Cambiar correo" y "Cambiar contraseña" pasan a filas plegables (mismos
+  formularios), "Cerrar sesión" es una fila, y "Eliminar mi cuenta" es una
+  fila roja plegada que abre la misma confirmación de escribir ELIMINAR.
+  Sin cambios de lógica (Supabase, cierre de sesión, Edge Function).
 - Reestructuración de documentación multi-agente (AGENTS.md/CLAUDE.md
   anidados + carpeta docs/) — commiteada y verificada: Claude Code carga
   los CLAUDE.md anidados de calma-app/ y supabase/ al trabajar en esas
