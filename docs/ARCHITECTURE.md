@@ -11,7 +11,7 @@
 /                                              → Entrada (splash)
 /elegir                                        → ElegirCamino (Necesito ayuda / Quiero ayudar)
 /islas                                         → Islas (menú, vuelve a /elegir)
-/islas/auxilio        [protegida]              → IslaAuxilio (vuelve a /islas)
+/islas/auxilio        [libre; contactos con sesión] → IslaAuxilio (vuelve a /islas)
 /islas/aire                                    → IslaAireMenu (vuelve a /islas)
 /islas/aire/respiracion                        → EjercicioRespiracion (vuelve a /islas/aire)
 /islas/aire/puerto-seguro                      → PuertoSeguro (vuelve a /islas/aire)

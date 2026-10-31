@@ -171,6 +171,13 @@ algo que parecía un bug era en realidad una decisión deliberada. Antes de
   acceso a la cuenta) que ameritan su propia confirmación explícita y
   aislada, sin mezclarse con otros cambios pendientes en la misma
   pantalla.
+- **`/islas/auxilio` es de acceso libre, no va detrás de `RequireAuth`.**
+  Las líneas de ayuda profesional tienen que estar a un toque para alguien
+  en crisis, sin pasar antes por un login. Solo la parte de contactos de
+  confianza necesita cuenta (viven en Supabase con RLS): sin sesión, la
+  pantalla no pide contactos y muestra "inicia sesión" en ese bloque
+  (estado `sin-sesion`, mismo patrón que el Panel de Acompañamiento). No
+  volver a envolver la ruta en `RequireAuth` sin revisar esta nota.
 
 ## Eliminar cuenta
 - **Eliminar cuenta pide escribir "ELIMINAR" exacto (sensible a

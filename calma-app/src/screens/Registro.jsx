@@ -33,8 +33,9 @@ export default function Registro() {
 
   const from = location.state?.from ?? '/islas'
 
+  // Igual que en Login: si ya hay sesión, volver a la pantalla de origen.
   if (!authLoading && user) {
-    return <Navigate to="/islas" replace />
+    return <Navigate to={from} replace />
   }
 
   const handleSubmit = async (e) => {

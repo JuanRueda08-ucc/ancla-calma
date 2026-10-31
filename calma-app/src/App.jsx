@@ -29,14 +29,10 @@ export default function App() {
           <Route path="/" element={<Entrada />} />
           <Route path="/elegir" element={<ElegirCamino />} />
           <Route path="/islas" element={<Islas />} />
-          <Route
-            path="/islas/auxilio"
-            element={
-              <RequireAuth>
-                <IslaAuxilio />
-              </RequireAuth>
-            }
-          />
+          {/* Ruta abierta: las líneas de ayuda profesional no deben pedir
+              cuenta. Solo los contactos de confianza requieren sesión, y eso
+              lo maneja la propia pantalla. */}
+          <Route path="/islas/auxilio" element={<IslaAuxilio />} />
           <Route path="/islas/aire" element={<IslaAireMenu />} />
           <Route path="/islas/aire/respiracion" element={<EjercicioRespiracion />} />
           <Route path="/islas/aire/puerto-seguro" element={<PuertoSeguro />} />

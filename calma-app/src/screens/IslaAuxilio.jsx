@@ -1,9 +1,11 @@
 import { useEffect, useRef, useState } from 'react'
+import { useLocation, useNavigate } from 'react-router-dom'
 import { motion } from 'framer-motion'
 import ScreenHeader from '../components/ScreenHeader'
 import StarField from '../components/StarField'
 import '../styles/islaNoche.css'
 import { riseIn } from '../animations/transitions'
+import { useAuth } from '../context/AuthContext'
 import { getContactos, guardarContacto, eliminarContacto, normalizarTelefono } from '../utils/contactosStorage'
 import { obtenerUbicacion, construirLinkMapa, construirLinkWhatsApp } from '../utils/compartirUbicacion'
 
@@ -66,10 +68,13 @@ function leerContactosLocalStorage() {
 }
 
 export default function IslaAuxilio() {
+  const { user, loading: authLoading } = useAuth()
+  const navigate = useNavigate()
+  const location = useLocation()
   const [toast, setToast] = useState(null)
   const toastTimeout = useRef(null)
 
-  const [cargaEstado, setCargaEstado] = useState('cargando') // 'cargando' | 'error' | 'listo'
+  const [cargaEstado, setCargaEstado] = useState('cargando') // 'cargando' | 'sin-sesion' | 'error' | 'listo'
   const [contactos, setContactos] = useState([])
   const [formAbierto, setFormAbierto] = useState(false)
   const [editandoId, setEditandoId] = useState(null)
@@ -93,7 +98,14 @@ export default function IslaAuxilio() {
   const [compartirErrorMsg, setCompartirErrorMsg] = useState('')
   const [contactoProblema, setContactoProblema] = useState(null)
 
+  // La isla es de acceso libre para que las líneas profesionales estén
+  // siempre a mano; sin sesión no se piden contactos (fallaría por RLS) y se
+  // muestra la invitación a iniciar sesión en su lugar.
   const cargarContactos = async () => {
+    if (!user) {
+      setCargaEstado('sin-sesion')
+      return
+    }
     setCargaEstado('cargando')
     try {
       const data = await getContactos()
@@ -113,8 +125,14 @@ export default function IslaAuxilio() {
   }
 
   useEffect(() => {
+    if (authLoading) return
     cargarContactos()
-  }, [])
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [authLoading, user])
+
+  const irAIniciarSesion = (ruta) => {
+    navigate(ruta, { state: { from: location.pathname } })
+  }
 
   useEffect(() => {
     return () => {
@@ -327,6 +345,33 @@ export default function IslaAuxilio() {
               className="h-8 w-8 animate-spin rounded-full border-2 border-white/30 border-t-white"
             />
           </div>
+        )}
+
+        {cargaEstado === 'sin-sesion' && (
+          <motion.section {...riseIn(0.06)} className="mb-4">
+            <h2 className="mb-3 text-[15px] font-semibold text-white">Tus personas de confianza</h2>
+            <div className={`text-center ${cardClass}`}>
+              <p className="mb-4 text-sm text-ink-soft">
+                Para agregar a tus personas de confianza y llamarlas con un toque, inicia sesión.
+              </p>
+              <div className="flex justify-center gap-2">
+                <button
+                  type="button"
+                  onClick={() => irAIniciarSesion('/login')}
+                  className={`px-5 py-2.5 ${botonPrincipal}`}
+                >
+                  Iniciar sesión
+                </button>
+                <button
+                  type="button"
+                  onClick={() => irAIniciarSesion('/registro')}
+                  className={`px-5 py-2.5 ${botonSecundario}`}
+                >
+                  Crear cuenta
+                </button>
+              </div>
+            </div>
+          </motion.section>
         )}
 
         {cargaEstado === 'error' && (
