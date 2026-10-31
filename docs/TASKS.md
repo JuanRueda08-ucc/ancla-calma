@@ -102,6 +102,20 @@ otro agente. Al terminar una tarea significativa, actualizar este archivo.
   pantalla de origen. Antes Login/Registro tenían un `<Navigate to="/islas">`
   que corría antes del `navigate(from)` en cuanto llegaba la sesión, así que
   siempre terminaban en /islas aunque se viniera de Auxilio, Faro o Bitácora.
+- Revisión de punta a punta (19 rutas en móvil) y arreglos:
+  - Una ruta inexistente dejaba la página en blanco: ahora redirige a `/`.
+  - El enlace a la política de privacidad en Registro abre en otra
+    pestaña; antes cambiaba de pantalla y se perdía lo ya escrito.
+  - `/privacidad` pasa a la noche (texto en hoja blanca), la última pantalla
+    que quedaba en estilo claro.
+  - Fondo base del `body` nocturno y `theme-color` navy: sin destellos
+    claros al rebotar el scroll en iOS o mientras carga.
+  - "Iniciar sesión" desde el menú de cuenta vuelve a la pantalla actual.
+  - Respiración y ejercicios guiados tienen `h1` (en los guiados, solo para
+    lectores de pantalla) y controles con íconos SVG en vez de ←, 🔊, ⏸, ×.
+  - Botón de cuenta y su menú con íconos SVG en vez de 👤 🚪 🔑; Perfil usa
+    los íconos compartidos de `components/Iconos.jsx`.
+  - Enlaces "Regístrate" / "Inicia sesión" con área táctil más alta.
 - Reestructuración de documentación multi-agente (AGENTS.md/CLAUDE.md
   anidados + carpeta docs/) — commiteada y verificada: Claude Code carga
   los CLAUDE.md anidados de calma-app/ y supabase/ al trabajar en esas

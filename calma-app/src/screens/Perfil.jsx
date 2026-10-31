@@ -4,6 +4,7 @@ import { AnimatePresence, motion } from 'framer-motion'
 import '../styles/islaNoche.css'
 import ScreenHeader from '../components/ScreenHeader'
 import StarField from '../components/StarField'
+import { ChevronIcon, PersonaIcon, SalirIcon } from '../components/Iconos'
 import { riseIn } from '../animations/transitions'
 import { useAuth } from '../context/AuthContext'
 import { supabase } from '../lib/supabaseClient'
@@ -27,33 +28,6 @@ function mapUpdateEmailError(error) {
     return 'Ese correo ya está en uso por otra cuenta.'
   }
   return 'No pudimos actualizar tu correo. Intenta de nuevo.'
-}
-
-function ChevronIcon({ className }) {
-  return (
-    <svg viewBox="0 0 24 24" className={className} fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-      <path d="M6 9l6 6 6-6" />
-    </svg>
-  )
-}
-
-function PersonaIcon({ className }) {
-  return (
-    <svg viewBox="0 0 24 24" className={className} fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-      <circle cx="12" cy="8" r="4" />
-      <path d="M4 21a8 8 0 0 1 16 0" />
-    </svg>
-  )
-}
-
-function SalirIcon({ className }) {
-  return (
-    <svg viewBox="0 0 24 24" className={className} fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-      <path d="M15 4h3a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2h-3" />
-      <path d="M10 17l-5-5 5-5" />
-      <path d="M5 12h11" />
-    </svg>
-  )
 }
 
 // Fila de ajustes que se despliega: correo, contraseña y eliminar cuenta

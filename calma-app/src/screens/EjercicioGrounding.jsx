@@ -53,6 +53,7 @@ export default function EjercicioGrounding() {
 
   return (
     <GuidedExerciseShell
+      title="Ejercicio de grounding"
       totalSteps={PASOS.length}
       currentStep={pasoIndex + 1}
       durationSeconds={180}

@@ -1,5 +1,7 @@
 import { motion } from 'framer-motion'
+import '../styles/islaNoche.css'
 import ScreenHeader from '../components/ScreenHeader'
+import StarField from '../components/StarField'
 import { riseIn } from '../animations/transitions'
 
 const CORREO_CONTACTO = 'juanjoruedav@gmail.com'
@@ -14,13 +16,17 @@ function CorreoContacto() {
 
 export default function Privacidad() {
   return (
-    <div className="min-h-screen bg-gradient-to-b from-sand to-sand-deep">
-      <div className="mx-auto max-w-[620px] px-6 py-10">
+    <div className="isla-noche-bg relative min-h-[100dvh] overflow-hidden">
+      <StarField />
+
+      <div className="relative z-[2] mx-auto max-w-[620px] px-5 pb-16 pt-10">
         <ScreenHeader backTo="/registro" showAccount={false} />
 
+        {/* El texto legal va en una hoja blanca sobre la noche, como la
+            Bitácora: se lee mejor en bloques largos. */}
         <motion.div
           {...riseIn(0)}
-          className="rounded-lg bg-white p-6 shadow-[0_8px_22px_rgba(0,0,0,0.06)] sm:p-8"
+          className="rounded-lg bg-white p-6 shadow-[0_8px_22px_rgba(0,0,0,0.12)] sm:p-8"
         >
           <h1 className="mb-1.5 text-[22px] font-semibold text-ink">Política de privacidad</h1>
           <p className="mb-6 text-sm text-ink-soft/70">

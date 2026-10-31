@@ -7,7 +7,7 @@ export default function RequireAuth({ children }) {
 
   if (loading) {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-[#04122A] text-white/75">
+      <div className="flex min-h-screen items-center justify-center bg-brand-navyDeep text-white/75">
         Cargando…
       </div>
     )
