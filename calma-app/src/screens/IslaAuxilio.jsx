@@ -25,6 +25,8 @@ const botonSecundario = 'rounded-full bg-black/10 text-sm font-semibold text-ink
 const inputClass =
   'mb-3 w-full rounded-lg border border-black/10 bg-white px-3 py-2.5 text-[14.5px] text-ink placeholder:text-ink-soft/50 focus:border-auxilio-1 focus:outline-none'
 
+// El teléfono es lo que dice "esto llama": se mantiene en los círculos de
+// contactos y en las líneas de ayuda aunque se simplifique lo demás.
 function TelefonoIcon({ className }) {
   return (
     <svg viewBox="0 0 24 24" className={className} fill="currentColor" aria-hidden="true">
@@ -331,7 +333,8 @@ export default function IslaAuxilio() {
       {/* resplandor cálido: marca la isla de auxilio dentro de la misma noche */}
       <div className="isla-resplandor isla-resplandor--auxilio pointer-events-none absolute inset-x-0 top-0 h-[55vh]" aria-hidden="true" />
       <StarField />
-      <div className="relative z-[2] mx-auto max-w-[620px] px-5 pb-20 pt-10">
+      {/* pb alto: deja espacio para la barra fija de líneas de ayuda */}
+      <div className="relative z-[2] mx-auto max-w-[620px] px-5 pb-[calc(9rem+env(safe-area-inset-bottom))] pt-10">
         <ScreenHeader backTo="/islas" accountButtonClassName="bg-white/20 text-white" />
 
         <motion.div {...riseIn(0)} className="mb-8">
@@ -451,12 +454,51 @@ export default function IslaAuxilio() {
           </motion.div>
         )}
 
-        {cargaEstado === 'listo' && contactos.map((contacto, index) => (
-          <motion.div
-            key={contacto.id}
-            {...riseIn(0.08 + index * 0.06)}
-            className={`mb-3 ${cardClass}`}
-          >
+        {/* Marcación rápida: cada contacto es un círculo que llama de un toque,
+            como en el teléfono. "Agregar" ocupa el siguiente lugar libre. Como
+            nunca hay más de 3 círculos (máximo 3 contactos), van centrados. */}
+        {cargaEstado === 'listo' && contactos.length > 0 && !administrando && (
+          <motion.ul {...riseIn(0.08)} className="mb-6 flex justify-center gap-6 sm:gap-10">
+            {contactos.map((contacto) => (
+              <li key={contacto.id} className="w-20">
+                <a
+                  href={`tel:${normalizarTelefono(contacto.telefono)}`}
+                  aria-label={`Llamar a ${contacto.nombre}`}
+                  className="group flex flex-col items-center gap-2 rounded-xl py-1 focus-visible:outline-none"
+                >
+                  <span className="relative flex h-16 w-16 items-center justify-center rounded-full bg-auxilio-1 text-xl font-bold text-white transition-transform group-active:scale-95 group-focus-visible:ring-4 group-focus-visible:ring-white/60">
+                    {obtenerIniciales(contacto.nombre)}
+                    <span className="absolute -bottom-0.5 -right-0.5 flex h-6 w-6 items-center justify-center rounded-full bg-white text-auxilio-1" aria-hidden="true">
+                      <TelefonoIcon className="h-3.5 w-3.5" />
+                    </span>
+                  </span>
+                  <span className="w-full truncate text-center text-[13px] font-semibold text-white">
+                    {contacto.nombre.trim().split(/\s+/)[0]}
+                  </span>
+                </a>
+              </li>
+            ))}
+            {contactos.length < MAX_CONTACTOS && !formAbierto && (
+              <li className="w-20">
+                <button
+                  type="button"
+                  onClick={abrirFormularioNuevo}
+                  aria-label="Agregar contacto de confianza"
+                  className="group flex w-full flex-col items-center gap-2 rounded-xl py-1 focus-visible:outline-none"
+                >
+                  <span className="flex h-16 w-16 items-center justify-center rounded-full border-[1.5px] border-dashed border-white/35 text-2xl text-white/70 group-focus-visible:ring-4 group-focus-visible:ring-white/60" aria-hidden="true">
+                    +
+                  </span>
+                  <span className="text-[13px] font-semibold text-white/70">Agregar</span>
+                </button>
+              </li>
+            )}
+          </motion.ul>
+        )}
+
+        {/* "Administrar": filas con teléfono, Editar y Eliminar (confirmación en dos pasos) */}
+        {cargaEstado === 'listo' && mostrarAcciones && contactos.map((contacto) => (
+          <div key={contacto.id} className={`mb-3 ${cardClass}`}>
             <div className="flex items-center gap-3.5">
               <div className="flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-full bg-auxilio-bg text-base font-bold text-auxilio-1">
                 {obtenerIniciales(contacto.nombre)}
@@ -466,14 +508,6 @@ export default function IslaAuxilio() {
                 <p className="text-[13px] text-ink-soft">{contacto.telefono}</p>
               </div>
             </div>
-
-            <a
-              href={`tel:${normalizarTelefono(contacto.telefono)}`}
-              className="mt-4 flex w-full items-center justify-center gap-2.5 rounded-full bg-brand-navy py-3.5 text-[15px] font-bold text-white shadow-[0_10px_20px_rgba(0,46,107,0.22)] focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-auxilio-2"
-            >
-              <TelefonoIcon className="h-5 w-5" />
-              Llamar a {contacto.nombre.trim().split(/\s+/)[0]}
-            </a>
 
             {mostrarAcciones && (
               <div className="mt-3 flex items-center justify-end gap-2 border-t border-black/5 pt-3">
@@ -518,19 +552,8 @@ export default function IslaAuxilio() {
                 )}
               </div>
             )}
-          </motion.div>
+          </div>
         ))}
-
-        {cargaEstado === 'listo' && contactos.length > 0 && contactos.length < MAX_CONTACTOS && !formAbierto && (
-          <motion.button
-            {...riseIn(0.1 + contactos.length * 0.06)}
-            type="button"
-            onClick={abrirFormularioNuevo}
-            className="mb-3 w-full rounded-full border-[1.5px] border-dashed border-white/50 py-3 text-sm font-semibold text-white"
-          >
-            + Agregar otro contacto
-          </motion.button>
-        )}
 
         {formAbierto && (
           <motion.div
@@ -595,19 +618,19 @@ export default function IslaAuxilio() {
             type="button"
             disabled={compartirEstado === 'cargando'}
             onClick={iniciarCompartirUbicacion}
-            className="mb-3 mt-3 flex w-full items-center gap-3 rounded-full bg-white py-3.5 pl-3.5 pr-5 text-left shadow-[0_10px_24px_rgba(0,0,0,0.08)] disabled:opacity-70"
+            className="mb-3 mt-1 flex min-h-[68px] w-full items-center gap-3 rounded-full border border-white/20 bg-white/[0.08] py-3 pl-3 pr-5 text-left focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-white/30 disabled:opacity-70"
           >
-            <span className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-full bg-senales-bg text-senales-1">
+            <span className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-full bg-white/10 text-white">
               {compartirEstado === 'cargando' ? (
                 <span
                   aria-hidden="true"
-                  className="h-4 w-4 animate-spin rounded-full border-2 border-senales-1/30 border-t-senales-1"
+                  className="h-4 w-4 animate-spin rounded-full border-2 border-white/30 border-t-white"
                 />
               ) : (
                 <UbicacionIcon className="h-5 w-5" />
               )}
             </span>
-            <span className="text-[15px] font-semibold text-ink">
+            <span className="text-[15px] font-semibold text-white">
               {compartirEstado === 'cargando' ? 'Obteniendo tu ubicación…' : 'Compartir mi ubicación'}
             </span>
           </motion.button>
@@ -714,36 +737,43 @@ export default function IslaAuxilio() {
           />
         )}
 
-        <motion.h2 {...riseIn(0.22)} className="mb-3 text-[15px] font-semibold text-white">
-          Líneas de apoyo profesional
-        </motion.h2>
-
-        <motion.div {...riseIn(0.28)} className="divide-y divide-black/5 rounded-lg bg-white px-5 py-1 shadow-[0_8px_22px_rgba(0,0,0,0.04)]">
-          {LINEAS_APOYO.map((linea) => (
-            <a
-              key={linea.nombre}
-              href={`tel:${linea.telefono.replace(/\s/g, '')}`}
-              aria-label={`Llamar a ${linea.nombre}, ${linea.telefono}`}
-              className="flex items-center justify-between gap-3 py-3.5"
-            >
-              <span>
-                <span className="block font-semibold text-ink">{linea.nombre}</span>
-                <span className="block text-sm font-semibold text-auxilio-1">{linea.telefono}</span>
-              </span>
-              <span className="flex h-11 w-11 flex-shrink-0 items-center justify-center rounded-full bg-auxilio-bg text-auxilio-1">
-                <TelefonoIcon className="h-5 w-5" />
-              </span>
-            </a>
-          ))}
-        </motion.div>
       </div>
+
+      {/* Líneas de ayuda fijas abajo, al alcance del pulgar: no se van con el
+          scroll y funcionan sin sesión y sin conexión (llamar no usa datos). */}
+      <section
+        aria-labelledby="auxilio-lineas"
+        className="fixed inset-x-0 bottom-0 z-[5] border-t border-white/10 bg-brand-navyDeep/95 pb-[max(0.75rem,env(safe-area-inset-bottom))] pt-2.5 backdrop-blur"
+      >
+        <div className="mx-auto max-w-[620px] px-5">
+          <h2 id="auxilio-lineas" className="mb-2 text-[13px] font-medium text-white/60">
+            Líneas de apoyo profesional
+          </h2>
+          <div className="grid grid-cols-2 gap-2.5">
+            {LINEAS_APOYO.map((linea) => (
+              <a
+                key={linea.nombre}
+                href={`tel:${linea.telefono.replace(/\s/g, '')}`}
+                aria-label={`Llamar a ${linea.nombre}, ${linea.telefono}`}
+                className="flex min-h-[60px] flex-col items-center justify-center rounded-xl bg-white px-2 py-2 text-center focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-auxilio-2"
+              >
+                <span className="flex items-center gap-1.5 whitespace-nowrap text-[16px] font-bold leading-tight text-ink">
+                  <TelefonoIcon className="h-3.5 w-3.5 flex-shrink-0 text-auxilio-1" />
+                  {linea.telefono}
+                </span>
+                <span className="mt-0.5 whitespace-nowrap text-[12px] leading-tight text-ink-soft">{linea.nombre}</span>
+              </a>
+            ))}
+          </div>
+        </div>
+      </section>
 
       {toast && (
         <motion.div
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
           exit={{ opacity: 0 }}
-          className="pointer-events-none fixed inset-x-0 bottom-8 flex justify-center px-5"
+          className="pointer-events-none fixed inset-x-0 bottom-[calc(7.5rem+env(safe-area-inset-bottom))] z-[6] flex justify-center px-5"
         >
           <div className="rounded-full bg-ink px-5 py-3 text-sm font-medium text-white shadow-lg">
             {toast}

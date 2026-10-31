@@ -144,7 +144,7 @@ export default function UbicacionEnVivoPanel({ contactos, onAgregarContacto, onE
         <button
           type="button"
           onClick={() => setPaso('duracion')}
-          className="flex w-full items-center gap-3 rounded-full border border-white/20 bg-white/[0.08] py-3.5 pl-3.5 pr-5 text-left focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-white/30"
+          className="flex min-h-[68px] w-full items-center gap-3 rounded-full border border-white/20 bg-white/[0.08] py-3 pl-3 pr-5 text-left focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-white/30"
         >
           <span className="relative flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-full bg-white/10" aria-hidden="true">
             <span className="h-2.5 w-2.5 rounded-full bg-auxilio-1" />
@@ -152,7 +152,7 @@ export default function UbicacionEnVivoPanel({ contactos, onAgregarContacto, onE
           </span>
           <span>
             <span className="block text-[15px] font-semibold text-white">Compartir ubicación en vivo</span>
-            <span className="block text-[13px] text-white/65">Tu contacto ve dónde estás mientras dure</span>
+            <span className="block text-[13px] text-white/60">Por 15 min, 1 h o 4 h</span>
           </span>
         </button>
       )}
