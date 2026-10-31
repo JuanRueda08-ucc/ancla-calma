@@ -143,6 +143,12 @@ otro agente. Al terminar una tarea significativa, actualizar este archivo.
     de ubicación no entrega nada sin el token exacto, funciones internas y
     notas de voz cerradas).
   - GitHub Actions: lint + pruebas + build en cada PR.
+- Isla del Auxilio como marcación rápida (primer layout del rediseño
+  estructural): cada contacto es un círculo con sus iniciales que llama de
+  un toque, con "Agregar" en el siguiente lugar libre; "Administrar" cambia
+  a filas con teléfono, Editar y Eliminar. Las líneas de ayuda quedan en una
+  barra fija abajo, al alcance del pulgar, con el número en grande. Lógica de
+  contactos, compartir ubicación y ubicación en vivo sin cambios.
 - Reestructuración de documentación multi-agente (AGENTS.md/CLAUDE.md
   anidados + carpeta docs/) — commiteada y verificada: Claude Code carga
   los CLAUDE.md anidados de calma-app/ y supabase/ al trabajar en esas
@@ -244,9 +250,11 @@ otro agente. Al terminar una tarea significativa, actualizar este archivo.
   sesión de verdad con una cuenta de prueba, ubicación en vivo entre dos
   pestañas, modo sin conexión. Pospuesto por espacio en disco (los
   navegadores ocupan varios cientos de MB); podría correr solo en CI.
-- Rediseño estructural grande: layouts distintos por tipo de pantalla en
-  vez de la misma plantilla (header + tarjetas apiladas + botón) repetida
-  — quedó en pausa antes de la ronda de backend
+- Rediseño estructural: layouts distintos por tipo de pantalla en vez de
+  la misma plantilla (header + tarjetas apiladas + botón). Hecho: Isla del
+  Auxilio como marcación rápida. Propuestos y pendientes de decidir:
+  Bitácora una pregunta a la vez, Señales en mosaico, Panel con pestañas
+  (Ahora / Señales / Guía), Historial como línea de tiempo por días.
 - Ubicación en vivo en segundo plano (seguir enviando con el teléfono
   bloqueado o con otra app abierta): no es posible en una app web; requeriría
   una app nativa. Ver DECISIONS.md → Ubicación.

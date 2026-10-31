@@ -88,6 +88,52 @@ describe('Isla del Auxilio sin sesión', () => {
   })
 })
 
+describe('Isla del Auxilio con sesión: marcación rápida', () => {
+  const contacto = (id, nombre, telefono) => ({ id, nombre, telefono })
+  const conContactos = (lista) => ({
+    sesion: SESION,
+    respuestas: {
+      contactos_confianza: { data: lista, error: null },
+      ubicaciones_en_vivo: { data: null, error: null },
+      profiles: { data: { avatar_id: null, display_name: null }, error: null },
+    },
+  })
+
+  it('cada contacto es un círculo que llama de un toque', async () => {
+    await abrirApp('/islas/auxilio', conContactos([contacto('1', 'Mamá', '+57 300 111 2233')]))
+    const llamar = await screen.findByRole('link', { name: 'Llamar a Mamá' })
+    expect(llamar).toHaveAttribute('href', 'tel:+573001112233')
+    expect(screen.getByRole('button', { name: 'Agregar contacto de confianza' })).toBeInTheDocument()
+  })
+
+  it('con 3 contactos ya no ofrece agregar otro', async () => {
+    await abrirApp(
+      '/islas/auxilio',
+      conContactos([contacto('1', 'Ana', '+571'), contacto('2', 'Beto', '+572'), contacto('3', 'Caro', '+573')]),
+    )
+    await screen.findByRole('link', { name: 'Llamar a Caro' })
+    expect(screen.queryByRole('button', { name: 'Agregar contacto de confianza' })).not.toBeInTheDocument()
+  })
+
+  it('"Administrar" muestra Editar y Eliminar con confirmación en dos pasos', async () => {
+    const usuario = userEvent.setup()
+    await abrirApp('/islas/auxilio', conContactos([contacto('1', 'Mamá', '+573001112233')]))
+    await usuario.click(await screen.findByRole('button', { name: 'Administrar' }))
+
+    expect(screen.queryByRole('link', { name: 'Llamar a Mamá' })).not.toBeInTheDocument()
+    expect(screen.getByRole('button', { name: 'Editar a Mamá' })).toBeInTheDocument()
+    await usuario.click(screen.getByRole('button', { name: 'Eliminar a Mamá' }))
+    expect(screen.getByRole('button', { name: '¿Eliminar?' })).toBeInTheDocument()
+  })
+
+  it('las líneas de ayuda van en una barra fija abajo, también con sesión', async () => {
+    await abrirApp('/islas/auxilio', conContactos([]))
+    const linea = await screen.findByRole('link', { name: /Línea de la Vida/ })
+    expect(linea.closest('section').className).toMatch(/\bfixed\b/)
+    expect(linea.closest('section').className).toMatch(/\bbottom-0\b/)
+  })
+})
+
 describe('acordeones: una sola sección abierta a la vez', () => {
   const abiertas = () =>
     screen
