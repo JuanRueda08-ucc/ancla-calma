@@ -130,7 +130,7 @@ export default function Login() {
             <Link
               to="/registro"
               state={location.state}
-              className="font-semibold text-white underline decoration-white/50 underline-offset-4"
+              className="inline-block py-2 font-semibold text-white underline decoration-white/50 underline-offset-4"
             >
               Regístrate
             </Link>

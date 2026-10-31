@@ -82,6 +82,90 @@ export function TelefonoIcon({ className }) {
   )
 }
 
+export function FlechaAtrasIcon({ className }) {
+  return (
+    <svg {...iconProps} strokeWidth="2.2" className={className}>
+      <path d="M19 12H5" />
+      <path d="M11 6l-6 6 6 6" />
+    </svg>
+  )
+}
+
+export function CerrarIcon({ className }) {
+  return (
+    <svg {...iconProps} strokeWidth="2.2" className={className}>
+      <path d="M6 6l12 12" />
+      <path d="M18 6L6 18" />
+    </svg>
+  )
+}
+
+export function PausaIcon({ className }) {
+  return (
+    <svg {...iconProps} className={className}>
+      <path d="M9 5v14" />
+      <path d="M15 5v14" />
+    </svg>
+  )
+}
+
+export function PlayIcon({ className }) {
+  return (
+    <svg {...iconProps} className={className}>
+      <path d="M7 5l12 7-12 7z" fill="currentColor" />
+    </svg>
+  )
+}
+
+export function SonidoIcon({ className }) {
+  return (
+    <svg {...iconProps} className={className}>
+      <path d="M4 9h4l5-4v14l-5-4H4z" />
+      <path d="M17 9a4 4 0 0 1 0 6" />
+      <path d="M19.5 6.5a8 8 0 0 1 0 11" />
+    </svg>
+  )
+}
+
+export function SilencioIcon({ className }) {
+  return (
+    <svg {...iconProps} className={className}>
+      <path d="M4 9h4l5-4v14l-5-4H4z" />
+      <path d="M17 9l5 6" />
+      <path d="M22 9l-5 6" />
+    </svg>
+  )
+}
+
+export function PersonaIcon({ className }) {
+  return (
+    <svg {...iconProps} strokeWidth="1.8" className={className}>
+      <circle cx="12" cy="8" r="4" />
+      <path d="M4 21a8 8 0 0 1 16 0" />
+    </svg>
+  )
+}
+
+export function SalirIcon({ className }) {
+  return (
+    <svg {...iconProps} className={className}>
+      <path d="M15 4h3a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2h-3" />
+      <path d="M10 17l-5-5 5-5" />
+      <path d="M5 12h11" />
+    </svg>
+  )
+}
+
+export function EntrarIcon({ className }) {
+  return (
+    <svg {...iconProps} className={className}>
+      <path d="M15 4h3a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2h-3" />
+      <path d="M10 7l5 5-5 5" />
+      <path d="M15 12H4" />
+    </svg>
+  )
+}
+
 export function MensajeIcon({ className }) {
   return (
     <svg {...iconProps} className={className}>

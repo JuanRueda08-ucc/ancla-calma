@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react'
 import { Link, useLocation, useNavigate } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
 import { AVATARES } from '../constants/avatares'
+import { EntrarIcon, PersonaIcon, SalirIcon } from './Iconos'
 
 export default function AccountMenu({ buttonClassName = 'bg-brand-navy text-white' }) {
   const { user, signOut, profile } = useAuth()
@@ -36,7 +37,8 @@ export default function AccountMenu({ buttonClassName = 'bg-brand-navy text-whit
 
   const irALogin = () => {
     setAbierto(false)
-    navigate('/login')
+    // `from` para volver a esta misma pantalla después de iniciar sesión.
+    navigate('/login', { state: { from: location.pathname } })
   }
 
   return (
@@ -53,7 +55,7 @@ export default function AccountMenu({ buttonClassName = 'bg-brand-navy text-whit
         {avatarActual ? (
           <img src={avatarActual.src} alt={avatarActual.nombre} className="h-full w-full object-cover" />
         ) : (
-          '👤'
+          <PersonaIcon className="h-5 w-5" />
         )}
       </button>
 
@@ -67,7 +69,7 @@ export default function AccountMenu({ buttonClassName = 'bg-brand-navy text-whit
                 onClick={() => setAbierto(false)}
                 className="flex w-full items-center gap-2 px-4 py-2.5 text-left text-sm font-semibold text-ink"
               >
-                <span>👤</span>
+                <PersonaIcon className="h-4 w-4 text-ink-soft" />
                 <span>Mi perfil</span>
               </Link>
               <button
@@ -75,7 +77,7 @@ export default function AccountMenu({ buttonClassName = 'bg-brand-navy text-whit
                 onClick={cerrarSesion}
                 className="flex w-full items-center gap-2 px-4 py-2.5 text-left text-sm font-semibold text-ink"
               >
-                <span>🚪</span>
+                <SalirIcon className="h-4 w-4 text-ink-soft" />
                 <span>Cerrar sesión</span>
               </button>
             </>
@@ -85,7 +87,7 @@ export default function AccountMenu({ buttonClassName = 'bg-brand-navy text-whit
               onClick={irALogin}
               className="flex w-full items-center gap-2 px-4 py-2.5 text-left text-sm font-semibold text-ink"
             >
-              <span>🔑</span>
+              <EntrarIcon className="h-4 w-4 text-ink-soft" />
               <span>Iniciar sesión</span>
             </button>
           )}

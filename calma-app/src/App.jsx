@@ -1,4 +1,4 @@
-import { BrowserRouter, Routes, Route } from 'react-router-dom'
+import { BrowserRouter, Navigate, Routes, Route } from 'react-router-dom'
 import Entrada from './screens/Entrada'
 import ElegirCamino from './screens/ElegirCamino'
 import Islas from './screens/Islas'
@@ -68,6 +68,9 @@ export default function App() {
           <Route path="/login" element={<Login />} />
           <Route path="/registro" element={<Registro />} />
           <Route path="/privacidad" element={<Privacidad />} />
+          {/* Una dirección que no existe (enlace viejo o mal escrito) dejaba la
+              página en blanco y sin salida: se manda al inicio. */}
+          <Route path="*" element={<Navigate to="/" replace />} />
           <Route
             path="/perfil"
             element={

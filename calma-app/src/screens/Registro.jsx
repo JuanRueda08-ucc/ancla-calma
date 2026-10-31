@@ -165,8 +165,16 @@ export default function Registro() {
                 />
                 <span>
                   Acepto el tratamiento de mis datos personales según la{' '}
-                  <Link to="/privacidad" className="font-semibold text-brand-navy">
+                  {/* En otra pestaña: navegar aquí desmontaba el formulario y se
+                      perdía lo ya escrito al volver. */}
+                  <Link
+                    to="/privacidad"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="font-semibold text-brand-navy underline underline-offset-2"
+                  >
                     política de privacidad
+                    <span className="sr-only"> (se abre en otra pestaña)</span>
                   </Link>
                 </span>
               </label>
@@ -196,7 +204,7 @@ export default function Registro() {
           {!success && (
             <motion.p {...riseIn(0.25)} className="mt-6 text-center text-sm text-white/70">
               ¿Ya tienes cuenta?{' '}
-              <Link to="/login" state={location.state} className="font-semibold text-white underline decoration-white/50 underline-offset-4">
+              <Link to="/login" state={location.state} className="inline-block py-2 font-semibold text-white underline decoration-white/50 underline-offset-4">
                 Inicia sesión
               </Link>
             </motion.p>

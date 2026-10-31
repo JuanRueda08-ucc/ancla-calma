@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { AnimatePresence, motion } from 'framer-motion'
+import { FlechaAtrasIcon, SilencioIcon, SonidoIcon } from '../components/Iconos'
 
 const FASES = ['Inhala…', 'Sostén…', 'Exhala…', 'Sostén…']
 const ESCALA_POR_FASE = [1.25, 1.25, 0.85, 0.85]
@@ -30,7 +31,7 @@ export default function EjercicioRespiracion() {
             aria-label="Volver"
             className="flex h-[42px] w-[42px] items-center justify-center rounded-full bg-white/[0.12] text-base text-white"
           >
-            ←
+            <FlechaAtrasIcon className="h-5 w-5" />
           </button>
           <button
             type="button"
@@ -38,7 +39,7 @@ export default function EjercicioRespiracion() {
             aria-label={sonidoActivo ? 'Silenciar' : 'Activar sonido'}
             className="flex h-[42px] w-[42px] items-center justify-center rounded-full bg-white/[0.12] text-base text-white"
           >
-            {sonidoActivo ? '🔊' : '🔇'}
+            {sonidoActivo ? <SonidoIcon className="h-5 w-5" /> : <SilencioIcon className="h-5 w-5" />}
           </button>
         </div>
 
@@ -72,7 +73,7 @@ export default function EjercicioRespiracion() {
             </motion.div>
           </div>
 
-          <h2 className="mb-2 text-2xl font-semibold text-white">Respiración de caja</h2>
+          <h1 className="mb-2 text-2xl font-semibold text-white">Respiración de caja</h1>
           <p className="mb-[22px] text-[14.5px] text-white/75">
             Sigue el ritmo de las olas del océano
           </p>

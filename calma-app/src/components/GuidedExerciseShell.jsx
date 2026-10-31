@@ -2,10 +2,12 @@ import { useEffect, useState } from 'react'
 import { AnimatePresence, motion } from 'framer-motion'
 import StarField from './StarField'
 import { NIGHT_SKY_BG } from '../styles/nightSky'
+import { CerrarIcon, PausaIcon, PlayIcon } from './Iconos'
 
 const TICK_MS = 150
 
 export default function GuidedExerciseShell({
+  title,
   totalSteps,
   currentStep,
   durationSeconds,
@@ -37,6 +39,9 @@ export default function GuidedExerciseShell({
       <StarField />
 
       <div className="relative z-[3] mx-auto flex min-h-screen max-w-[620px] flex-col px-5 pb-10 pt-10">
+        {/* título para lectores de pantalla; en pantalla manda cada paso */}
+        <h1 className="sr-only">{title}</h1>
+
         <div className="flex items-center justify-between px-1 pt-1">
           <button
             type="button"
@@ -44,7 +49,7 @@ export default function GuidedExerciseShell({
             aria-label={pausado ? 'Reanudar' : 'Pausar'}
             className="flex h-[42px] w-[42px] items-center justify-center rounded-full bg-white/[0.12] text-base text-white"
           >
-            {pausado ? '▶' : '⏸'}
+            {pausado ? <PlayIcon className="h-5 w-5" /> : <PausaIcon className="h-5 w-5" />}
           </button>
           <button
             type="button"
@@ -52,7 +57,7 @@ export default function GuidedExerciseShell({
             aria-label="Cerrar"
             className="flex h-[42px] w-[42px] items-center justify-center rounded-full bg-white/[0.12] text-base text-white"
           >
-            ×
+            <CerrarIcon className="h-5 w-5" />
           </button>
         </div>
 

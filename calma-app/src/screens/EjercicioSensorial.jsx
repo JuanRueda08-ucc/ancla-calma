@@ -51,6 +51,7 @@ export default function EjercicioSensorial() {
 
   return (
     <GuidedExerciseShell
+      title="Ejercicios sensoriales"
       totalSteps={PASOS.length}
       currentStep={pasoIndex + 1}
       durationSeconds={240}
