@@ -120,11 +120,42 @@ const botonClaroClass =
 const botonSecundarioClass =
   'rounded-full bg-white/10 px-5 py-2.5 text-sm font-semibold text-white focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-white/30'
 
+function inicialesDe(nombre) {
+  const partes = nombre.trim().split(/\s+/).filter(Boolean)
+  return partes.slice(0, 2).map((parte) => parte[0]?.toUpperCase() ?? '').join('') || '?'
+}
+
+// Pestañas: "Ahora" junta lo que se necesita en el momento (contactar y qué
+// decir); "Señales" y "Guía" son para leer con calma.
+const PESTANAS = [
+  { id: 'ahora', etiqueta: 'Ahora' },
+  { id: 'senales', etiqueta: 'Señales' },
+  { id: 'guia', etiqueta: 'Guía' },
+]
+
 export default function PanelAcompanamiento() {
   const navigate = useNavigate()
   const location = useLocation()
   const { user, loading: authLoading } = useAuth()
   const [abierto, setAbierto] = useState('emocionales')
+  const [pestana, setPestana] = useState('ahora')
+  const pestanasRef = useRef({})
+
+  // Patrón de pestañas accesible: flechas, Inicio y Fin mueven la selección.
+  const alTeclearPestana = (evento) => {
+    const indice = PESTANAS.findIndex((p) => p.id === pestana)
+    const destino = {
+      ArrowRight: (indice + 1) % PESTANAS.length,
+      ArrowLeft: (indice - 1 + PESTANAS.length) % PESTANAS.length,
+      Home: 0,
+      End: PESTANAS.length - 1,
+    }[evento.key]
+    if (destino === undefined) return
+    evento.preventDefault()
+    const id = PESTANAS[destino].id
+    setPestana(id)
+    pestanasRef.current[id]?.focus()
+  }
   const [toast, setToast] = useState(null)
   const toastTimeoutRef = useRef(null)
 
@@ -132,9 +163,8 @@ export default function PanelAcompanamiento() {
   const [cargaEstado, setCargaEstado] = useState('cargando')
   const [contactos, setContactos] = useState([])
 
-  // null | 'seleccion' | 'sin-codigo-pais'
+  // null | 'sin-codigo-pais' (WhatsApp necesita el código de país)
   const [accionEstado, setAccionEstado] = useState(null)
-  const [accionTipo, setAccionTipo] = useState(null) // 'llamar' | 'mensaje'
   const [contactoProblema, setContactoProblema] = useState(null)
 
   // Esta pantalla es de acceso libre (no está detrás de RequireAuth, a
@@ -186,8 +216,10 @@ export default function PanelAcompanamiento() {
     showToast('Copiado', 1500)
   }
 
+  // `from`: la Isla del Auxilio usa este origen en su "Volver", así quien
+  // acompaña regresa al Panel y no a las islas de "Necesito ayuda".
   const irAContactos = () => {
-    navigate('/islas/auxilio')
+    navigate('/islas/auxilio', { state: { from: location.pathname } })
   }
 
   const irAIniciarSesion = () => {
@@ -196,37 +228,22 @@ export default function PanelAcompanamiento() {
 
   const cerrarPanelAccion = () => {
     setAccionEstado(null)
-    setAccionTipo(null)
     setContactoProblema(null)
   }
 
   const irAAgregarContacto = () => {
     cerrarPanelAccion()
-    navigate('/islas/auxilio')
+    irAContactos()
   }
 
-  const ejecutarAccion = (tipo, contacto) => {
-    if (tipo === 'mensaje' && !contacto.telefono.trim().startsWith('+')) {
+  const escribirPorWhatsApp = (contacto) => {
+    if (!contacto.telefono.trim().startsWith('+')) {
       setContactoProblema(contacto)
       setAccionEstado('sin-codigo-pais')
       return
     }
-
-    if (tipo === 'llamar') {
-      window.location.href = `tel:${normalizarTelefono(contacto.telefono)}`
-    } else {
-      window.location.href = construirLinkWhatsApp(contacto.telefono, '')
-    }
     cerrarPanelAccion()
-  }
-
-  const iniciarAccion = (tipo) => {
-    setAccionTipo(tipo)
-    if (contactos.length === 1) {
-      ejecutarAccion(tipo, contactos[0])
-      return
-    }
-    setAccionEstado('seleccion')
+    window.location.href = construirLinkWhatsApp(contacto.telefono, '')
   }
 
   let delay = 0
@@ -250,11 +267,47 @@ export default function PanelAcompanamiento() {
           <p className="mt-1.5 text-[15px] text-white/75">Guía para apoyar a tu persona</p>
         </motion.div>
 
+        <motion.div
+          {...riseIn(nextDelay())}
+          role="tablist"
+          aria-label="Secciones del panel"
+          onKeyDown={alTeclearPestana}
+          className="mb-6 flex rounded-full border border-white/15 bg-white/[0.06] p-1"
+        >
+          {PESTANAS.map((p) => {
+            const activa = pestana === p.id
+            return (
+              <button
+                key={p.id}
+                ref={(el) => (pestanasRef.current[p.id] = el)}
+                type="button"
+                role="tab"
+                id={`panel-pestana-${p.id}`}
+                aria-selected={activa}
+                aria-controls={`panel-contenido-${p.id}`}
+                tabIndex={activa ? 0 : -1}
+                onClick={() => setPestana(p.id)}
+                className={`flex-1 rounded-full py-2.5 text-[14px] font-semibold transition-colors focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-white/30 ${
+                  activa ? 'bg-white text-brand-navyDeep' : 'text-white/75'
+                }`}
+              >
+                {p.etiqueta}
+              </button>
+            )
+          })}
+        </motion.div>
+
+        <div
+          role="tabpanel"
+          id="panel-contenido-ahora"
+          aria-labelledby="panel-pestana-ahora"
+          hidden={pestana !== 'ahora'}
+        >
         {/* Contactar va primero: en un momento difícil es lo que más urge */}
         <motion.section
           {...riseIn(nextDelay())}
           aria-labelledby="panel-tu-persona"
-          className="mb-10 rounded-xl border border-acomp-1/30 bg-acomp-1/[0.1] p-4"
+          className="mb-8 rounded-xl border border-acomp-1/30 bg-acomp-1/[0.1] p-4"
         >
           <div className="mb-3 flex items-baseline justify-between gap-3">
             <h2 id="panel-tu-persona" className="text-[17px] font-semibold text-white">
@@ -312,48 +365,38 @@ export default function PanelAcompanamiento() {
             </div>
           )}
 
+          {/* Cada contacto a la vista: se ve a quién se llama o se escribe */}
           {cargaEstado === 'listo' && (
-            <div className="flex gap-3">
-              <button
-                type="button"
-                onClick={() => iniciarAccion('llamar')}
-                className="flex flex-1 items-center justify-center gap-2 rounded-full bg-acomp-2 py-3.5 text-sm font-bold text-brand-navyDeep focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-acomp-2/50"
-              >
-                <TelefonoIcon className="h-[18px] w-[18px]" />
-                Llamar
-              </button>
-              <button
-                type="button"
-                onClick={() => iniciarAccion('mensaje')}
-                className="flex flex-1 items-center justify-center gap-2 rounded-full bg-acomp-1 py-3.5 text-sm font-bold text-brand-navyDeep focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-acomp-1/50"
-              >
-                <MensajeIcon className="h-[18px] w-[18px]" />
-                Mensaje
-              </button>
-            </div>
-          )}
-
-          {accionEstado === 'seleccion' && (
-            <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="mt-4">
-              <p className="mb-3 text-sm font-semibold text-white">
-                {accionTipo === 'llamar' ? '¿A quién quieres llamar?' : '¿A quién quieres escribirle?'}
-              </p>
-              <div className="flex flex-col gap-2">
-                {contactos.map((contacto) => (
-                  <button
-                    key={contacto.id}
-                    type="button"
-                    onClick={() => ejecutarAccion(accionTipo, contacto)}
-                    className="rounded-lg bg-white/10 px-4 py-2.5 text-left text-[14.5px] font-semibold text-white focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-white/30"
+            <ul className="flex flex-col gap-2.5">
+              {contactos.map((contacto) => (
+                <li key={contacto.id} className="flex items-center gap-3 rounded-xl bg-white/[0.08] py-2.5 pl-3 pr-2.5">
+                  <span
+                    className="flex h-11 w-11 flex-shrink-0 items-center justify-center rounded-full bg-acomp-1/25 text-[15px] font-bold text-white"
+                    aria-hidden="true"
                   >
+                    {inicialesDe(contacto.nombre)}
+                  </span>
+                  <span className="min-w-0 flex-1 truncate text-[15.5px] font-semibold text-white">
                     {contacto.nombre}
+                  </span>
+                  <a
+                    href={`tel:${normalizarTelefono(contacto.telefono)}`}
+                    aria-label={`Llamar a ${contacto.nombre}`}
+                    className="flex h-11 w-11 flex-shrink-0 items-center justify-center rounded-full bg-acomp-2 text-brand-navyDeep focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-acomp-2/50"
+                  >
+                    <TelefonoIcon className="h-5 w-5" />
+                  </a>
+                  <button
+                    type="button"
+                    onClick={() => escribirPorWhatsApp(contacto)}
+                    aria-label={`Escribir a ${contacto.nombre} por WhatsApp`}
+                    className="flex h-11 w-11 flex-shrink-0 items-center justify-center rounded-full bg-acomp-1 text-brand-navyDeep focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-acomp-1/50"
+                  >
+                    <MensajeIcon className="h-5 w-5" />
                   </button>
-                ))}
-              </div>
-              <button type="button" onClick={cerrarPanelAccion} className={`mt-3 w-full ${botonSecundarioClass}`}>
-                Cancelar
-              </button>
-            </motion.div>
+                </li>
+              ))}
+            </ul>
           )}
 
           {accionEstado === 'sin-codigo-pais' && (
@@ -378,6 +421,36 @@ export default function PanelAcompanamiento() {
           )}
         </motion.section>
 
+        {/* Qué decir: a la vista, sin acordeón; tocar copia el mensaje */}
+        <section aria-labelledby="panel-que-decir">
+          <div className="mb-3 flex items-baseline justify-between gap-3">
+            <h2 id="panel-que-decir" className="text-[17px] font-semibold text-white">
+              Qué decir
+            </h2>
+            <span className="text-xs font-semibold text-white/55">Toca para copiar</span>
+          </div>
+          <div className="flex flex-col gap-2">
+            {MENSAJES_RAPIDOS.map((mensaje) => (
+              <button
+                key={mensaje}
+                type="button"
+                onClick={() => copiarMensaje(mensaje)}
+                aria-label={`Copiar: ${mensaje}`}
+                className="rounded-2xl border border-white/10 bg-white/[0.06] px-4 py-3 text-left text-[14px] italic text-white focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-white/30"
+              >
+                "{mensaje}"
+              </button>
+            ))}
+          </div>
+        </section>
+        </div>
+
+        <div
+          role="tabpanel"
+          id="panel-contenido-senales"
+          aria-labelledby="panel-pestana-senales"
+          hidden={pestana !== 'senales'}
+        >
         <motion.div {...riseIn(nextDelay())} className="mb-4">
           <h2 className="mb-1.5 text-[17px] font-semibold text-white">Entender las señales</h2>
           <p className="text-[13.5px] leading-[1.55] text-white/70">
@@ -411,9 +484,14 @@ export default function PanelAcompanamiento() {
           </Accordion>
         ))}
 
-        <motion.h2 {...riseIn(nextDelay())} className="mb-3 mt-8 text-[17px] font-semibold text-white">
-          Cómo apoyar
-        </motion.h2>
+        </div>
+
+        <div
+          role="tabpanel"
+          id="panel-contenido-guia"
+          aria-labelledby="panel-pestana-guia"
+          hidden={pestana !== 'guia'}
+        >
 
         {GUIA_LISTAS.map((seccion) => (
           <Accordion
@@ -437,30 +515,6 @@ export default function PanelAcompanamiento() {
         ))}
 
         <Accordion
-          id="panel-mensajes"
-          titulo="Mensajes de apoyo rápido"
-          detalle="Toca para copiar"
-          abierto={abierto === 'mensajes'}
-          onToggle={() => toggleAcordeon('mensajes')}
-          delay={nextDelay()}
-          acento="acomp"
-        >
-          <div className="flex flex-col gap-2">
-            {MENSAJES_RAPIDOS.map((mensaje) => (
-              <button
-                key={mensaje}
-                type="button"
-                onClick={() => copiarMensaje(mensaje)}
-                aria-label={`Copiar: ${mensaje}`}
-                className="rounded-2xl bg-white/10 px-4 py-3 text-left text-[13.5px] italic text-white focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-white/30"
-              >
-                "{mensaje}"
-              </button>
-            ))}
-          </div>
-        </Accordion>
-
-        <Accordion
           id="panel-herramientas"
           titulo="Herramientas de apoyo"
           abierto={abierto === 'herramientas'}
@@ -482,6 +536,7 @@ export default function PanelAcompanamiento() {
             ))}
           </ul>
         </Accordion>
+        </div>
       </div>
 
       {toast && (

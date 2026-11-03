@@ -155,6 +155,11 @@ otro agente. Al terminar una tarea significativa, actualizar este archivo.
   Todos los pasos quedan montados y solo se oculta el resto, así no se
   pierde lo escrito ni la grabación al ir y volver. El foco pasa al título
   de cada pregunta. Mismo guardado que antes (texto + audio).
+- Panel de Acompañamiento con pestañas accesibles (role tablist, flechas,
+  Inicio y Fin): "Ahora" junta la tarjeta "Tu persona" y "Qué decir" (los
+  mensajes a la vista, tocar copia); "Señales" tiene las 4 categorías;
+  "Guía" tiene principios, cómo acompañar, qué evitar y herramientas.
+  Abre en "Ahora". Misma lógica de contactos y del toast.
 - Reestructuración de documentación multi-agente (AGENTS.md/CLAUDE.md
   anidados + carpeta docs/) — commiteada y verificada: Claude Code carga
   los CLAUDE.md anidados de calma-app/ y supabase/ al trabajar en esas
@@ -258,9 +263,9 @@ otro agente. Al terminar una tarea significativa, actualizar este archivo.
   navegadores ocupan varios cientos de MB); podría correr solo en CI.
 - Rediseño estructural: layouts distintos por tipo de pantalla en vez de
   la misma plantilla (header + tarjetas apiladas + botón). Hecho: Isla del
-  Auxilio como marcación rápida y Bitácora una pregunta a la vez.
-  Propuestos y pendientes de decidir: Señales en mosaico, Panel con
-  pestañas (Ahora / Señales / Guía), Historial como línea de tiempo por días.
+  Auxilio como marcación rápida, Bitácora una pregunta a la vez y Panel
+  con pestañas. Propuestos y pendientes de decidir: Señales en mosaico,
+  Historial como línea de tiempo por días.
 - Ubicación en vivo en segundo plano (seguir enviando con el teléfono
   bloqueado o con otra app abierta): no es posible en una app web; requeriría
   una app nativa. Ver DECISIONS.md → Ubicación.
