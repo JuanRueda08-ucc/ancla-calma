@@ -87,6 +87,10 @@ algo que parecía un bug era en realidad una decisión deliberada. Antes de
   animaciones cuidadas. Se descartó una guía sin figura. Cada paso tiene
   ritmo propio (tensa 5 s, suelta 10 s) y avanza solo. Las notas de abajo
   sobre el pirata quedan como historia por si se vuelve a usar.
+- **Los ejercicios guiados avanzan solos** (noviembre 2026): antes la
+  duración ("3 min", "4 min") era solo una etiqueta y había que tocar
+  "Continuar" en cada paso. Ahora el tiempo de la etiqueta se reparte entre
+  los pasos; "Continuar" sigue sirviendo para adelantarse.
 - **El personaje pirata NO se anima por piezas recortadas** (cabeza,
   brazos, piernas rotando) — se probó y el resultado visual no convenció
   (movimiento débil, costuras visibles en los pivotes). El enfoque actual

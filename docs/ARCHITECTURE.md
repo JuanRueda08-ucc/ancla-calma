@@ -89,6 +89,10 @@ policies de RLS — ver DECISIONS.md para el bug que motivó esta regla.
   avatar real del usuario si hay sesión y perfil cargado, o el ícono
   genérico como respaldo. Sin sesión, ofrece un acceso directo a
   "Iniciar sesión" en vez de ocultarse.
+- `useRitmoPasos.js` + `AvancePaso.jsx`: los ejercicios de grounding (36 s
+  por paso, 3 min) y sensoriales (1 min por paso, 4 min) avanzan solos, con
+  barra y cuenta regresiva; "Continuar" adelanta, la pausa del shell
+  (`onPausaCambio`) detiene el reloj y al final se muestra un cierre.
 - `GuidedExerciseShell.jsx`: shell común de los 3 ejercicios de Puerto Seguro
   (fondo StarField, barra superior pausa/cerrar, temporizador real con barra
   de progreso ligada a `durationSeconds`, independiente del avance manual
