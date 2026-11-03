@@ -3,6 +3,8 @@ import '../styles/islaNoche.css'
 import ScreenHeader from '../components/ScreenHeader'
 import StarField from '../components/StarField'
 import { riseIn } from '../animations/transitions'
+import { useTextos } from '../i18n'
+import TEXTOS from '../i18n/textos/privacidad'
 
 const CORREO_CONTACTO = 'juanjoruedav@gmail.com'
 
@@ -14,7 +16,19 @@ function CorreoContacto() {
   )
 }
 
+// Párrafo con su inicio en negrita (si lo tiene)
+function Bloque({ fuerte, texto }) {
+  return (
+    <>
+      {fuerte && <strong className="text-ink">{fuerte}</strong>}
+      {texto}
+    </>
+  )
+}
+
 export default function Privacidad() {
+  const t = useTextos(TEXTOS)
+
   return (
     <div className="isla-noche-bg relative min-h-[100dvh] overflow-hidden">
       <StarField />
@@ -28,144 +42,51 @@ export default function Privacidad() {
           {...riseIn(0)}
           className="rounded-lg bg-white p-6 shadow-[0_8px_22px_rgba(0,0,0,0.12)] sm:p-8"
         >
-          <h1 className="mb-1.5 text-[22px] font-semibold text-ink">Política de privacidad</h1>
-          <p className="mb-6 text-sm text-ink-soft/70">
-            Última actualización: 31 de octubre de 2026
-          </p>
+          <h1 className="mb-1.5 text-[22px] font-semibold text-ink">{t.titulo}</h1>
+          <p className="mb-6 text-sm text-ink-soft/70">{t.actualizacion}</p>
 
           <div className="mx-auto max-w-[52ch] space-y-7 text-[15px] leading-relaxed text-ink-soft">
-            <p>
-              Esta política describe qué información recoge Calma (Proyecto ANCLA), para qué la
-              usa, y qué derechos tienes sobre ella. Está escrita para ser honesta sobre lo que la
-              app realmente hace, no un texto genérico.
-            </p>
+            {t.notaTraduccion && (
+              <p className="rounded-lg bg-sand-deep px-4 py-3 text-sm text-ink">{t.notaTraduccion}</p>
+            )}
+
+            <p>{t.intro}</p>
 
             <section>
-              <h2 className="mb-2 text-[17px] font-semibold text-ink">
-                Quién es responsable de tus datos
-              </h2>
+              <h2 className="mb-2 text-[17px] font-semibold text-ink">{t.responsableTitulo}</h2>
               <p>
-                Calma es desarrollada por Juan José Rueda Viveros, como parte del Proyecto ANCLA. Si
-                tienes preguntas sobre tus datos, escribe a: <CorreoContacto />
+                {t.responsableTexto} <CorreoContacto />
               </p>
             </section>
 
-            <section>
-              <h2 className="mb-3 text-[17px] font-semibold text-ink">Qué información recogemos</h2>
-              <div className="space-y-3">
-                <p>
-                  <strong className="text-ink">Cuenta</strong>: tu correo electrónico, usado
-                  únicamente para iniciar sesión y confirmar tu identidad.
-                </p>
-                <p>
-                  <strong className="text-ink">Contactos de confianza</strong>: el nombre y
-                  teléfono de las personas que decidas agregar. Solo se usan para que tú puedas
-                  llamarlas o compartirles tu ubicación por WhatsApp — nunca se comparten con
-                  nadie más ni se usan para ningún otro fin.
-                </p>
-                <p>
-                  <strong className="text-ink">Bitácora emocional</strong>: las emociones que
-                  selecciones, el texto que escribas (en tus propias palabras o por transcripción
-                  de voz), y si grabaste una nota de voz, el audio de esa nota.
-                </p>
-                <p>
-                  <strong className="text-ink">Transcripción por voz</strong>: el botón de
-                  micrófono en cada pregunta de la bitácora usa la función de reconocimiento de
-                  voz de tu propio navegador (no un servicio nuestro). Esto significa que,
-                  dependiendo de qué navegador uses, el audio de tu voz se procesa en los
-                  servidores de Google (Chrome, Edge) o Apple (Safari) para convertirlo a texto,
-                  antes de devolvértelo. No tenemos control sobre ese procesamiento ni acceso a
-                  él — ocurre entre tu navegador y esas empresas. Si prefieres no usar esta
-                  función, puedes escribir directamente en cada campo sin usar el micrófono.
-                </p>
-                <p>
-                  <strong className="text-ink">Ubicación en vivo (solo si la activas)</strong>:
-                  cuando usas "Compartir ubicación en vivo", guardamos tu posición más reciente
-                  —solo el último punto, nunca un recorrido— durante el tiempo que elijas (15
-                  minutos, 1 hora o 4 horas), para que las personas a las que les envíes el
-                  enlace puedan verla junto con tu nombre de usuario. Cualquiera que tenga ese
-                  enlace puede verla mientras esté activa, así que envíalo solo a personas de
-                  confianza. Al detenerla o cuando se acaba el tiempo, tu ubicación se borra y el
-                  enlace deja de funcionar.
-                </p>
-              </div>
-            </section>
+            {t.secciones.map((seccion) => (
+              <section key={seccion.titulo}>
+                <h2 className="mb-3 text-[17px] font-semibold text-ink">{seccion.titulo}</h2>
+                <div className="space-y-3">
+                  {seccion.bloques.map((bloque) => (
+                    <p key={bloque.texto}>
+                      <Bloque {...bloque} />
+                    </p>
+                  ))}
+                </div>
+              </section>
+            ))}
 
             <section>
-              <h2 className="mb-3 text-[17px] font-semibold text-ink">
-                Qué NO recogemos ni guardamos
-              </h2>
-              <div className="space-y-3">
-                <p>
-                  <strong className="text-ink">
-                    "Compartir mi ubicación" (una sola vez) no guarda tu ubicación.
-                  </strong>{' '}
-                  La calculamos una sola vez, armamos el link para enviarte a WhatsApp, y la
-                  descartamos de inmediato — no queda registrada en ningún lugar, ni en tu
-                  dispositivo ni en nuestros servidores. Tampoco seguimos tu ubicación en segundo
-                  plano: la ubicación en vivo solo funciona mientras tú la activas y Calma está
-                  abierta.
-                </p>
-                <p>
-                  No mostramos publicidad ni vendemos, alquilamos o compartimos tu información con
-                  terceros con fines comerciales.
-                </p>
-              </div>
-            </section>
-
-            <section>
-              <h2 className="mb-3 text-[17px] font-semibold text-ink">
-                Dónde se almacena tu información
-              </h2>
-              <div className="space-y-3">
-                <p>
-                  Tus datos (contactos, entradas de bitácora, audio de notas de voz) se guardan en
-                  Supabase, un proveedor de base de datos con seguridad a nivel de fila (Row Level
-                  Security): esto significa que, técnicamente, solo tu cuenta puede leer o
-                  modificar tus propios datos — ni siquiera otro usuario de Calma puede acceder a
-                  ellos.
-                </p>
-                <p>
-                  Tu sesión de acceso se guarda en el almacenamiento local de tu navegador, para
-                  que no tengas que iniciar sesión cada vez que abres la app.
-                </p>
-              </div>
-            </section>
-
-            <section>
-              <h2 className="mb-3 text-[17px] font-semibold text-ink">
-                Tus derechos sobre tu información
-              </h2>
-              <p className="mb-3">
-                De acuerdo con la Ley 1581 de 2012 (Habeas Data, Colombia), tienes derecho a
-                conocer, actualizar, corregir y solicitar la eliminación de tu información
-                personal.
-              </p>
+              <h2 className="mb-3 text-[17px] font-semibold text-ink">{t.derechosTitulo}</h2>
+              <p className="mb-3">{t.derechosIntro}</p>
               <ul className="list-disc space-y-2 pl-5">
-                <li>
-                  <strong className="text-ink">
-                    Contactos de confianza y entradas de tu bitácora
-                  </strong>
-                  : puedes eliminarlos individualmente en cualquier momento, directamente desde la
-                  app (Isla del Auxilio y tu Historial, respectivamente).
-                </li>
-                <li>
-                  <strong className="text-ink">Eliminar tu cuenta por completo</strong>: puedes
-                  hacerlo tú mismo/a en cualquier momento desde Mi perfil → Zona de peligro. Esto
-                  borra de inmediato y de forma permanente tu cuenta, tus contactos de confianza,
-                  y toda tu bitácora (incluyendo las notas de voz). No hay forma de deshacer esta
-                  acción, así que la app te pide escribir una palabra de confirmación antes de
-                  proceder.
-                </li>
+                {t.derechos.map((derecho) => (
+                  <li key={derecho.fuerte}>
+                    <Bloque {...derecho} />
+                  </li>
+                ))}
               </ul>
             </section>
 
             <section>
-              <h2 className="mb-2 text-[17px] font-semibold text-ink">Cambios a esta política</h2>
-              <p>
-                Si esta política cambia de forma importante, lo indicaremos actualizando la fecha
-                al inicio de este documento.
-              </p>
+              <h2 className="mb-2 text-[17px] font-semibold text-ink">{t.cambiosTitulo}</h2>
+              <p>{t.cambiosTexto}</p>
             </section>
           </div>
         </motion.div>

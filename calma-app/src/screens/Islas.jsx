@@ -3,6 +3,8 @@ import { motion } from 'framer-motion'
 import '../styles/islas.css'
 import ScreenHeader from '../components/ScreenHeader'
 import { riseIn } from '../animations/transitions'
+import { useTextos } from '../i18n'
+import TEXTOS from '../i18n/textos/islas'
 
 // Islas vistas desde arriba, como en una carta náutica (viewBox 0 0 120 100).
 // La costa se dibuja una sola vez y se repite con trazos gruesos para el agua
@@ -111,26 +113,18 @@ function IslaSenales() {
 const ISLAS = [
   {
     to: '/islas/auxilio',
-    title: 'Isla del Auxilio',
-    description: 'Contacto de emergencia',
     Dibujo: IslaAuxilio,
   },
   {
     to: '/islas/aire',
-    title: 'Isla del Aire',
-    description: 'Respiración y calma',
     Dibujo: IslaAire,
   },
   {
     to: '/islas/faro',
-    title: 'Isla del Faro',
-    description: 'Tus recursos personales',
     Dibujo: IslaFaro,
   },
   {
     to: '/islas/senales',
-    title: 'Isla de las Señales',
-    description: 'Reconoce el malestar emocional',
     Dibujo: IslaSenales,
   },
 ]
@@ -172,16 +166,17 @@ function IslaParada({ to, title, description, Dibujo, invertida, delay }) {
         <Dibujo />
       </div>
       <div className="min-w-0 flex-1">
-        <h2 className="text-lg font-semibold leading-snug text-white sm:text-xl">{title}</h2>
-        <p className="mt-1 text-[13.5px] text-white/70 sm:text-sm">{description}</p>
+        <h2 className="text-lg font-semibold leading-snug text-cielo sm:text-xl">{title}</h2>
+        <p className="mt-1 text-[13.5px] text-cielo/70 sm:text-sm">{description}</p>
       </div>
     </motion.button>
   )
 }
 
 export default function Islas() {
+  const t = useTextos(TEXTOS)
   return (
-    <div className="islas-bg relative min-h-[100dvh] overflow-hidden text-white">
+    <div className="islas-bg relative min-h-[100dvh] overflow-hidden text-cielo">
       {/* textura de oleaje, apenas visible */}
       <svg className="pointer-events-none absolute inset-0 h-full w-full" aria-hidden="true">
         <defs>
@@ -194,18 +189,18 @@ export default function Islas() {
       </svg>
 
       <div className="relative z-[2] mx-auto max-w-[540px] px-6 pb-16 pt-10">
-        <ScreenHeader backTo="/elegir" accountButtonClassName="bg-white/20 text-white" />
+        <ScreenHeader backTo="/elegir" accountButtonClassName="bg-white/20 text-cielo" />
 
         <motion.div {...riseIn(0)} className="mb-6 mt-[2vh]">
-          <h1 className="text-[30px] font-semibold leading-tight sm:text-[36px]">¿A dónde quieres ir?</h1>
-          <p className="mt-2 text-[15px] text-white/70">Cada isla guarda un tipo de ayuda</p>
+          <h1 className="text-[30px] font-semibold leading-tight sm:text-[36px]">{t.titulo}</h1>
+          <p className="mt-2 text-[15px] text-cielo/70">{t.subtitulo}</p>
         </motion.div>
 
         <div className="flex flex-col">
           {ISLAS.map((isla, index) => (
             <div key={isla.to}>
               {index > 0 && <Ruta haciaDerecha={index % 2 === 1} />}
-              <IslaParada {...isla} invertida={index % 2 === 1} delay={0.1 + 0.1 * index} />
+              <IslaParada {...isla} {...t.islas[index]} invertida={index % 2 === 1} delay={0.1 + 0.1 * index} />
             </div>
           ))}
         </div>

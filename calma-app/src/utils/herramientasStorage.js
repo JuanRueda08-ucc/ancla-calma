@@ -1,13 +1,13 @@
 import { supabase } from '../lib/supabaseClient'
+import { textoActual } from '../i18n'
+import ERRORES from '../i18n/textos/errores'
+import TEXTOS_FARO from '../i18n/textos/islaFaro'
 
 const COLUMNAS = 'id, icon, label, favorite, orden'
 
-export const HERRAMIENTAS_INICIALES = [
-  { icon: '🎵', label: 'Escuchar música tranquila' },
-  { icon: '🚶', label: 'Dar un paseo' },
-  { icon: '📞', label: 'Llamar a alguien de confianza' },
-  { icon: '🫁', label: 'Respirar profundo' },
-]
+// Íconos de las 4 herramientas iniciales; los nombres salen de
+// i18n/textos/islaFaro.js en el idioma elegido al sembrarlas.
+const ICONOS_INICIALES = ['🎵', '🚶', '📞', '🫁']
 
 async function getUserId() {
   const {
@@ -22,7 +22,8 @@ let sembrando = null
 
 async function sembrarIniciales() {
   const userId = await getUserId()
-  const filas = HERRAMIENTAS_INICIALES.map((h, i) => ({ ...h, user_id: userId, orden: i }))
+  const nombres = textoActual(TEXTOS_FARO).iniciales
+  const filas = ICONOS_INICIALES.map((icon, i) => ({ icon, label: nombres[i], user_id: userId, orden: i }))
   const { data, error } = await supabase.from('herramientas_faro').insert(filas).select(COLUMNAS)
   if (error) throw error
   return data.sort((a, b) => a.orden - b.orden)
@@ -56,18 +57,18 @@ export async function crearHerramienta({ icon, label, orden }) {
     .select(COLUMNAS)
     .single()
 
-  if (error) throw new Error('No pudimos guardar la herramienta. Intenta de nuevo.')
+  if (error) throw new Error(textoActual(ERRORES).guardarHerramienta)
   return data
 }
 
 export async function actualizarHerramienta(id, cambios) {
   const { error } = await supabase.from('herramientas_faro').update(cambios).eq('id', id)
-  if (error) throw new Error('No pudimos guardar el cambio. Intenta de nuevo.')
+  if (error) throw new Error(textoActual(ERRORES).guardarCambio)
 }
 
 export async function eliminarHerramienta(id) {
   const { error } = await supabase.from('herramientas_faro').delete().eq('id', id)
-  if (error) throw new Error('No pudimos eliminar la herramienta. Intenta de nuevo.')
+  if (error) throw new Error(textoActual(ERRORES).eliminarHerramienta)
 }
 
 // Reescribe `orden` según la posición en la lista. Solo toca las filas
@@ -81,6 +82,6 @@ export async function guardarOrden(herramientas) {
     cambios.map(({ id, orden }) => supabase.from('herramientas_faro').update({ orden }).eq('id', id)),
   )
   if (resultados.some((r) => r.error)) {
-    throw new Error('No pudimos guardar el nuevo orden. Intenta de nuevo.')
+    throw new Error(textoActual(ERRORES).guardarOrden)
   }
 }

@@ -61,3 +61,15 @@
     transparent 80%
   );
 }
+
+/* Tema de día: el mismo fondo de las islas como un amanecer pastel. La luz
+   de cada isla va con mezcla normal y suave: con "screen" se lavaría a
+   blanco y con "multiply" el menta y el turquesa se ensucian a gris. */
+:root[data-tema='dia'] .isla-noche-bg {
+  background: linear-gradient(180deg, #fde6dc 0%, #f8dbe6 45%, #e6dcf3 100%);
+}
+
+:root[data-tema='dia'] .isla-resplandor {
+  mix-blend-mode: normal;
+  opacity: 0.4;
+}

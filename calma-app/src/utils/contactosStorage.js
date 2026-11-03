@@ -1,5 +1,9 @@
 import { supabase } from '../lib/supabaseClient'
+import { textoActual } from '../i18n'
+import ERRORES from '../i18n/textos/errores'
 
+// Mensaje exacto del trigger de la base (siempre en español): se reconoce y
+// se muestra traducido.
 const LIMITE_CONTACTOS_MSG = 'Máximo 3 contactos de confianza por usuario'
 
 export function normalizarTelefono(telefono) {
@@ -35,9 +39,9 @@ export async function guardarContacto({ id, nombre, telefono }) {
 
   if (error) {
     if (error.message === LIMITE_CONTACTOS_MSG) {
-      throw new Error(LIMITE_CONTACTOS_MSG)
+      throw new Error(textoActual(ERRORES).limiteContactos)
     }
-    throw new Error('No pudimos guardar el contacto. Intenta de nuevo.')
+    throw new Error(textoActual(ERRORES).guardarContacto)
   }
 
   return data

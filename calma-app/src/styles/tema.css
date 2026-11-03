@@ -1,0 +1,122 @@
+/* Dos temas: "noche" (el de siempre, cielo navy con estrellas) y "día"
+   (amanecer en pasteles: durazno, coral, rosa y lavanda). El tema va en
+   <html data-tema="...">, lo pone PreferenciasContext (e index.html antes de
+   cargar React). Los colores `cielo` y `fondo` de Tailwind leen estas
+   variables; los fondos de cada pantalla tienen su versión de día junto a la
+   de noche en su propio archivo (entrada.css, islaNoche.css, ...). */
+:root {
+  --cielo: 255 255 255;
+  --fondo: 0 27 68;
+  color-scheme: dark;
+}
+
+:root[data-tema='dia'] {
+  --cielo: 46 38 84;
+  --fondo: 253 233 224;
+  color-scheme: light;
+}
+
+body {
+  transition: background-color 0.4s ease;
+}
+
+/* De día no hay estrellas */
+:root[data-tema='dia'] .star-field {
+  display: none;
+}
+
+/* Vidrio: de noche un blanco casi transparente basta para separar filas y
+   tarjetas del cielo; sobre los pasteles del día ese mismo blanco no se ve,
+   así que se vuelve más opaco (vidrio esmerilado). */
+:root[data-tema='dia'] .bg-white\/\[0\.04\],
+:root[data-tema='dia'] .bg-white\/\[0\.06\],
+:root[data-tema='dia'] .bg-white\/\[0\.08\] {
+  background-color: rgb(255 255 255 / 0.5);
+}
+
+:root[data-tema='dia'] .bg-white\/10,
+:root[data-tema='dia'] .bg-white\/\[0\.12\] {
+  background-color: rgb(255 255 255 / 0.58);
+}
+
+:root[data-tema='dia'] .bg-white\/15,
+:root[data-tema='dia'] .bg-white\/\[0\.15\],
+:root[data-tema='dia'] .bg-white\/20 {
+  background-color: rgb(255 255 255 / 0.66);
+}
+
+/* Fondo de los ejercicios guiados y Puerto Seguro */
+.cielo-ejercicio-bg {
+  background: linear-gradient(180deg, #0f2e38 0%, #002e6b 100%);
+}
+
+:root[data-tema='dia'] .cielo-ejercicio-bg {
+  background: linear-gradient(180deg, #d9d4f1 0%, #f6d6e3 50%, #ffdccb 100%);
+}
+
+/* Respiración de caja: luz que baja desde arriba */
+.respiracion-bg {
+  background: radial-gradient(120% 100% at 50% 0%, #0a4b94 0%, #002e6b 62%);
+}
+
+:root[data-tema='dia'] .respiracion-bg {
+  background: radial-gradient(120% 100% at 50% 0%, #fff1e8 0%, #fcd9cc 45%, #e4d9f2 100%);
+}
+
+/* Olas dibujadas con trazo blanco: de día se tiñen del índigo del texto */
+.ola-trazo {
+  stroke: rgb(255 255 255);
+}
+
+:root[data-tema='dia'] .ola-trazo {
+  stroke: rgb(var(--cielo));
+}
+
+/* Mar de Entrada y ElegirCamino (stops del degradado, con currentColor) */
+.mar-arriba {
+  color: #0a4b94;
+}
+
+.mar-abajo {
+  color: #001b44;
+}
+
+:root[data-tema='dia'] .mar-arriba {
+  color: #f7c2b2;
+}
+
+:root[data-tema='dia'] .mar-abajo {
+  color: #93b9dc;
+}
+
+/* Acentos claros que de noche se usan como texto sobre el cielo (menta,
+   crema, turquesa, ámbar). Sobre los pasteles del día no se leerían, así que
+   se oscurecen al mismo tono. :not(stop) deja intactos los degradados de las
+   ilustraciones, que usan estas clases con currentColor. */
+:root[data-tema='dia'] .text-senales-bg:not(stop) {
+  color: #23786a;
+}
+
+:root[data-tema='dia'] .text-acomp-bg:not(stop),
+:root[data-tema='dia'] .text-acomp-1:not(stop) {
+  color: #1d7c66;
+}
+
+:root[data-tema='dia'] .text-aire-accent:not(stop) {
+  color: #18857c;
+}
+
+:root[data-tema='dia'] .text-faro-1:not(stop),
+:root[data-tema='dia'] .text-faro-2:not(stop) {
+  color: #a5600f;
+}
+
+:root[data-tema='dia'] .text-auxilio-2:not(stop) {
+  color: #d2553a;
+}
+
+/* Rojo de la "zona de peligro" de Perfil: el rojo claro de noche no se lee
+   sobre el pastel */
+:root[data-tema='dia'] .text-red-300 {
+  color: #c2412d;
+}

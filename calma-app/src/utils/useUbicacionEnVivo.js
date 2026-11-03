@@ -28,10 +28,11 @@ function leerPosicion(opciones) {
 }
 
 export function mensajeErrorUbicacion(error) {
-  if (error?.code === 1) return 'Calma no tiene permiso para usar tu ubicación. Actívalo en los ajustes del navegador.'
-  if (error?.code === 'NO_SUPPORT') return 'Este navegador no permite compartir la ubicación.'
+  const t = textoActual(ERRORES)
+  if (error?.code === 1) return t.sinPermisoUbicacion
+  if (error?.code === 'NO_SUPPORT') return t.sinSoporteUbicacion
   if (error?.message) return error.message
-  return 'No pudimos obtener tu ubicación. Intenta de nuevo.'
+  return t.ubicacionGenerico
 }
 
 // Maneja una sesión de ubicación en vivo desde el teléfono de quien comparte
@@ -178,7 +179,7 @@ export function useUbicacionEnVivo() {
     try {
       await detenerSesion(actual.id)
     } catch {
-      setError('No pudimos confirmar que se detuvo. Revisa tu conexión e inténtalo de nuevo.')
+      setError(textoActual(ERRORES).detenerSeguimiento)
     }
   }
 

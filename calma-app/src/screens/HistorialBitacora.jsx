@@ -7,7 +7,11 @@ import StarField from '../components/StarField'
 import { riseIn } from '../animations/transitions'
 import { getEntradas, guardarEntrada, eliminarEntrada } from '../utils/bitacoraStorage'
 import { obtenerAudio, guardarAudio } from '../utils/audioStorage'
-import { agruparPorDia, formatoHora } from '../utils/historial'
+import { agruparPorDia, formatearHora } from '../utils/historial'
+import { EMOJI_POR_EMOCION } from '../constants/emociones'
+import { usePreferencias } from '../context/PreferenciasContext'
+import { useTextos } from '../i18n'
+import TEXTOS from '../i18n/textos/bitacora'
 
 const LOCAL_STORAGE_KEY = 'calma:bitacora'
 const LEGACY_AUDIO_DB_NAME = 'calma-audio'
@@ -15,35 +19,8 @@ const LEGACY_AUDIO_STORE_NAME = 'notas'
 // Las entradas y avisos van en tarjetas blancas, como hojas sobre la noche.
 const cardClass = 'rounded-lg bg-white p-5 text-center shadow-[0_8px_22px_rgba(0,0,0,0.12)]'
 
-const TAG_EMOJIS = {
-  Tranquilidad: '😌',
-  Ansiedad: '😟',
-  Frustración: '😤',
-  Cansancio: '😴',
-  Alegría: '😊',
-  Soledad: '😔',
-  Miedo: '😨',
-  Esperanza: '☀️',
-  Confusión: '😵',
-  Calma: '🍵',
-  Irritabilidad: '😠',
-  Motivación: '💪',
-  Saturación: '😩',
-  Nostalgia: '🥺',
-  Alivio: '😌',
-  Desconexión: '😶',
-  Inseguridad: '😟',
-  Gratitud: '🙏',
-  Estrés: '😖',
-  Sensibilidad: '🥹',
-}
-
-const PREGUNTAS = [
-  { key: 'queEstoySintiendo', label: '¿Qué estoy sintiendo?' },
-  { key: 'queOcurrio', label: '¿Qué ocurrió?' },
-  { key: 'queNecesito', label: '¿Qué necesito ahora?' },
-  { key: 'queMeAyudo', label: '¿Qué me ayudó hoy?' },
-]
+// Mismo orden que las preguntas de la bitácora (i18n/textos/bitacora.js)
+const PREGUNTAS = [{ key: 'queEstoySintiendo' }, { key: 'queOcurrio' }, { key: 'queNecesito' }, { key: 'queMeAyudo' }]
 
 
 function formatDuracion(totalSeconds) {
@@ -109,6 +86,9 @@ function eliminarBaseAudioLegacy() {
 // `abierto` lo controla la lista: solo una entrada abierta a la vez.
 function EntradaCard({ entrada, delay, abierto, onToggle, onEliminar }) {
   const [confirmando, setConfirmando] = useState(false)
+  const { idioma } = usePreferencias()
+  const textos = useTextos(TEXTOS)
+  const t = textos.historial
   // 'idle' | 'loading' | 'ready' | 'unavailable'
   const [audioState, setAudioState] = useState('idle')
   const [isPlaying, setIsPlaying] = useState(false)
@@ -117,7 +97,7 @@ function EntradaCard({ entrada, delay, abierto, onToggle, onEliminar }) {
   const audioElRef = useRef(null)
 
   const fragmento = obtenerFragmento(entrada)
-  const preguntasConContenido = PREGUNTAS.filter(
+  const preguntasConContenido = PREGUNTAS.map((p, indice) => ({ ...p, ...textos.preguntas[indice] })).filter(
     (p) => entrada[p.key] && entrada[p.key].trim() !== ''
   )
 
@@ -179,7 +159,7 @@ function EntradaCard({ entrada, delay, abierto, onToggle, onEliminar }) {
         <div className="mb-2 flex items-start justify-between gap-3">
           {/* el día va en el encabezado del grupo; aquí solo la hora */}
           <span className="text-[13px] font-semibold text-ink-soft">
-            {formatoHora.format(new Date(entrada.fecha))}
+            {formatearHora(new Date(entrada.fecha), idioma)}
           </span>
           <motion.span
             animate={{ rotate: abierto ? 180 : 0 }}
@@ -199,8 +179,8 @@ function EntradaCard({ entrada, delay, abierto, onToggle, onEliminar }) {
                 key={tag}
                 className="inline-flex items-center gap-1 rounded-full border-[1.5px] border-black/[0.07] bg-white px-2.5 py-1 text-xs font-semibold text-ink-soft"
               >
-                {TAG_EMOJIS[tag] && <span aria-hidden="true">{TAG_EMOJIS[tag]}</span>}
-                <span>{tag}</span>
+                {EMOJI_POR_EMOCION[tag] && <span aria-hidden="true">{EMOJI_POR_EMOCION[tag]}</span>}
+                <span>{textos.emociones[tag] ?? tag}</span>
               </span>
             ))}
           </div>
@@ -215,7 +195,7 @@ function EntradaCard({ entrada, delay, abierto, onToggle, onEliminar }) {
               <path d="M5 11a7 7 0 0 0 14 0" />
               <path d="M12 18v3" />
             </svg>
-            <span>Nota de voz • {formatDuracion(entrada.notaVozDuracion)}</span>
+            <span>{t.notaDeVoz} • {formatDuracion(entrada.notaVozDuracion)}</span>
           </div>
         )}
       </button>
@@ -233,7 +213,7 @@ function EntradaCard({ entrada, delay, abierto, onToggle, onEliminar }) {
             <div className="flex flex-col gap-3 px-5 pb-4">
               {entrada.emocionLibre && entrada.emocionLibre.trim() !== '' && (
                 <div>
-                  <p className="mb-1 text-[13px] font-semibold text-ink">O describe tu emoción</p>
+                  <p className="mb-1 text-[13px] font-semibold text-ink">{textos.describeEmocion.replace(/:$/, '')}</p>
                   <p className="text-[14px] leading-[1.5] text-ink-soft">{entrada.emocionLibre}</p>
                 </div>
               )}
@@ -247,7 +227,7 @@ function EntradaCard({ entrada, delay, abierto, onToggle, onEliminar }) {
 
               {entrada.tieneNotaDeVoz && (
                 <div>
-                  <p className="mb-1 text-[13px] font-semibold text-ink">Nota de voz</p>
+                  <p className="mb-1 text-[13px] font-semibold text-ink">{t.notaDeVoz}</p>
                   {audioState === 'ready' ? (
                     <div className="flex items-center gap-2.5">
                       <button
@@ -256,7 +236,7 @@ function EntradaCard({ entrada, delay, abierto, onToggle, onEliminar }) {
                           e.stopPropagation()
                           togglePlay()
                         }}
-                        aria-label={isPlaying ? 'Pausar nota de voz' : 'Reproducir nota de voz'}
+                        aria-label={isPlaying ? textos.voz.pausarNota : textos.voz.reproducirNota}
                         className="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-full bg-auxilio-bg text-base text-auxilio-1"
                       >
                         {isPlaying ? '⏸' : '▶'}
@@ -274,9 +254,9 @@ function EntradaCard({ entrada, delay, abierto, onToggle, onEliminar }) {
                       />
                     </div>
                   ) : audioState === 'loading' ? (
-                    <p className="text-[13px] text-ink-soft">Cargando audio…</p>
+                    <p className="text-[13px] text-ink-soft">{t.cargandoAudio}</p>
                   ) : (
-                    <p className="text-[13px] italic text-ink-soft">Audio no disponible</p>
+                    <p className="text-[13px] italic text-ink-soft">{t.audioNoDisponible}</p>
                   )}
                 </div>
               )}
@@ -292,7 +272,7 @@ function EntradaCard({ entrada, delay, abierto, onToggle, onEliminar }) {
                       }}
                       className="rounded-full bg-ink/10 px-3.5 py-1.5 text-xs font-semibold text-ink"
                     >
-                      Cancelar
+                      {t.cancelar}
                     </button>
                     <button
                       type="button"
@@ -302,7 +282,7 @@ function EntradaCard({ entrada, delay, abierto, onToggle, onEliminar }) {
                       }}
                       className="rounded-full bg-red-500 px-3.5 py-1.5 text-xs font-semibold text-white"
                     >
-                      Sí, eliminar
+                      {t.siEliminar}
                     </button>
                   </div>
                 ) : (
@@ -314,7 +294,7 @@ function EntradaCard({ entrada, delay, abierto, onToggle, onEliminar }) {
                     }}
                     className="rounded-full px-3.5 py-1.5 text-xs font-semibold text-red-500"
                   >
-                    Eliminar entrada
+                    {t.eliminarEntrada}
                   </button>
                 )}
               </div>
@@ -327,6 +307,8 @@ function EntradaCard({ entrada, delay, abierto, onToggle, onEliminar }) {
 }
 
 export default function HistorialBitacora() {
+  const { idioma } = usePreferencias()
+  const t = useTextos(TEXTOS).historial
   const [cargaEstado, setCargaEstado] = useState('cargando') // 'cargando' | 'error' | 'listo'
   const [entradas, setEntradas] = useState([])
   // Una sola entrada abierta a la vez: abrir otra cierra la anterior.
@@ -420,18 +402,18 @@ export default function HistorialBitacora() {
       <StarField />
 
       <div className="relative z-[2] mx-auto max-w-[620px] px-5 pb-20 pt-10">
-        <ScreenHeader backTo="/bitacora" accountButtonClassName="bg-white/20 text-white" />
+        <ScreenHeader backTo="/bitacora" accountButtonClassName="bg-white/20 text-cielo" />
 
         <motion.div {...riseIn(0)} className="mb-8">
-          <h1 className="text-[30px] font-semibold leading-tight text-white">Tu historial</h1>
-          <p className="mt-1.5 text-[15px] text-white/75">Todo lo que has registrado hasta ahora</p>
+          <h1 className="text-[30px] font-semibold leading-tight text-cielo">{t.titulo}</h1>
+          <p className="mt-1.5 text-[15px] text-cielo/75">{t.subtitulo}</p>
         </motion.div>
 
         {cargaEstado === 'cargando' && (
           <div className="flex justify-center py-10">
             <span
               aria-hidden="true"
-              className="h-8 w-8 animate-spin rounded-full border-2 border-white/20 border-t-white/80"
+              className="h-8 w-8 animate-spin rounded-full border-2 border-cielo/20 border-t-cielo/80"
             />
           </div>
         )}
@@ -443,14 +425,14 @@ export default function HistorialBitacora() {
             className={`mt-6 ${cardClass}`}
           >
             <p className="mb-3 text-sm text-ink-soft">
-              No pudimos cargar tu historial. Intenta de nuevo.
+              {t.errorCarga}
             </p>
             <button
               type="button"
               onClick={cargarEntradas}
               className="rounded-full bg-gradient-to-br from-faro-1 to-faro-2 px-6 py-3 text-sm font-bold text-brand-navyDeep shadow-[0_10px_20px_rgba(242,169,59,0.25)]"
             >
-              Reintentar
+              {t.reintentar}
             </button>
           </motion.div>
         )}
@@ -462,8 +444,7 @@ export default function HistorialBitacora() {
             className={`mb-4 ${cardClass}`}
           >
             <p className="mb-3 text-sm text-ink-soft">
-              Encontramos entradas guardadas en este dispositivo. ¿Quieres agregarlas a tu
-              cuenta?
+              {t.migracionPregunta}
             </p>
             <div className="flex justify-center gap-2">
               <button
@@ -472,7 +453,7 @@ export default function HistorialBitacora() {
                 onClick={migrarEntradasLocales}
                 className="rounded-full bg-gradient-to-br from-faro-1 to-faro-2 px-5 py-2.5 text-sm font-bold text-brand-navyDeep shadow-[0_10px_20px_rgba(242,169,59,0.25)] disabled:opacity-70"
               >
-                {migrando ? 'Migrando…' : 'Sí, migrarlas'}
+                {migrando ? t.migrando : t.siMigrar}
               </button>
               <button
                 type="button"
@@ -480,7 +461,7 @@ export default function HistorialBitacora() {
                 onClick={descartarMigracion}
                 className="rounded-full bg-black/10 px-5 py-2.5 text-sm font-semibold text-ink disabled:opacity-70"
               >
-                No, descartar
+                {t.noDescartar}
               </button>
             </div>
           </motion.div>
@@ -488,32 +469,31 @@ export default function HistorialBitacora() {
 
         {cargaEstado === 'listo' && entradas.length === 0 && (
           <motion.div {...riseIn(0.1)} className="mt-6 text-center">
-            <p className="mx-auto max-w-[380px] text-[15px] leading-[1.6] text-white/75">
-              Todavía no tienes entradas guardadas. Cuando registres algo en tu bitácora,
-              aparecerá aquí.
+            <p className="mx-auto max-w-[380px] text-[15px] leading-[1.6] text-cielo/75">
+              {t.vacio}
             </p>
             <Link
               to="/bitacora"
               className="mt-5 inline-block rounded-full bg-gradient-to-br from-faro-1 to-faro-2 px-8 py-3.5 text-sm font-bold text-brand-navyDeep shadow-[0_14px_28px_rgba(242,169,59,0.25)]"
             >
-              Ir a la bitácora
+              {t.irABitacora}
             </Link>
           </motion.div>
         )}
 
         {/* Línea de tiempo: un grupo por día, con un punto por entrada */}
         {cargaEstado === 'listo' &&
-          agruparPorDia(entradas).map((grupo, indiceGrupo) => (
+          agruparPorDia(entradas, new Date(), idioma).map((grupo, indiceGrupo) => (
             <section key={grupo.clave} aria-labelledby={`historial-dia-${grupo.clave}`} className="mb-6">
-              <h2 id={`historial-dia-${grupo.clave}`} className="mb-3 text-[15px] font-semibold text-white">
+              <h2 id={`historial-dia-${grupo.clave}`} className="mb-3 text-[15px] font-semibold text-cielo">
                 {grupo.etiqueta}
               </h2>
-              <ol className="ml-1.5 border-l border-white/15 pl-5">
+              <ol className="ml-1.5 border-l border-cielo/15 pl-5">
                 {grupo.entradas.map((entrada, indice) => (
                   <li key={entrada.id} className="relative">
                     <span
                       aria-hidden="true"
-                      className="absolute -left-[26px] top-[22px] h-2.5 w-2.5 rounded-full bg-faro-2 ring-4 ring-brand-navyDeep"
+                      className="absolute -left-[26px] top-[22px] h-2.5 w-2.5 rounded-full bg-faro-2 ring-4 ring-fondo"
                     />
                     <EntradaCard
                       entrada={entrada}

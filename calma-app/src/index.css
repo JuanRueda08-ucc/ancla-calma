@@ -9,10 +9,10 @@
     padding: 0;
   }
 
-  /* Fondo base nocturno: todas las pantallas son de noche, así que el rebote
-     del scroll en iOS y el instante de carga no deben destellar en claro. */
+  /* Fondo base del tema (styles/tema.css): el rebote del scroll en iOS y el
+     instante de carga no deben destellar con el color del otro tema. */
   body {
-    @apply font-sans text-ink bg-brand-navyDeep antialiased;
+    @apply font-sans text-ink bg-fondo antialiased;
   }
 
   h1,

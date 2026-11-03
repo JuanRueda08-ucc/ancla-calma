@@ -5,6 +5,8 @@ import { riseIn } from '../animations/transitions'
 import InstalarApp from '../components/InstalarApp'
 import ScreenHeader from '../components/ScreenHeader'
 import StarField from '../components/StarField'
+import { useTextos } from '../i18n'
+import TEXTOS from '../i18n/textos/elegirCamino'
 
 // Salvavidas: pedir ayuda en medio del agua.
 function SalvavidasIcon() {
@@ -43,17 +45,12 @@ function FarolIcon() {
 const CAMINOS = [
   {
     to: '/islas',
-    title: 'Necesito ayuda',
-    description:
-      'Explora herramientas de calma, contacto de emergencia y tu bitácora emocional.',
     Icon: SalvavidasIcon,
     band: 'bg-gradient-to-r from-auxilio-1 to-faro-1 shadow-[0_18px_44px_rgba(255,122,89,0.28)]',
     delay: 0.2,
   },
   {
     to: '/acompanamiento',
-    title: 'Quiero ayudar',
-    description: 'Aprende a reconocer señales y acompañar a alguien que lo necesita.',
     Icon: FarolIcon,
     band: 'bg-gradient-to-r from-acomp-1 to-acomp-2 shadow-[0_18px_44px_rgba(47,191,159,0.24)]',
     delay: 0.32,
@@ -72,7 +69,7 @@ function CaminoBand({ to, title, description, Icon, band, delay }) {
       whileTap={{ scale: 0.98, transition: { duration: 0.15 } }}
       // Contenida y redondeada en todos los tamaños: en móvil la franja que
       // salía por el borde derecho se veía cortada, no como un haz de luz.
-      className={`flex w-full items-center gap-4 rounded-xl px-6 py-6 text-left text-brand-navyDeep focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-white/70 sm:px-8 ${band}`}
+      className={`flex w-full items-center gap-4 rounded-xl px-6 py-6 text-left text-brand-navyDeep focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-cielo/70 sm:px-8 ${band}`}
     >
       <div className="min-w-0 flex-1">
         <h2 className="text-[22px] font-semibold leading-tight">{title}</h2>
@@ -88,33 +85,34 @@ function CaminoBand({ to, title, description, Icon, band, delay }) {
 export default function ElegirCamino() {
   const [searchParams] = useSearchParams()
   const cuentaEliminada = searchParams.get('cuenta_eliminada') === '1'
+  const t = useTextos(TEXTOS)
 
   return (
-    <div className="elegir-bg relative min-h-[100dvh] overflow-hidden text-white">
+    <div className="elegir-bg relative min-h-[100dvh] overflow-hidden text-cielo">
       <StarField />
 
       <div className="relative z-[2] mx-auto flex min-h-[100dvh] max-w-[620px] flex-col px-6 pb-[18vh] pt-10">
-        <ScreenHeader backTo="/" accountButtonClassName="bg-white/20 text-white" />
+        <ScreenHeader backTo="/" accountButtonClassName="bg-white/20 text-cielo" />
 
         {cuentaEliminada && (
           <motion.div
             {...riseIn(0)}
             className="mb-5 rounded-lg bg-acomp-1/15 px-4 py-3 text-sm font-semibold text-acomp-bg"
           >
-            Tu cuenta fue eliminada
+            {t.cuentaEliminada}
           </motion.div>
         )}
 
         <motion.div {...riseIn(0)} className="mb-8 mt-[3vh] sm:mb-10 sm:mt-[6vh]">
           <h1 className="text-[32px] font-semibold leading-tight sm:text-[40px]">
-            ¿Qué necesitas hoy?
+            {t.titulo}
           </h1>
-          <p className="mt-3 text-[15px] text-white/70">Elige el camino que se ajuste a este momento</p>
+          <p className="mt-3 text-[15px] text-cielo/70">{t.subtitulo}</p>
         </motion.div>
 
         <div className="flex flex-col gap-4">
-          {CAMINOS.map((camino) => (
-            <CaminoBand key={camino.to} {...camino} />
+          {CAMINOS.map((camino, index) => (
+            <CaminoBand key={camino.to} {...camino} {...t.caminos[index]} />
           ))}
         </div>
 
@@ -130,8 +128,8 @@ export default function ElegirCamino() {
       >
         <defs>
           <linearGradient id="elegirSeaGrad" x1="0" y1="0" x2="0" y2="1">
-            <stop offset="0%" className="text-aire-2" stopColor="currentColor" />
-            <stop offset="100%" className="text-brand-navyDeep" stopColor="currentColor" />
+            <stop offset="0%" className="mar-arriba" stopColor="currentColor" />
+            <stop offset="100%" className="mar-abajo" stopColor="currentColor" />
           </linearGradient>
         </defs>
         <rect x="0" y="0" width="400" height="100" fill="url(#elegirSeaGrad)" />

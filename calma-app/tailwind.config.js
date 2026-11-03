@@ -3,6 +3,11 @@ export default {
   theme: {
     extend: {
       colors: {
+        // Cambian con el tema (noche/día): `cielo` es el color de lo que va
+        // directo sobre el fondo de la pantalla (blanco de noche, índigo de día)
+        // y `fondo` el color base del body. Valores en styles/tema.css.
+        cielo: 'rgb(var(--cielo) / <alpha-value>)',
+        fondo: 'rgb(var(--fondo) / <alpha-value>)',
         brand: { navy: '#002E6B', navyDeep: '#001B44' },
         sand: { DEFAULT: '#F5F8FB', deep: '#EAF0F7' },
         ink: { DEFAULT: '#0A2540', soft: '#55677E' },

@@ -11,6 +11,8 @@ import {
   eliminarHerramienta,
   guardarOrden,
 } from '../utils/herramientasStorage'
+import { useTextos } from '../i18n'
+import TEXTOS from '../i18n/textos/islaFaro'
 
 const ICONOS_DISPONIBLES = ['🎵', '🚶', '📞', '🫁', '💧', '😴', '📝', '🎉', '🌳', '🎨']
 
@@ -45,14 +47,15 @@ function ArrastrarIcon({ className }) {
 }
 
 function BotonFavorito({ item, onToggleFavorito, className = '' }) {
+  const t = useTextos(TEXTOS)
   return (
     <button
       type="button"
       onClick={() => onToggleFavorito(item.id)}
-      aria-label={item.favorite ? `Quitar ${item.label} de favoritas` : `Marcar ${item.label} como favorita`}
+      aria-label={item.favorite ? t.quitarFavorita(item.label) : t.marcarFavorita(item.label)}
       aria-pressed={item.favorite}
       className={`flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-full ${
-        item.favorite ? 'text-faro-2' : 'text-white/40'
+        item.favorite ? 'text-faro-2' : 'text-cielo/40'
       } ${className}`}
     >
       <EstrellaIcon llena={item.favorite} className="h-5 w-5" />
@@ -77,6 +80,7 @@ function HerramientaRow({
   onSoltar,
 }) {
   const controls = useDragControls()
+  const t = useTextos(TEXTOS)
 
   return (
     <Reorder.Item
@@ -88,7 +92,7 @@ function HerramientaRow({
       animate={{ opacity: 1, height: 'auto' }}
       exit={{ opacity: 0, height: 0 }}
       transition={{ duration: 0.25 }}
-      className="mb-2.5 rounded-xl border border-white/10 bg-white/[0.06] px-3 py-2.5"
+      className="mb-2.5 rounded-xl border border-cielo/10 bg-white/[0.06] px-3 py-2.5"
     >
       <div className="flex items-center gap-3">
         {/* reordenar solo en modo Administrar, para no arrastrar por accidente */}
@@ -96,8 +100,8 @@ function HerramientaRow({
           <button
             type="button"
             onPointerDown={(e) => controls.start(e)}
-            aria-label={`Arrastrar ${item.label} para reordenar`}
-            className="cursor-grab touch-none select-none text-white/40 active:cursor-grabbing"
+            aria-label={t.arrastrar(item.label)}
+            className="cursor-grab touch-none select-none text-cielo/40 active:cursor-grabbing"
           >
             <ArrastrarIcon className="h-5 w-5" />
           </button>
@@ -116,11 +120,11 @@ function HerramientaRow({
               if (e.key === 'Enter') onConfirmarEdicion(item.id)
               if (e.key === 'Escape') onCancelarEdicion()
             }}
-            aria-label="Nombre de la herramienta"
-            className="min-w-0 flex-1 border-b border-white/30 bg-transparent py-1 text-[15px] text-white outline-none focus:border-faro-2"
+            aria-label={t.nombre}
+            className="min-w-0 flex-1 border-b border-cielo/30 bg-transparent py-1 text-[15px] text-cielo outline-none focus:border-faro-2"
           />
         ) : (
-          <span className="min-w-0 flex-1 text-[15px] text-white">{item.label}</span>
+          <span className="min-w-0 flex-1 text-[15px] text-cielo">{item.label}</span>
         )}
 
         {!isEditing && <BotonFavorito item={item} onToggleFavorito={onToggleFavorito} />}
@@ -131,37 +135,37 @@ function HerramientaRow({
           <button
             type="button"
             onClick={onCancelarEdicion}
-            className="rounded-full px-4 py-1.5 text-sm font-semibold text-white/70"
+            className="rounded-full px-4 py-1.5 text-sm font-semibold text-cielo/70"
           >
-            Cancelar
+            {t.cancelar}
           </button>
           <button
             type="button"
             onClick={() => onConfirmarEdicion(item.id)}
             className="rounded-full bg-faro-2 px-4 py-1.5 text-sm font-semibold text-brand-navyDeep"
           >
-            Guardar
+            {t.guardar}
           </button>
         </div>
       )}
 
       {administrando && !isEditing && (
-        <div className="mt-2.5 flex justify-end gap-2 border-t border-white/10 pt-2.5">
+        <div className="mt-2.5 flex justify-end gap-2 border-t border-cielo/10 pt-2.5">
           {confirmandoEliminar ? (
             <>
               <button
                 type="button"
                 onClick={onCancelarEliminar}
-                className="rounded-full px-4 py-1.5 text-sm font-semibold text-white/70"
+                className="rounded-full px-4 py-1.5 text-sm font-semibold text-cielo/70"
               >
-                Cancelar
+                {t.cancelar}
               </button>
               <button
                 type="button"
                 onClick={() => onConfirmarEliminar(item.id)}
                 className="whitespace-nowrap rounded-full bg-auxilio-1 px-4 py-1.5 text-sm font-semibold text-white"
               >
-                ¿Eliminar?
+                {t.confirmarEliminar}
               </button>
             </>
           ) : (
@@ -169,18 +173,18 @@ function HerramientaRow({
               <button
                 type="button"
                 onClick={() => onIniciarEdicion(item)}
-                aria-label={`Editar ${item.label}`}
-                className="rounded-full bg-white/10 px-4 py-1.5 text-sm font-semibold text-white"
+                aria-label={t.editarA(item.label)}
+                className="rounded-full bg-white/10 px-4 py-1.5 text-sm font-semibold text-cielo"
               >
-                Editar
+                {t.editar}
               </button>
               <button
                 type="button"
                 onClick={() => onSolicitarEliminar(item.id)}
-                aria-label={`Eliminar ${item.label}`}
+                aria-label={t.eliminarA(item.label)}
                 className="rounded-full px-4 py-1.5 text-sm font-semibold text-auxilio-2"
               >
-                Eliminar
+                {t.eliminar}
               </button>
             </>
           )}
@@ -191,6 +195,7 @@ function HerramientaRow({
 }
 
 export default function IslaFaro() {
+  const t = useTextos(TEXTOS)
   const [cargaEstado, setCargaEstado] = useState('cargando') // 'cargando' | 'error' | 'listo'
   const [herramientas, setHerramientas] = useState([])
   // espejo de `herramientas` para leer el orden final al soltar un arrastre
@@ -363,12 +368,12 @@ export default function IslaFaro() {
       <StarField />
 
       <div className="relative z-[2] mx-auto max-w-[620px] px-5 pb-20 pt-10">
-        <ScreenHeader backTo="/islas" accountButtonClassName="bg-white/20 text-white" />
+        <ScreenHeader backTo="/islas" accountButtonClassName="bg-white/20 text-cielo" />
 
         <motion.div {...riseIn(0)} className="mb-8">
-          <h1 className="text-[30px] font-semibold leading-tight text-white">Tu faro</h1>
-          <p className="mt-1.5 max-w-xs text-[15px] text-white/75">
-            Herramientas que te ayudan en momentos difíciles
+          <h1 className="text-[30px] font-semibold leading-tight text-cielo">{t.titulo}</h1>
+          <p className="mt-1.5 max-w-xs text-[15px] text-cielo/75">
+            {t.subtitulo}
           </p>
         </motion.div>
 
@@ -376,7 +381,7 @@ export default function IslaFaro() {
           <div className="flex justify-center py-10">
             <span
               aria-hidden="true"
-              className="h-8 w-8 animate-spin rounded-full border-2 border-white/30 border-t-white"
+              className="h-8 w-8 animate-spin rounded-full border-2 border-cielo/30 border-t-cielo"
             />
           </div>
         )}
@@ -388,21 +393,21 @@ export default function IslaFaro() {
             className="mb-4 rounded-lg bg-white/95 p-4 text-center shadow-[0_8px_22px_rgba(0,0,0,0.06)]"
           >
             <p className="mb-3 text-sm text-ink-soft">
-              No pudimos cargar tus herramientas. Intenta de nuevo.
+              {t.errorCarga}
             </p>
             <button
               type="button"
               onClick={cargarHerramientas}
               className="rounded-full bg-gradient-to-br from-faro-1 to-faro-2 px-6 py-3 text-sm font-bold text-brand-navyDeep"
             >
-              Reintentar
+              {t.reintentar}
             </button>
           </motion.div>
         )}
 
         <div aria-live="polite">
           {errorAccion && (
-            <p role="alert" className="mb-4 rounded-lg bg-auxilio-1/20 px-3 py-2 text-sm text-white">
+            <p role="alert" className="mb-4 rounded-lg bg-auxilio-1/20 px-3 py-2 text-sm text-cielo">
               {errorAccion}
             </p>
           )}
@@ -412,7 +417,7 @@ export default function IslaFaro() {
           <>
             {favoritas.length > 0 && !administrando && (
               <motion.section {...riseIn(0.06)} className="mb-8">
-                <h2 className="mb-3 text-[15px] font-semibold text-white">Tus favoritas</h2>
+                <h2 className="mb-3 text-[15px] font-semibold text-cielo">{t.tusFavoritas}</h2>
                 <div className="grid grid-cols-2 gap-3">
                   <AnimatePresence initial={false}>
                     {favoritas.map((item) => (
@@ -426,7 +431,7 @@ export default function IslaFaro() {
                         className="relative rounded-xl border border-faro-2/40 bg-faro-1/[0.22] p-4 pr-10"
                       >
                         <span className="block text-[28px] leading-none">{item.icon}</span>
-                        <span className="mt-3 block text-[14.5px] font-semibold leading-snug text-white">
+                        <span className="mt-3 block text-[14.5px] font-semibold leading-snug text-cielo">
                           {item.label}
                         </span>
                         <BotonFavorito item={item} onToggleFavorito={toggleFavorito} className="absolute right-1.5 top-1.5" />
@@ -438,23 +443,23 @@ export default function IslaFaro() {
             )}
 
             <motion.div {...riseIn(0.1)} className="mb-3 flex items-center justify-between">
-              <h2 className="text-[15px] font-semibold text-white">
-                {favoritas.length > 0 && !administrando ? 'Otras herramientas' : 'Tus herramientas'}
+              <h2 className="text-[15px] font-semibold text-cielo">
+                {favoritas.length > 0 && !administrando ? t.otrasHerramientas : t.tusHerramientas}
               </h2>
               {herramientas.length > 0 && (
                 <button
                   type="button"
                   onClick={alternarAdministrar}
                   aria-pressed={administrando}
-                  className="rounded-full px-3 py-1.5 text-sm font-semibold text-white underline decoration-white/50 underline-offset-4"
+                  className="rounded-full px-3 py-1.5 text-sm font-semibold text-cielo underline decoration-cielo/50 underline-offset-4"
                 >
-                  {administrando ? 'Listo' : 'Administrar'}
+                  {administrando ? t.listo : t.administrar}
                 </button>
               )}
             </motion.div>
 
             {otras.length === 0 && favoritas.length > 0 && !administrando && (
-              <p className="mb-4 text-sm text-white/60">Todas tus herramientas están en favoritas.</p>
+              <p className="mb-4 text-sm text-cielo/60">{t.todasFavoritas}</p>
             )}
 
             {/* en modo Administrar la lista muestra todas (también las favoritas) y la
@@ -494,12 +499,12 @@ export default function IslaFaro() {
                 animate={{ opacity: 1, y: 0 }}
                 className="rounded-lg bg-white/95 p-4 shadow-[0_8px_22px_rgba(0,0,0,0.06)]"
               >
-                <p className="mb-3 text-sm font-semibold text-ink">Agregar herramienta</p>
+                <p className="mb-3 text-sm font-semibold text-ink">{t.agregarHerramienta}</p>
                 <div className="mb-3 flex gap-2">
                   <select
                     value={nuevoIcono}
                     onChange={(e) => setNuevoIcono(e.target.value)}
-                    aria-label="Ícono de la herramienta"
+                    aria-label={t.icono}
                     className="rounded-lg border border-black/10 bg-white px-2 py-2 text-lg"
                   >
                     {ICONOS_DISPONIBLES.map((icono) => (
@@ -516,8 +521,8 @@ export default function IslaFaro() {
                     onKeyDown={(e) => {
                       if (e.key === 'Enter') agregarHerramienta()
                     }}
-                    aria-label="Nombre de la herramienta"
-                    placeholder="Ej: escuchar música, caminar..."
+                    aria-label={t.nombre}
+                    placeholder={t.nombreEjemplo}
                     className={inputClass}
                   />
                 </div>
@@ -528,14 +533,14 @@ export default function IslaFaro() {
                     disabled={guardando}
                     className="flex-1 rounded-full disabled:opacity-60 bg-gradient-to-br from-faro-1 to-faro-2 py-2.5 text-sm font-bold text-brand-navyDeep shadow-[0_10px_20px_rgba(242,169,59,0.25)]"
                   >
-                    Agregar
+                    {t.agregar}
                   </button>
                   <button
                     type="button"
                     onClick={cancelarNuevo}
                     className="flex-1 rounded-full bg-black/10 py-2.5 text-sm font-semibold text-ink"
                   >
-                    Cancelar
+                    {t.cancelar}
                   </button>
                 </div>
               </motion.div>
@@ -544,9 +549,9 @@ export default function IslaFaro() {
                 {...riseIn(0.14)}
                 type="button"
                 onClick={() => setFormAbierto(true)}
-                className="w-full rounded-full border-[1.5px] border-dashed border-white/50 py-3 text-sm font-semibold text-white"
+                className="w-full rounded-full border-[1.5px] border-dashed border-cielo/50 py-3 text-sm font-semibold text-cielo"
               >
-                + Agregar herramienta
+                {t.nuevaHerramienta}
               </motion.button>
             )}
           </>

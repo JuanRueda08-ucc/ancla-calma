@@ -1,4 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
+import { useTextos } from '../i18n'
+import TEXTOS from '../i18n/textos/bitacora'
 
 const MIME_CANDIDATES = ['audio/webm;codecs=opus', 'audio/mp4']
 
@@ -25,6 +27,7 @@ const pillClass =
   'flex w-full items-center gap-2.5 rounded-full bg-white px-5 py-3.5 text-sm font-semibold text-ink-soft shadow-[0_8px_22px_rgba(0,0,0,0.04)]'
 
 export default function VoiceNoteRecorder({ onRecordingChange }) {
+  const t = useTextos(TEXTOS).voz
   // Estado de la máquina: 'idle' | 'requesting' | 'recording' | 'recorded' | 'error'.
   const [status, setStatus] = useState('idle')
   const [elapsedSeconds, setElapsedSeconds] = useState(0)
@@ -158,7 +161,7 @@ export default function VoiceNoteRecorder({ onRecordingChange }) {
     return (
       <button type="button" onClick={handleStart} className={pillClass}>
         <span>🎙️</span>
-        <span>Detalles adicionales (nota de voz)</span>
+        <span>{t.detallesAdicionales}</span>
       </button>
     )
   }
@@ -171,7 +174,7 @@ export default function VoiceNoteRecorder({ onRecordingChange }) {
           aria-hidden="true"
           className="h-4 w-4 animate-spin rounded-full border-2 border-ink-soft/25 border-t-ink-soft"
         />
-        <span>Detalles adicionales (nota de voz)</span>
+        <span>{t.detallesAdicionales}</span>
       </div>
     )
   }
@@ -180,11 +183,11 @@ export default function VoiceNoteRecorder({ onRecordingChange }) {
     return (
       <div className={pillClass}>
         <span aria-hidden="true" className="h-2.5 w-2.5 flex-shrink-0 animate-pulse rounded-full bg-red-500" />
-        <span className="flex-1 text-left">Grabando... {formatDuration(elapsedSeconds)}</span>
+        <span className="flex-1 text-left">{t.grabando} {formatDuration(elapsedSeconds)}</span>
         <button
           type="button"
           onClick={handleStop}
-          aria-label="Detener grabación"
+          aria-label={t.detenerGrabacion}
           className="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-full bg-ink/10 text-sm text-ink"
         >
           ■
@@ -199,16 +202,16 @@ export default function VoiceNoteRecorder({ onRecordingChange }) {
         <button
           type="button"
           onClick={togglePlay}
-          aria-label={isPlaying ? 'Pausar nota de voz' : 'Reproducir nota de voz'}
+          aria-label={isPlaying ? t.pausarNota : t.reproducirNota}
           className="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-full bg-auxilio-bg text-base text-auxilio-1"
         >
           {isPlaying ? '⏸' : '▶'}
         </button>
-        <span className="flex-1 text-left">Nota de voz • {formatDuration(recordedDuration)}</span>
+        <span className="flex-1 text-left">{t.notaDeVoz} • {formatDuration(recordedDuration)}</span>
         <button
           type="button"
           onClick={handleDiscard}
-          aria-label="Descartar nota de voz"
+          aria-label={t.descartarNota}
           className="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-full bg-ink/10 text-sm text-ink"
         >
           🗑️
@@ -231,8 +234,8 @@ export default function VoiceNoteRecorder({ onRecordingChange }) {
     <div className="flex w-full flex-col gap-2.5 rounded-2xl bg-white px-5 py-4 shadow-[0_8px_22px_rgba(0,0,0,0.04)]">
       <p className="text-sm text-ink-soft">
         {isUnsupported
-          ? 'Tu navegador no soporta grabación de audio.'
-          : 'No pudimos acceder a tu micrófono. Revisa los permisos del navegador.'}
+          ? t.sinSoporte
+          : t.sinPermiso}
       </p>
       {!isUnsupported && (
         <button
@@ -240,7 +243,7 @@ export default function VoiceNoteRecorder({ onRecordingChange }) {
           onClick={handleRetry}
           className="self-start rounded-full bg-ink/10 px-4 py-2 text-xs font-semibold text-ink"
         >
-          Reintentar
+          {t.reintentar}
         </button>
       )}
     </div>

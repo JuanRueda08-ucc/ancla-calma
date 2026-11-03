@@ -1,4 +1,6 @@
 import { supabase } from '../lib/supabaseClient'
+import { textoActual } from '../i18n'
+import ERRORES from '../i18n/textos/errores'
 
 // "Compartir ubicación en vivo": a diferencia de compartirUbicacion.js
 // (snapshot que se calcula y se descarta), aquí la posición SÍ viaja a
@@ -63,7 +65,7 @@ export async function iniciarSesion(duracionMin, posicion) {
     .select('id, token, duracion_min, expira_at')
     .single()
 
-  if (error) throw new Error('No pudimos iniciar el seguimiento. Intenta de nuevo.')
+  if (error) throw new Error(textoActual(ERRORES).iniciarSeguimiento)
   return data
 }
 

@@ -2,7 +2,9 @@ import { useEffect, useRef, useState } from 'react'
 import { Link, useLocation, useNavigate } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
 import { AVATARES } from '../constants/avatares'
-import { EntrarIcon, PersonaIcon, SalirIcon } from './Iconos'
+import { useTextos } from '../i18n'
+import TEXTOS from '../i18n/textos/comun'
+import { EntrarIcon, IdiomaIcon, PersonaIcon, SalirIcon } from './Iconos'
 
 export default function AccountMenu({ buttonClassName = 'bg-brand-navy text-white' }) {
   const { user, signOut, profile } = useAuth()
@@ -10,6 +12,7 @@ export default function AccountMenu({ buttonClassName = 'bg-brand-navy text-whit
   const location = useLocation()
   const [abierto, setAbierto] = useState(false)
   const contenedorRef = useRef(null)
+  const t = useTextos(TEXTOS)
 
   const avatarActual = AVATARES.find((avatar) => avatar.id === profile?.avatar_id)
 
@@ -46,21 +49,21 @@ export default function AccountMenu({ buttonClassName = 'bg-brand-navy text-whit
       <button
         type="button"
         onClick={() => setAbierto((prev) => !prev)}
-        aria-label="Cuenta"
+        aria-label={t.cuenta}
         aria-expanded={abierto}
         className={`flex h-9 w-9 items-center justify-center overflow-hidden rounded-full text-base ${
           avatarActual ? '' : buttonClassName
         }`}
       >
         {avatarActual ? (
-          <img src={avatarActual.src} alt={avatarActual.nombre} className="h-full w-full object-cover" />
+          <img src={avatarActual.src} alt={t.avatares[avatarActual.id]} className="h-full w-full object-cover" />
         ) : (
           <PersonaIcon className="h-5 w-5" />
         )}
       </button>
 
       {abierto && (
-        <div className="absolute right-0 top-full z-10 mt-2 w-44 overflow-hidden rounded-lg bg-white py-1.5 shadow-[0_8px_22px_rgba(0,0,0,0.12)]">
+        <div className="absolute right-0 top-full z-10 mt-2 w-48 overflow-hidden rounded-lg bg-white py-1.5 shadow-[0_8px_22px_rgba(0,0,0,0.12)]">
           {user ? (
             <>
               <Link
@@ -70,7 +73,7 @@ export default function AccountMenu({ buttonClassName = 'bg-brand-navy text-whit
                 className="flex w-full items-center gap-2 px-4 py-2.5 text-left text-sm font-semibold text-ink"
               >
                 <PersonaIcon className="h-4 w-4 text-ink-soft" />
-                <span>Mi perfil</span>
+                <span>{t.miPerfil}</span>
               </Link>
               <button
                 type="button"
@@ -78,7 +81,7 @@ export default function AccountMenu({ buttonClassName = 'bg-brand-navy text-whit
                 className="flex w-full items-center gap-2 px-4 py-2.5 text-left text-sm font-semibold text-ink"
               >
                 <SalirIcon className="h-4 w-4 text-ink-soft" />
-                <span>Cerrar sesión</span>
+                <span>{t.cerrarSesion}</span>
               </button>
             </>
           ) : (
@@ -88,9 +91,19 @@ export default function AccountMenu({ buttonClassName = 'bg-brand-navy text-whit
               className="flex w-full items-center gap-2 px-4 py-2.5 text-left text-sm font-semibold text-ink"
             >
               <EntrarIcon className="h-4 w-4 text-ink-soft" />
-              <span>Iniciar sesión</span>
+              <span>{t.iniciarSesion}</span>
             </button>
           )}
+          {/* Con o sin sesión: el idioma es del dispositivo, no de la cuenta */}
+          <Link
+            to="/idioma"
+            state={{ from: location.pathname }}
+            onClick={() => setAbierto(false)}
+            className="flex w-full items-center gap-2 border-t border-black/5 px-4 py-2.5 text-left text-sm font-semibold text-ink"
+          >
+            <IdiomaIcon className="h-4 w-4 text-ink-soft" />
+            <span>{t.cambiarIdioma}</span>
+          </Link>
         </div>
       )}
     </div>

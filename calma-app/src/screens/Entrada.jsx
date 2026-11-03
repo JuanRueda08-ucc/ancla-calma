@@ -4,6 +4,10 @@ import '../styles/entrada.css'
 import { riseIn } from '../animations/transitions'
 import StarField from '../components/StarField'
 import AccountMenu from '../components/AccountMenu'
+import TemaToggle from '../components/TemaToggle'
+import { usePreferencias } from '../context/PreferenciasContext'
+import { useTextos } from '../i18n'
+import TEXTOS from '../i18n/textos/entrada'
 
 // Posición de la linterna dentro del viewBox del faro (0 0 160 360), en %:
 // el haz y el halo se anclan aquí.
@@ -21,10 +25,14 @@ const MULLION_X = [72, 80, 88]
 export default function Entrada() {
   const navigate = useNavigate()
   const reduceMotion = useReducedMotion()
+  const { idiomaElegido } = usePreferencias()
+  const t = useTextos(TEXTOS)
 
   return (
-    <div className="entrada-bg relative min-h-[100dvh] overflow-hidden text-white">
+    <div className="entrada-bg relative min-h-[100dvh] overflow-hidden text-cielo">
       <StarField />
+      {/* sol del amanecer sobre el horizonte: solo en el tema de día */}
+      <div className="entrada-sol pointer-events-none absolute bottom-[19%] left-[14%] h-[22vmin] w-[22vmin] rounded-full" aria-hidden="true" />
 
       {/* escena: faro anclado a la derecha, sangrando fuera del borde */}
       <motion.div {...riseIn(0.2)} className={SCENE_ANCHOR} aria-hidden="true">
@@ -116,8 +124,8 @@ export default function Entrada() {
       >
         <defs>
           <linearGradient id="entradaSeaGrad" x1="0" y1="0" x2="0" y2="1">
-            <stop offset="0%" className="text-aire-2" stopColor="currentColor" />
-            <stop offset="100%" className="text-brand-navyDeep" stopColor="currentColor" />
+            <stop offset="0%" className="mar-arriba" stopColor="currentColor" />
+            <stop offset="100%" className="mar-abajo" stopColor="currentColor" />
           </linearGradient>
         </defs>
         <rect x="0" y="0" width="400" height="100" fill="url(#entradaSeaGrad)" />
@@ -134,31 +142,35 @@ export default function Entrada() {
       </motion.div>
 
       <motion.div {...riseIn(0)} className="absolute right-6 top-[calc(1.5rem+env(safe-area-inset-top))] z-[4]">
-        <AccountMenu buttonClassName="bg-white/20 text-white" />
+        <div className="flex items-center gap-2">
+          <TemaToggle />
+          <AccountMenu buttonClassName="bg-white/20 text-cielo" />
+        </div>
       </motion.div>
 
       <div className="relative z-[3] mx-auto flex min-h-[100dvh] w-full max-w-5xl flex-col px-7 pb-[max(2.5rem,env(safe-area-inset-bottom))] pt-[18vh] sm:px-12">
         <motion.h1
           {...riseIn(0)}
-          className="entrada-wordmark font-display uppercase leading-[0.9] tracking-[2px] text-white"
+          className="entrada-wordmark font-display uppercase leading-[0.9] tracking-[2px] text-cielo"
         >
           Calma
         </motion.h1>
 
         <motion.p
           {...riseIn(0.15)}
-          className="mt-4 max-w-[15rem] font-sans text-[15px] leading-relaxed text-white/75 sm:max-w-xs sm:text-base"
+          className="mt-4 max-w-[15rem] font-sans text-[15px] leading-relaxed text-cielo/75 sm:max-w-xs sm:text-base"
         >
-          Un espacio para ti, contigo donde estés
+          {t.frase}
         </motion.p>
 
         <motion.button
           {...riseIn(0.45)}
           whileTap={{ scale: 0.97 }}
-          onClick={() => navigate('/elegir')}
+          // La primera vez se pregunta el idioma; después va directo.
+          onClick={() => navigate(idiomaElegido ? '/elegir' : '/idioma')}
           className="mt-auto self-start rounded-full bg-white px-10 py-4 text-[15.5px] font-bold text-brand-navy shadow-[0_16px_34px_rgba(0,0,0,.28)] focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-faro-2"
         >
-          Comenzar
+          {t.comenzar}
         </motion.button>
       </div>
     </div>

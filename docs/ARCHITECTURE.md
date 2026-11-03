@@ -13,6 +13,7 @@
 
 ```
 /                                              → Entrada (splash)
+/idioma                                        → ElegirIdioma (primera vez tras "Comenzar", o desde "Cambiar idioma")
 /elegir                                        → ElegirCamino (Necesito ayuda / Quiero ayudar)
 /islas                                         → Islas (menú, vuelve a /elegir)
 /islas/auxilio        [libre; contactos con sesión] → IslaAuxilio (vuelve a /islas)
@@ -64,6 +65,22 @@ todos `auth.uid() = user_id`.
 
 Todas las tablas necesitan GRANT explícito a `authenticated` además de las
 policies de RLS — ver DECISIONS.md para el bug que motivó esta regla.
+
+## Idioma y tema
+- `PreferenciasContext` (`src/context/PreferenciasContext.jsx`) guarda el
+  idioma (`es`/`en`) y el tema (`noche`/`dia`) en localStorage
+  (`calma:idioma`, `calma:tema`), solo en el dispositivo, no en la cuenta.
+  Pone `<html lang>` y `<html data-tema>`; `index.html` aplica ambos antes
+  de que cargue React para que no destelle el tema contrario.
+- Traducciones sin librería: `src/i18n/` (`useTextos`, `textoActual`,
+  `LOCALES`) y un archivo por pantalla en `src/i18n/textos/`.
+- Idioma: `/idioma` (`ElegirIdioma.jsx`) aparece la primera vez después de
+  "Comenzar"; luego se cambia desde "Cambiar idioma" en `AccountMenu` o la
+  fila "Idioma" de Perfil, y vuelve a la pantalla de origen.
+- Tema: botón sol/luna (`TemaToggle.jsx`) junto a la cuenta en
+  `ScreenHeader` y en Entrada. Colores `cielo`/`fondo` de Tailwind leen
+  variables CSS (`styles/tema.css`); cada fondo de pantalla tiene su versión
+  de día en su propio CSS.
 
 ## Componentes/utilidades compartidas clave
 - `AccountMenu.jsx`: ícono persistente de cuenta, presente en casi todas

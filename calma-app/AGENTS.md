@@ -9,6 +9,17 @@ Ver también: ../AGENTS.md (raíz), ../docs/ARCHITECTURE.md, ../docs/DECISIONS.m
   No introducir valores hex sueltos en className.
 - Tipografía: Poppins para todo excepto el wordmark "CALMA" (Comba Test,
   demo font sin tildes/ñ — nunca usarla en texto con acentos).
+- Idiomas (español e inglés): NINGÚN texto visible va escrito directo en el
+  componente. Cada pantalla tiene su archivo en `src/i18n/textos/` con la
+  misma forma en `es` y `en` (`textos.test.js` falla si no coinciden) y
+  lo lee con `useTextos(TEXTOS)`. Textos con datos son funciones
+  (`llamarA: (nombre) => ...`). Fuera de React (utils/) usar
+  `textoActual(TEXTOS)`. Fechas y horas con `LOCALES[idioma]`.
+- Temas noche/día: lo que va directo sobre el fondo usa el color `cielo`
+  (`text-cielo`, `border-cielo/10`...), no `text-white`; `text-white`
+  queda solo para texto sobre botones de color sólido. Un fondo nuevo de
+  pantalla necesita su versión `:root[data-tema='dia']` en su CSS (ver
+  `styles/tema.css` e `islaNoche.css`).
 - Animaciones de entrada de pantalla: reutilizar `src/animations/transitions.js`
   (`riseIn` y afines), no inventar timings/easings nuevos sueltos por
   componente.

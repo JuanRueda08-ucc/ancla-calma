@@ -10,6 +10,8 @@ import { useAuth } from '../context/AuthContext'
 import { useVolverA } from '../utils/useVolverA'
 import { getContactos, guardarContacto, eliminarContacto, normalizarTelefono } from '../utils/contactosStorage'
 import { obtenerUbicacion, construirLinkMapa, construirLinkWhatsApp } from '../utils/compartirUbicacion'
+import { useTextos } from '../i18n'
+import TEXTOS from '../i18n/textos/islaAuxilio'
 
 const MAX_CONTACTOS = 3
 const LOCAL_STORAGE_KEY = 'calma:contactos'
@@ -78,6 +80,7 @@ export default function IslaAuxilio() {
   // "Volver" regresa al origen (ej. "Editar contactos" del Panel, "Buscar
   // apoyo" de Señales); si no, a las islas. Ver utils/useVolverA.js.
   const volverA = useVolverA('/islas')
+  const t = useTextos(TEXTOS)
   const [toast, setToast] = useState(null)
   const toastTimeout = useRef(null)
 
@@ -184,15 +187,15 @@ export default function IslaAuxilio() {
     const telefono = telefonoForm.trim()
 
     if (!nombre) {
-      setErrorForm('Ingresa un nombre')
+      setErrorForm(t.faltaNombre)
       return
     }
     if (!telefono.startsWith('+')) {
-      setErrorForm('Incluye el código de país (ej. +57 para Colombia)')
+      setErrorForm(t.faltaCodigoPais)
       return
     }
     if (!esTelefonoValido(telefono)) {
-      setErrorForm('Ingresa un teléfono válido (mínimo 7 dígitos)')
+      setErrorForm(t.telefonoInvalido)
       return
     }
 
@@ -231,7 +234,7 @@ export default function IslaAuxilio() {
       setConfirmarEliminarId(null)
       clearTimeout(confirmarTimeoutRef.current)
     } catch {
-      showToast('No pudimos eliminar el contacto. Intenta de nuevo.')
+      showToast(t.errorEliminar)
     } finally {
       setEliminandoId(null)
     }
@@ -256,9 +259,9 @@ export default function IslaAuxilio() {
       setContactos(nuevos)
       localStorage.removeItem(LOCAL_STORAGE_KEY)
       setMigracionDisponible(false)
-      showToast('Contactos migrados a tu cuenta')
+      showToast(t.migrados)
     } catch {
-      showToast('No pudimos migrar tus contactos. Intenta de nuevo.')
+      showToast(t.errorMigrar)
     } finally {
       setMigrando(false)
     }
@@ -292,7 +295,7 @@ export default function IslaAuxilio() {
     setCompartirEstado('cargando')
     try {
       const { lat, lng } = await obtenerUbicacion()
-      const mensaje = `Esta es mi ubicación en este momento: ${construirLinkMapa(lat, lng)}`
+      const mensaje = t.mensajeUbicacion(construirLinkMapa(lat, lng))
       const url = construirLinkWhatsApp(contacto.telefono, mensaje)
 
       // location.href (no window.open): navega la pestaña actual, lo cual
@@ -305,14 +308,10 @@ export default function IslaAuxilio() {
     } catch (error) {
       if (error?.code === 1) {
         // GeolocationPositionError.PERMISSION_DENIED
-        setCompartirErrorMsg(
-          'No pudimos acceder a tu ubicación. Revisa los permisos de ubicación de tu navegador.'
-        )
+        setCompartirErrorMsg(t.sinPermisoUbicacion)
       } else {
         // 'NO_SUPPORT', TIMEOUT (3) o POSITION_UNAVAILABLE (2)
-        setCompartirErrorMsg(
-          'Tu dispositivo no pudo obtener tu ubicación en este momento. Intenta de nuevo.'
-        )
+        setCompartirErrorMsg(t.ubicacionNoDisponible)
       }
       setCompartirEstado('error')
     }
@@ -339,28 +338,28 @@ export default function IslaAuxilio() {
       <StarField />
       {/* pb alto: deja espacio para la barra fija de líneas de ayuda */}
       <div className="relative z-[2] mx-auto max-w-[620px] px-5 pb-[calc(9rem+env(safe-area-inset-bottom))] pt-10">
-        <ScreenHeader backTo={volverA} accountButtonClassName="bg-white/20 text-white" />
+        <ScreenHeader backTo={volverA} accountButtonClassName="bg-white/20 text-cielo" />
 
         <motion.div {...riseIn(0)} className="mb-8">
-          <h1 className="text-[30px] font-semibold leading-tight text-white">Isla del Auxilio</h1>
-          <p className="mt-1.5 text-[15px] text-white/75">Tu red de apoyo está aquí</p>
+          <h1 className="text-[30px] font-semibold leading-tight text-cielo">{t.titulo}</h1>
+          <p className="mt-1.5 text-[15px] text-cielo/75">{t.subtitulo}</p>
         </motion.div>
 
         {cargaEstado === 'cargando' && (
           <div className="flex justify-center py-10">
             <span
               aria-hidden="true"
-              className="h-8 w-8 animate-spin rounded-full border-2 border-white/30 border-t-white"
+              className="h-8 w-8 animate-spin rounded-full border-2 border-cielo/30 border-t-cielo"
             />
           </div>
         )}
 
         {cargaEstado === 'sin-sesion' && (
           <motion.section {...riseIn(0.06)} className="mb-4">
-            <h2 className="mb-3 text-[15px] font-semibold text-white">Tus personas de confianza</h2>
+            <h2 className="mb-3 text-[15px] font-semibold text-cielo">{t.tusPersonas}</h2>
             <div className={`text-center ${cardClass}`}>
               <p className="mb-4 text-sm text-ink-soft">
-                Para agregar a tus personas de confianza y llamarlas con un toque, inicia sesión.
+                {t.invitacionSesion}
               </p>
               <div className="flex justify-center gap-2">
                 <button
@@ -368,14 +367,14 @@ export default function IslaAuxilio() {
                   onClick={() => irAIniciarSesion('/login')}
                   className={`px-5 py-2.5 ${botonPrincipal}`}
                 >
-                  Iniciar sesión
+                  {t.iniciarSesion}
                 </button>
                 <button
                   type="button"
                   onClick={() => irAIniciarSesion('/registro')}
                   className={`px-5 py-2.5 ${botonSecundario}`}
                 >
-                  Crear cuenta
+                  {t.crearCuenta}
                 </button>
               </div>
             </div>
@@ -389,10 +388,10 @@ export default function IslaAuxilio() {
             className={`mb-4 text-center ${cardClass}`}
           >
             <p className="mb-3 text-sm text-ink-soft">
-              No pudimos cargar tus contactos. Intenta de nuevo.
+              {t.errorCarga}
             </p>
             <button type="button" onClick={cargarContactos} className={`px-6 py-3 ${botonPrincipal}`}>
-              Reintentar
+              {t.reintentar}
             </button>
           </motion.div>
         )}
@@ -404,8 +403,7 @@ export default function IslaAuxilio() {
             className={`mb-4 text-center ${cardClass}`}
           >
             <p className="mb-3 text-sm text-ink-soft">
-              Encontramos contactos guardados en este dispositivo. ¿Quieres agregarlos a tu
-              cuenta?
+              {t.migracionPregunta}
             </p>
             <div className="flex justify-center gap-2">
               <button
@@ -414,7 +412,7 @@ export default function IslaAuxilio() {
                 onClick={migrarContactosLocales}
                 className={`px-5 py-2.5 ${botonPrincipal}`}
               >
-                {migrando ? 'Migrando…' : 'Sí, migrarlos'}
+                {migrando ? t.migrando : t.siMigrar}
               </button>
               <button
                 type="button"
@@ -422,7 +420,7 @@ export default function IslaAuxilio() {
                 onClick={descartarMigracion}
                 className={`px-5 py-2.5 ${botonSecundario}`}
               >
-                No, descartar
+                {t.noDescartar}
               </button>
             </div>
           </motion.div>
@@ -430,7 +428,7 @@ export default function IslaAuxilio() {
 
         {cargaEstado === 'listo' && (
           <motion.div {...riseIn(0.06)} className="mb-3 flex items-center justify-between">
-            <h2 className="text-[15px] font-semibold text-white">Tus personas de confianza</h2>
+            <h2 className="text-[15px] font-semibold text-cielo">{t.tusPersonas}</h2>
             {contactos.length > 0 && !formAbierto && (
               <button
                 type="button"
@@ -439,9 +437,9 @@ export default function IslaAuxilio() {
                   cancelarEliminar()
                 }}
                 aria-pressed={administrando}
-                className="rounded-full px-3 py-1.5 text-sm font-semibold text-white underline decoration-white/50 underline-offset-4"
+                className="rounded-full px-3 py-1.5 text-sm font-semibold text-cielo underline decoration-cielo/50 underline-offset-4"
               >
-                {administrando ? 'Listo' : 'Administrar'}
+                {administrando ? t.listo : t.administrar}
               </button>
             )}
           </motion.div>
@@ -450,10 +448,10 @@ export default function IslaAuxilio() {
         {cargaEstado === 'listo' && contactos.length === 0 && !formAbierto && (
           <motion.div {...riseIn(0.08)} className={`mb-4 text-center ${cardClass}`}>
             <p className="mb-3 text-sm text-ink-soft">
-              Agrega a alguien en quien confíes, para tenerlo a un toque de distancia
+              {t.agregaAlguien}
             </p>
             <button type="button" onClick={abrirFormularioNuevo} className={`px-6 py-3 ${botonPrincipal}`}>
-              Agregar contacto de confianza
+              {t.agregarContacto}
             </button>
           </motion.div>
         )}
@@ -467,16 +465,16 @@ export default function IslaAuxilio() {
               <li key={contacto.id} className="w-20">
                 <a
                   href={`tel:${normalizarTelefono(contacto.telefono)}`}
-                  aria-label={`Llamar a ${contacto.nombre}`}
+                  aria-label={t.llamarA(contacto.nombre)}
                   className="group flex flex-col items-center gap-2 rounded-xl py-1 focus-visible:outline-none"
                 >
-                  <span className="relative flex h-16 w-16 items-center justify-center rounded-full bg-auxilio-1 text-xl font-bold text-white transition-transform group-active:scale-95 group-focus-visible:ring-4 group-focus-visible:ring-white/60">
+                  <span className="relative flex h-16 w-16 items-center justify-center rounded-full bg-auxilio-1 text-xl font-bold text-white transition-transform group-active:scale-95 group-focus-visible:ring-4 group-focus-visible:ring-cielo/60">
                     {obtenerIniciales(contacto.nombre)}
                     <span className="absolute -bottom-0.5 -right-0.5 flex h-6 w-6 items-center justify-center rounded-full bg-white text-auxilio-1" aria-hidden="true">
                       <TelefonoIcon className="h-3.5 w-3.5" />
                     </span>
                   </span>
-                  <span className="w-full truncate text-center text-[13px] font-semibold text-white">
+                  <span className="w-full truncate text-center text-[13px] font-semibold text-cielo">
                     {contacto.nombre.trim().split(/\s+/)[0]}
                   </span>
                 </a>
@@ -487,13 +485,13 @@ export default function IslaAuxilio() {
                 <button
                   type="button"
                   onClick={abrirFormularioNuevo}
-                  aria-label="Agregar contacto de confianza"
+                  aria-label={t.agregarContacto}
                   className="group flex w-full flex-col items-center gap-2 rounded-xl py-1 focus-visible:outline-none"
                 >
-                  <span className="flex h-16 w-16 items-center justify-center rounded-full border-[1.5px] border-dashed border-white/35 text-2xl text-white/70 group-focus-visible:ring-4 group-focus-visible:ring-white/60" aria-hidden="true">
+                  <span className="flex h-16 w-16 items-center justify-center rounded-full border-[1.5px] border-dashed border-cielo/35 text-2xl text-cielo/70 group-focus-visible:ring-4 group-focus-visible:ring-cielo/60" aria-hidden="true">
                     +
                   </span>
-                  <span className="text-[13px] font-semibold text-white/70">Agregar</span>
+                  <span className="text-[13px] font-semibold text-cielo/70">{t.agregar}</span>
                 </button>
               </li>
             )}
@@ -523,7 +521,7 @@ export default function IslaAuxilio() {
                       onClick={() => confirmarEliminar(contacto.id)}
                       className="whitespace-nowrap rounded-full bg-auxilio-1 px-4 py-2 text-sm font-semibold text-white disabled:opacity-70"
                     >
-                      {eliminandoId === contacto.id ? 'Eliminando…' : '¿Eliminar?'}
+                      {eliminandoId === contacto.id ? t.eliminando : t.confirmarEliminar}
                     </button>
                     <button
                       type="button"
@@ -531,7 +529,7 @@ export default function IslaAuxilio() {
                       onClick={cancelarEliminar}
                       className={`px-4 py-2 ${botonSecundario}`}
                     >
-                      Cancelar
+                      {t.cancelar}
                     </button>
                   </>
                 ) : (
@@ -539,18 +537,18 @@ export default function IslaAuxilio() {
                     <button
                       type="button"
                       onClick={() => iniciarEdicion(contacto)}
-                      aria-label={`Editar a ${contacto.nombre}`}
+                      aria-label={t.editarA(contacto.nombre)}
                       className={`px-4 py-2 ${botonSecundario}`}
                     >
-                      Editar
+                      {t.editar}
                     </button>
                     <button
                       type="button"
                       onClick={() => solicitarEliminar(contacto.id)}
-                      aria-label={`Eliminar a ${contacto.nombre}`}
+                      aria-label={t.eliminarA(contacto.nombre)}
                       className="rounded-full px-4 py-2 text-sm font-semibold text-red-600"
                     >
-                      Eliminar
+                      {t.eliminar}
                     </button>
                   </>
                 )}
@@ -566,23 +564,23 @@ export default function IslaAuxilio() {
             className="mb-4 rounded-lg bg-white/95 p-4 shadow-[0_8px_22px_rgba(0,0,0,0.06)]"
           >
             <p className="mb-3 text-sm font-semibold text-ink">
-              {editandoId ? 'Editar contacto' : 'Agregar contacto de confianza'}
+              {editandoId ? t.editarContacto : t.agregarContacto}
             </p>
 
             <label htmlFor="auxilio-nombre" className="mb-1 block text-xs font-semibold text-ink-soft">
-              Nombre
+              {t.nombre}
             </label>
             <input
               id="auxilio-nombre"
               type="text"
               value={nombreForm}
               onChange={(e) => setNombreForm(e.target.value)}
-              placeholder="Ej: Ana Torres"
+              placeholder={t.nombreEjemplo}
               className={inputClass}
             />
 
             <label htmlFor="auxilio-telefono" className="mb-1 block text-xs font-semibold text-ink-soft">
-              Teléfono
+              {t.telefono}
             </label>
             <input
               id="auxilio-telefono"
@@ -602,7 +600,7 @@ export default function IslaAuxilio() {
                 onClick={handleGuardarContacto}
                 className={`flex-1 py-2.5 ${botonPrincipal}`}
               >
-                {guardando ? 'Guardando…' : 'Guardar'}
+                {guardando ? t.guardando : t.guardar}
               </button>
               <button
                 type="button"
@@ -610,7 +608,7 @@ export default function IslaAuxilio() {
                 onClick={cerrarFormulario}
                 className={`flex-1 py-2.5 ${botonSecundario}`}
               >
-                Cancelar
+                {t.cancelar}
               </button>
             </div>
           </motion.div>
@@ -622,20 +620,20 @@ export default function IslaAuxilio() {
             type="button"
             disabled={compartirEstado === 'cargando'}
             onClick={iniciarCompartirUbicacion}
-            className="mb-3 mt-1 flex min-h-[68px] w-full items-center gap-3 rounded-full border border-white/20 bg-white/[0.08] py-3 pl-3 pr-5 text-left focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-white/30 disabled:opacity-70"
+            className="mb-3 mt-1 flex min-h-[68px] w-full items-center gap-3 rounded-full border border-cielo/20 bg-white/[0.08] py-3 pl-3 pr-5 text-left focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-cielo/30 disabled:opacity-70"
           >
-            <span className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-full bg-white/10 text-white">
+            <span className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-full bg-white/10 text-cielo">
               {compartirEstado === 'cargando' ? (
                 <span
                   aria-hidden="true"
-                  className="h-4 w-4 animate-spin rounded-full border-2 border-white/30 border-t-white"
+                  className="h-4 w-4 animate-spin rounded-full border-2 border-cielo/30 border-t-cielo"
                 />
               ) : (
                 <UbicacionIcon className="h-5 w-5" />
               )}
             </span>
-            <span className="text-[15px] font-semibold text-white">
-              {compartirEstado === 'cargando' ? 'Obteniendo tu ubicación…' : 'Compartir mi ubicación'}
+            <span className="text-[15px] font-semibold text-cielo">
+              {compartirEstado === 'cargando' ? t.obteniendoUbicacion : t.compartirUbicacion}
             </span>
           </motion.button>
         )}
@@ -647,7 +645,7 @@ export default function IslaAuxilio() {
             className={`mb-9 mt-3 text-center ${cardClass}`}
           >
             <p className="mb-3 text-sm text-ink-soft">
-              Agrega un contacto de confianza primero para poder compartir tu ubicación
+              {t.primeroUnContacto}
             </p>
             <div className="flex justify-center gap-2">
               <button
@@ -658,10 +656,10 @@ export default function IslaAuxilio() {
                 }}
                 className={`px-5 py-2.5 ${botonPrincipal}`}
               >
-                Agregar contacto de confianza
+                {t.agregarContacto}
               </button>
               <button type="button" onClick={cerrarPanelCompartir} className={`px-5 py-2.5 ${botonSecundario}`}>
-                Cancelar
+                {t.cancelar}
               </button>
             </div>
           </motion.div>
@@ -674,7 +672,7 @@ export default function IslaAuxilio() {
             className={`mb-9 mt-3 ${cardClass}`}
           >
             <p className="mb-3 text-sm font-semibold text-ink">
-              ¿A quién le compartes tu ubicación?
+              {t.aQuienUbicacion}
             </p>
             <div className="flex flex-col gap-2">
               {contactos.map((contacto) => (
@@ -693,7 +691,7 @@ export default function IslaAuxilio() {
               onClick={cerrarPanelCompartir}
               className={`mt-3 w-full py-2.5 ${botonSecundario}`}
             >
-              Cancelar
+              {t.cancelar}
             </button>
           </motion.div>
         )}
@@ -705,15 +703,14 @@ export default function IslaAuxilio() {
             className={`mb-9 mt-3 text-center ${cardClass}`}
           >
             <p className="mb-3 text-sm text-ink-soft">
-              Este contacto no tiene código de país guardado. Edítalo primero para poder
-              compartir por WhatsApp.
+              {t.sinCodigoPais}
             </p>
             <div className="flex justify-center gap-2">
               <button type="button" onClick={editarContactoProblema} className={`px-5 py-2.5 ${botonPrincipal}`}>
-                Editar contacto
+                {t.editarContacto}
               </button>
               <button type="button" onClick={cerrarPanelCompartir} className={`px-5 py-2.5 ${botonSecundario}`}>
-                Cancelar
+                {t.cancelar}
               </button>
             </div>
           </motion.div>
@@ -727,7 +724,7 @@ export default function IslaAuxilio() {
           >
             <p className="mb-3 text-sm font-medium text-red-500">{compartirErrorMsg}</p>
             <button type="button" onClick={cerrarPanelCompartir} className={`px-5 py-2.5 ${botonSecundario}`}>
-              Cerrar
+              {t.cerrar}
             </button>
           </motion.div>
         )}
@@ -747,18 +744,18 @@ export default function IslaAuxilio() {
           scroll y funcionan sin sesión y sin conexión (llamar no usa datos). */}
       <section
         aria-labelledby="auxilio-lineas"
-        className="fixed inset-x-0 bottom-0 z-[5] border-t border-white/10 bg-brand-navyDeep/95 pb-[max(0.75rem,env(safe-area-inset-bottom))] pt-2.5 backdrop-blur"
+        className="fixed inset-x-0 bottom-0 z-[5] border-t border-cielo/10 bg-fondo/95 pb-[max(0.75rem,env(safe-area-inset-bottom))] pt-2.5 backdrop-blur"
       >
         <div className="mx-auto max-w-[620px] px-5">
-          <h2 id="auxilio-lineas" className="mb-2 text-[13px] font-medium text-white/60">
-            Líneas de apoyo profesional
+          <h2 id="auxilio-lineas" className="mb-2 text-[13px] font-medium text-cielo/60">
+            {t.lineasApoyo}
           </h2>
           <div className="grid grid-cols-2 gap-2.5">
             {LINEAS_APOYO.map((linea) => (
               <a
                 key={linea.nombre}
                 href={`tel:${linea.telefono.replace(/\s/g, '')}`}
-                aria-label={`Llamar a ${linea.nombre}, ${linea.telefono}`}
+                aria-label={t.llamarLinea(linea.nombre, linea.telefono)}
                 className="flex min-h-[60px] flex-col items-center justify-center rounded-xl bg-white px-2 py-2 text-center focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-auxilio-2"
               >
                 <span className="flex items-center gap-1.5 whitespace-nowrap text-[16px] font-bold leading-tight text-ink">

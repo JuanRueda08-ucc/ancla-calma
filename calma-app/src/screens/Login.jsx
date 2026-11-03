@@ -7,21 +7,24 @@ import StarField from '../components/StarField'
 import { riseIn } from '../animations/transitions'
 import { useAuth } from '../context/AuthContext'
 import { supabase } from '../lib/supabaseClient'
+import { useTextos } from '../i18n'
+import TEXTOS from '../i18n/textos/cuenta'
 
-function mapAuthError(error) {
+function mapAuthError(error, t) {
   if (error?.message === 'Invalid login credentials') {
-    return 'Correo o contraseña incorrectos.'
+    return t.login.credencialesIncorrectas
   }
   if (error?.message === 'Email not confirmed') {
-    return 'Confirma tu correo antes de iniciar sesión. Revisa tu bandeja de entrada.'
+    return t.login.correoSinConfirmar
   }
-  return 'Algo salió mal. Intenta de nuevo.'
+  return t.algoSalioMal
 }
 
 export default function Login() {
   const { user, loading: authLoading } = useAuth()
   const location = useLocation()
   const navigate = useNavigate()
+  const t = useTextos(TEXTOS)
 
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
@@ -46,7 +49,7 @@ export default function Login() {
     const { error: signInError } = await supabase.auth.signInWithPassword({ email, password })
 
     if (signInError) {
-      setError(mapAuthError(signInError))
+      setError(mapAuthError(signInError, t))
       setSubmitting(false)
       return
     }
@@ -64,11 +67,11 @@ export default function Login() {
 
         <div className="flex flex-1 flex-col justify-center">
           <motion.div {...riseIn(0)} className="mb-8 text-center">
-            <p className="mb-4 font-display text-[22px] uppercase tracking-[2px] text-white">
+            <p className="mb-4 font-display text-[22px] uppercase tracking-[2px] text-cielo">
               Calma
             </p>
-            <h1 className="mb-1.5 text-[26px] font-semibold text-white">Bienvenido de vuelta</h1>
-            <p className="text-sm text-white/75">Tu bitácora y contactos te esperan</p>
+            <h1 className="mb-1.5 text-[26px] font-semibold text-cielo">{t.login.titulo}</h1>
+            <p className="text-sm text-cielo/75">{t.login.subtitulo}</p>
           </motion.div>
 
           <motion.form
@@ -77,7 +80,7 @@ export default function Login() {
             className="rounded-lg bg-white p-6 shadow-[0_8px_22px_rgba(0,0,0,0.06)]"
           >
             <label htmlFor="email" className="mb-1 block text-xs font-semibold text-ink-soft">
-              Correo electrónico
+              {t.correo}
             </label>
             <input
               id="email"
@@ -86,12 +89,12 @@ export default function Login() {
               autoComplete="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              placeholder="tucorreo@ejemplo.com"
+              placeholder={t.correoEjemplo}
               className="mb-4 w-full rounded-lg border border-black/10 bg-white px-3 py-2 text-[14.5px] text-ink placeholder:text-ink-soft/50 focus:border-brand-navy focus:outline-none focus:ring-2 focus:ring-brand-navy/20"
             />
 
             <label htmlFor="password" className="mb-1 block text-xs font-semibold text-ink-soft">
-              Contraseña
+              {t.contrasena}
             </label>
             <input
               id="password"
@@ -115,24 +118,24 @@ export default function Login() {
                 <>
                   <span
                     aria-hidden="true"
-                    className="h-4 w-4 animate-spin rounded-full border-2 border-white/30 border-t-white"
+                    className="h-4 w-4 animate-spin rounded-full border-2 border-cielo/30 border-t-cielo"
                   />
-                  Ingresando…
+                  {t.login.ingresando}
                 </>
               ) : (
-                'Iniciar sesión'
+                t.login.iniciarSesion
               )}
             </button>
           </motion.form>
 
-          <motion.p {...riseIn(0.25)} className="mt-6 text-center text-sm text-white/70">
-            ¿No tienes cuenta?{' '}
+          <motion.p {...riseIn(0.25)} className="mt-6 text-center text-sm text-cielo/70">
+            {t.login.sinCuenta}{' '}
             <Link
               to="/registro"
               state={location.state}
-              className="inline-block py-2 font-semibold text-white underline decoration-white/50 underline-offset-4"
+              className="inline-block py-2 font-semibold text-cielo underline decoration-cielo/50 underline-offset-4"
             >
-              Regístrate
+              {t.login.registrate}
             </Link>
           </motion.p>
         </div>

@@ -4,45 +4,18 @@ import { AnimatePresence, motion } from 'framer-motion'
 import GuidedExerciseShell from '../components/GuidedExerciseShell'
 import piezaBaseConOjo from '../assets/personajes/pirata/pieza_base_conojo.png'
 import piezaPupila from '../assets/personajes/pirata/pieza_pupila.png'
+import { useTextos } from '../i18n'
+import TEXTOS from '../i18n/textos/ejercicios'
 
+// Zonas que se resaltan en cada paso; los textos están en i18n/textos/ejercicios.js
 const PASOS = [
-  {
-    zona: 'Hombros',
-    partes: ['shoulders'],
-    texto: 'Eleva tus hombros hacia las orejas… Sostén… Suelta y relaja',
-  },
-  {
-    zona: 'Mandíbula',
-    partes: ['jaw'],
-    texto: 'Aprieta suavemente tu mandíbula… Sostén… Relaja completamente',
-  },
-  {
-    zona: 'Brazos',
-    partes: ['armLeft', 'armRight'],
-    texto:
-      'Tensa los músculos de tus brazos, como si los apretaras con fuerza… Sostén… Deja que caigan sueltos a tus costados',
-  },
-  {
-    zona: 'Manos',
-    partes: ['handLeft', 'handRight'],
-    texto: 'Cierra tus manos en puños apretados… Sostén… Abre los dedos y siente el alivio',
-  },
-  {
-    zona: 'Abdomen',
-    partes: ['torso'],
-    texto: 'Contrae suavemente los músculos de tu abdomen… Sostén… Suelta y respira profundo',
-  },
-  {
-    zona: 'Piernas',
-    partes: ['legLeft', 'legRight'],
-    texto:
-      'Tensa los músculos de tus piernas, como si empujaras el suelo… Sostén… Suelta y siente el peso de tus piernas',
-  },
-  {
-    zona: 'Pies',
-    partes: ['footLeft', 'footRight'],
-    texto: 'Aprieta los dedos de tus pies hacia abajo… Sostén… Relaja y siente el contacto con el suelo',
-  },
+  { partes: ['shoulders'] },
+  { partes: ['jaw'] },
+  { partes: ['armLeft', 'armRight'] },
+  { partes: ['handLeft', 'handRight'] },
+  { partes: ['torso'] },
+  { partes: ['legLeft', 'legRight'] },
+  { partes: ['footLeft', 'footRight'] },
 ]
 
 // Coordenadas en % del contenedor (mismas proporciones que la imagen completa 2373x2924).
@@ -102,7 +75,7 @@ function ZoneGlow({ rect }) {
   )
 }
 
-function PersonajeConOjo({ pasoIndex, partesActivas }) {
+function PersonajeConOjo({ pasoIndex, partesActivas, alt }) {
   return (
     <div
       className="relative mx-auto mb-6 w-full max-w-[280px]"
@@ -110,7 +83,7 @@ function PersonajeConOjo({ pasoIndex, partesActivas }) {
     >
       <img
         src={piezaBaseConOjo}
-        alt="Personaje pirata"
+        alt={alt}
         className="pointer-events-none absolute inset-0 h-full w-full select-none"
       />
       <motion.div
@@ -153,8 +126,10 @@ function PersonajeConOjo({ pasoIndex, partesActivas }) {
 export default function EjercicioRelajacionMuscular() {
   const navigate = useNavigate()
   const [pasoIndex, setPasoIndex] = useState(0)
+  const textos = useTextos(TEXTOS)
+  const t = textos.relajacion
   const esUltimoPaso = pasoIndex === PASOS.length - 1
-  const paso = PASOS[pasoIndex]
+  const paso = { ...PASOS[pasoIndex], ...t.pasos[pasoIndex] }
 
   const salir = () => navigate('/islas/aire/puerto-seguro')
 
@@ -168,19 +143,19 @@ export default function EjercicioRelajacionMuscular() {
 
   return (
     <GuidedExerciseShell
-      title="Relajación muscular"
+      title={t.titulo}
       totalSteps={PASOS.length}
       currentStep={pasoIndex + 1}
       durationSeconds={300}
       onBack={salir}
-      footerLabel="Relajación muscular • 5 min"
+      footerLabel={t.pie}
     >
       <div className="text-center">
-        <PersonajeConOjo pasoIndex={pasoIndex} partesActivas={paso.partes} />
+        <PersonajeConOjo pasoIndex={pasoIndex} partesActivas={paso.partes} alt={t.personaje} />
         <span className="mb-3 inline-block rounded-full bg-white/10 px-4 py-1 text-xs font-semibold text-faro-1">
           {paso.zona}
         </span>
-        <div className="mx-auto mb-3 max-w-[420px] rounded-[20px] border border-white/[0.14] bg-white/[0.08] px-5 py-4 text-sm leading-[1.55] text-white/90">
+        <div className="mx-auto mb-3 max-w-[420px] rounded-[20px] border border-cielo/[0.14] bg-white/[0.08] px-5 py-4 text-sm leading-[1.55] text-cielo/90">
           {paso.texto}
         </div>
         <button
@@ -188,7 +163,7 @@ export default function EjercicioRelajacionMuscular() {
           onClick={handleContinuar}
           className="mt-5 rounded-full bg-white px-10 py-4 text-[15.5px] font-bold text-brand-navy shadow-[0_16px_34px_rgba(0,0,0,0.28)]"
         >
-          {esUltimoPaso ? 'Finalizar' : 'Continuar'}
+          {esUltimoPaso ? textos.finalizar : textos.continuar}
         </button>
       </div>
     </GuidedExerciseShell>
