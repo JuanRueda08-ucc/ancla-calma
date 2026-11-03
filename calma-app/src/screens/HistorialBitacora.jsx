@@ -7,6 +7,7 @@ import StarField from '../components/StarField'
 import { riseIn } from '../animations/transitions'
 import { getEntradas, guardarEntrada, eliminarEntrada } from '../utils/bitacoraStorage'
 import { obtenerAudio, guardarAudio } from '../utils/audioStorage'
+import { agruparPorDia, formatoHora } from '../utils/historial'
 
 const LOCAL_STORAGE_KEY = 'calma:bitacora'
 const LEGACY_AUDIO_DB_NAME = 'calma-audio'
@@ -44,7 +45,6 @@ const PREGUNTAS = [
   { key: 'queMeAyudo', label: '¿Qué me ayudó hoy?' },
 ]
 
-const formatoFecha = new Intl.DateTimeFormat('es-CO', { dateStyle: 'medium', timeStyle: 'short' })
 
 function formatDuracion(totalSeconds) {
   const segundos = Math.round(totalSeconds || 0)
@@ -168,7 +168,7 @@ function EntradaCard({ entrada, delay, abierto, onToggle, onEliminar }) {
   return (
     <motion.div
       {...riseIn(delay)}
-      className="mb-4 overflow-hidden rounded-lg bg-white shadow-[0_8px_22px_rgba(0,0,0,0.12)]"
+      className="mb-3 overflow-hidden rounded-lg bg-white shadow-[0_8px_22px_rgba(0,0,0,0.12)]"
     >
       <button
         type="button"
@@ -177,8 +177,9 @@ function EntradaCard({ entrada, delay, abierto, onToggle, onEliminar }) {
         className="w-full px-5 py-[18px] text-left focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-inset focus-visible:ring-brand-navy/20"
       >
         <div className="mb-2 flex items-start justify-between gap-3">
+          {/* el día va en el encabezado del grupo; aquí solo la hora */}
           <span className="text-[13px] font-semibold text-ink-soft">
-            {formatoFecha.format(new Date(entrada.fecha))}
+            {formatoHora.format(new Date(entrada.fecha))}
           </span>
           <motion.span
             animate={{ rotate: abierto ? 180 : 0 }}
@@ -500,16 +501,31 @@ export default function HistorialBitacora() {
           </motion.div>
         )}
 
+        {/* Línea de tiempo: un grupo por día, con un punto por entrada */}
         {cargaEstado === 'listo' &&
-          entradas.map((entrada, index) => (
-            <EntradaCard
-              key={entrada.id}
-              entrada={entrada}
-              delay={0.05 * index}
-              abierto={abiertaId === entrada.id}
-              onToggle={() => alternarEntrada(entrada.id)}
-              onEliminar={handleEliminar}
-            />
+          agruparPorDia(entradas).map((grupo, indiceGrupo) => (
+            <section key={grupo.clave} aria-labelledby={`historial-dia-${grupo.clave}`} className="mb-6">
+              <h2 id={`historial-dia-${grupo.clave}`} className="mb-3 text-[15px] font-semibold text-white">
+                {grupo.etiqueta}
+              </h2>
+              <ol className="ml-1.5 border-l border-white/15 pl-5">
+                {grupo.entradas.map((entrada, indice) => (
+                  <li key={entrada.id} className="relative">
+                    <span
+                      aria-hidden="true"
+                      className="absolute -left-[26px] top-[22px] h-2.5 w-2.5 rounded-full bg-faro-2 ring-4 ring-brand-navyDeep"
+                    />
+                    <EntradaCard
+                      entrada={entrada}
+                      delay={0.05 * (indiceGrupo + indice)}
+                      abierto={abiertaId === entrada.id}
+                      onToggle={() => alternarEntrada(entrada.id)}
+                      onEliminar={handleEliminar}
+                    />
+                  </li>
+                ))}
+              </ol>
+            </section>
           ))}
       </div>
     </div>
