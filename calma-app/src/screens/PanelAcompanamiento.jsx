@@ -489,7 +489,7 @@ export default function PanelAcompanamiento() {
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
           exit={{ opacity: 0 }}
-          className="pointer-events-none fixed inset-x-0 bottom-8 flex justify-center px-5"
+          className="pointer-events-none fixed inset-x-0 bottom-[calc(2rem+env(safe-area-inset-bottom))] z-50 flex transform-gpu justify-center px-5"
         >
           {/* sobre la noche un toast oscuro se pierde */}
           <div className="rounded-full bg-white px-5 py-3 text-sm font-medium text-ink shadow-lg">
