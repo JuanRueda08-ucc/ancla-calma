@@ -1,5 +1,26 @@
 import { useEffect, useRef } from 'react'
 import { Renderer, Program, Mesh, Triangle, Geometry } from 'ogl'
+import { useTema } from '../context/PreferenciasContext'
+
+// Colores del agua por tema (RGB 0-1). De noche: navy con vetas turquesa
+// (tokens aire-1 y aire-accent). De día: durazno con vetas aqua, para que el
+// texto índigo de encima se lea y combine con el amanecer.
+const PALETAS = {
+  noche: {
+    base: [0.0, 0.1804, 0.4196],
+    caustica: [0.4353, 0.8902, 0.8392],
+    luz: [0.9, 0.98, 0.96],
+    particulaA: [1.0, 1.0, 1.0],
+    particulaB: [0.4353, 0.8902, 0.8392],
+  },
+  dia: {
+    base: [0.976, 0.871, 0.851],
+    caustica: [0.651, 0.894, 0.886],
+    luz: [1.0, 0.86, 0.78],
+    particulaA: [1.0, 0.6, 0.5],
+    particulaB: [0.3, 0.72, 0.7],
+  },
+}
 
 const MAX_RIPPLES = 12
 const RIPPLE_LIFETIME = 2.0
@@ -64,6 +85,9 @@ const FRAGMENT = /* glsl */ `
   uniform float u_time;
   uniform vec2 u_resolution;
   uniform float u_intensity;
+  uniform vec3 u_colorBase;
+  uniform vec3 u_colorCaustica;
+  uniform vec3 u_colorLuz;
   ${RIPPLE_UNIFORMS_GLSL}
 
   varying vec2 vUv;
@@ -156,14 +180,12 @@ ${RIPPLE_GLOW_BLOCKS_GLSL}
     caustics = caustics * 0.5 + 0.5;
     caustics = pow(clamp(caustics, 0.0, 1.0), 3.0);
 
-    vec3 navy = vec3(0.0, 0.1804, 0.4196);
-    vec3 teal = vec3(0.4353, 0.8902, 0.8392);
+    // Colores según el tema (PALETAS, abajo): agua navy de noche, durazno con
+    // vetas aqua de día.
+    vec3 color = mix(u_colorBase, u_colorCaustica, caustics * u_intensity);
 
-    vec3 color = mix(navy, teal, caustics * u_intensity);
-
-    // Luz cálida (blanco con tinte teal) sumada de forma aditiva y suave, no un overlay plano.
-    vec3 warmLight = vec3(0.9, 0.98, 0.96);
-    color += rippleGlow(uv) * warmLight * 0.55;
+    // Luz cálida sumada de forma aditiva y suave, no un overlay plano.
+    color += rippleGlow(uv) * u_colorLuz * 0.55;
 
     gl_FragColor = vec4(color, 1.0);
   }
@@ -219,6 +241,9 @@ ${RIPPLE_BOOST_BLOCKS_GLSL}
 const PARTICLE_FRAGMENT = /* glsl */ `
   precision highp float;
 
+  uniform vec3 u_particulaA;
+  uniform vec3 u_particulaB;
+
   varying float vSeed;
   varying float vRippleBoost;
 
@@ -228,7 +253,7 @@ const PARTICLE_FRAGMENT = /* glsl */ `
     float circle = smoothstep(1.0, 0.0, d);
     if (circle <= 0.0) discard;
 
-    vec3 particleColor = mix(vec3(1.0), vec3(0.4353, 0.8902, 0.8392), fract(vSeed * 13.0) * 0.6);
+    vec3 particleColor = mix(u_particulaA, u_particulaB, fract(vSeed * 13.0) * 0.6);
     float baseOpacity = 0.15 + fract(vSeed * 7.0) * 0.2;
     float opacity = baseOpacity * circle * (1.0 + vRippleBoost * 1.6);
 
@@ -251,6 +276,12 @@ function createRippleUniforms() {
 export default function OceanShaderBackground({ interactive = false, intensity = 0.5 }) {
   const containerRef = useRef(null)
   const programRef = useRef(null)
+  const particulasRef = useRef(null)
+  const tema = useTema()
+  const paleta = PALETAS[tema] ?? PALETAS.noche
+  // El efecto que crea el renderer solo corre al montar: lee la paleta de aquí.
+  const paletaRef = useRef(paleta)
+  paletaRef.current = paleta
 
   useEffect(() => {
     const container = containerRef.current
@@ -283,6 +314,9 @@ export default function OceanShaderBackground({ interactive = false, intensity =
         u_time: { value: 0 },
         u_resolution: { value: resolution },
         u_intensity: { value: intensity },
+        u_colorBase: { value: paletaRef.current.base },
+        u_colorCaustica: { value: paletaRef.current.caustica },
+        u_colorLuz: { value: paletaRef.current.luz },
         ...createRippleUniforms(),
       },
     })
@@ -318,11 +352,14 @@ export default function OceanShaderBackground({ interactive = false, intensity =
         u_time: { value: 0 },
         u_dpr: { value: dpr },
         u_resolution: { value: resolution },
+        u_particulaA: { value: paletaRef.current.particulaA },
+        u_particulaB: { value: paletaRef.current.particulaB },
         ...createRippleUniforms(),
       },
     })
     // Glow aditivo real (no alpha-blend normal) para que sumen luz sobre el fondo.
     particleProgram.setBlendFunc(gl.SRC_ALPHA, gl.ONE)
+    particulasRef.current = particleProgram
 
     const particleMesh = new Mesh(gl, { geometry: particleGeometry, program: particleProgram, mode: gl.POINTS })
 
@@ -455,6 +492,21 @@ export default function OceanShaderBackground({ interactive = false, intensity =
       programRef.current.uniforms.u_intensity.value = intensity
     }
   }, [intensity])
+
+  // Cambiar de tema con el ejercicio abierto recolorea el agua sin recrearla.
+  useEffect(() => {
+    const programa = programRef.current
+    const particulas = particulasRef.current
+    if (programa) {
+      programa.uniforms.u_colorBase.value = paleta.base
+      programa.uniforms.u_colorCaustica.value = paleta.caustica
+      programa.uniforms.u_colorLuz.value = paleta.luz
+    }
+    if (particulas) {
+      particulas.uniforms.u_particulaA.value = paleta.particulaA
+      particulas.uniforms.u_particulaB.value = paleta.particulaB
+    }
+  }, [paleta])
 
   return (
     <div
