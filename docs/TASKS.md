@@ -6,14 +6,27 @@ tarea grande, revisar qué está "en progreso" acá para no pisar trabajo del
 otro agente. Al terminar una tarea significativa, actualizar este archivo.
 
 ## En progreso / pendiente ahora mismo
-- Relajación muscular con silueta de cuerpo animada y ritmo guiado (ya en main):
-  reemplaza al personaje pirata.
+- Nada en curso.
+- Por verificar (sin cambios de código previstos):
+  - Tema de día con sesión iniciada (Bitácora, Historial, Isla del Faro,
+    Perfil): están adaptados pero no se revisaron en pantalla.
+  - Idioma, tema de día y ejercicios nuevos en un teléfono real (solo se
+    probaron en el navegador con tamaño de teléfono).
+- Detalles menores anotados:
+  - En los ejercicios guiados, la barra de progreso de arriba no salta al
+    adelantar con "Continuar" / "Siguiente zona" (sigue el tiempo real).
+  - Isla de las Señales de día: los recuadros menta se ven algo grisáceos.
 
 ## Completado (diseño y documentación)
 - Idioma español/inglés y tema de día (PR #27, ya en main): selector de
   idioma tras "Comenzar", "Cambiar idioma" en el menú de cuenta y en Perfil,
-  botón sol/luna y todas las pantallas traducidas. Pendiente revisar el tema
-  de día con sesión iniciada y la traducción de la política de privacidad.
+  botón sol/luna y todas las pantallas traducidas.
+- Relajación muscular con silueta de cuerpo animada y ritmo guiado (PR #28,
+  ya en main): reemplaza al personaje pirata (sus assets se conservan). Tensa
+  5 s / suelta 10 s por zona, avanza solo, ≈ 2 min.
+- Agua de Ejercicios sensoriales con paleta de día y avance automático de
+  Grounding (36 s por paso) y Sensoriales (1 min por paso), con cuenta
+  regresiva, pausa y cierre al final (PR #29, ya en main).
 - Rediseño de la pantalla Entrada (PR #2, ya en main): escena nocturna
   asimétrica — wordmark y frase alineados a la izquierda, botón
   "Comenzar" abajo sobre el mar, faro nuevo (torre esbelta crema con
@@ -282,7 +295,8 @@ otro agente. Al terminar una tarea significativa, actualizar este archivo.
 - Pruebas de punta a punta en un navegador real (Playwright): iniciar
   sesión de verdad con una cuenta de prueba, ubicación en vivo entre dos
   pestañas, modo sin conexión. Pospuesto por espacio en disco (los
-  navegadores ocupan varios cientos de MB); podría correr solo en CI.
+  navegadores ocupan varios cientos de MB, y el disco sigue casi lleno);
+  podría correr solo en CI.
 - Rediseño estructural: layouts distintos por tipo de pantalla en vez de
   la misma plantilla (header + tarjetas apiladas + botón). Hecho: Isla del
   Auxilio como marcación rápida, Bitácora una pregunta a la vez, Panel
@@ -293,4 +307,9 @@ otro agente. Al terminar una tarea significativa, actualizar este archivo.
   una app nativa. Ver DECISIONS.md → Ubicación.
 - Revisión legal profesional del texto de `/privacidad` — el contenido ya
   no es placeholder, pero falta que alguien con criterio legal lo valide
-  antes de considerarlo definitivo
+  antes de considerarlo definitivo. Incluye la traducción al inglés (que
+  aclara que rige la versión en español).
+- Herramientas de apoyo del Panel de Acompañamiento: hoy son 4 fijas en el
+  código (TODO en `PanelAcompanamiento.jsx`). Leerlas del Faro de la persona
+  acompañada depende del modelo de "persona vinculada", pospuesto (ver
+  DECISIONS.md → Panel de Acompañamiento).
