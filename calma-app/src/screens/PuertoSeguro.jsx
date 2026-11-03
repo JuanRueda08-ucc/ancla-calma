@@ -18,7 +18,7 @@ const EJERCICIOS = [
   {
     to: '/islas/aire/puerto-seguro/relajacion-muscular',
     emoji: '🧘',
-    duracion: '5 min',
+    duracion: '2 min',
   },
   {
     to: '/islas/aire/puerto-seguro/sensorial',

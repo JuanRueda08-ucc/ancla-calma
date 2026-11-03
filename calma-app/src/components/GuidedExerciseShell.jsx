@@ -15,6 +15,9 @@ export default function GuidedExerciseShell({
   durationSeconds,
   onBack,
   footerLabel,
+  // Para ejercicios con su propio ritmo (relajación muscular): se entera de
+  // la pausa del botón de arriba y detiene su temporizador.
+  onPausaCambio,
   children,
 }) {
   const [pausado, setPausado] = useState(false)
@@ -34,6 +37,10 @@ export default function GuidedExerciseShell({
 
     return () => clearInterval(id)
   }, [pausado])
+
+  useEffect(() => {
+    onPausaCambio?.(pausado)
+  }, [pausado, onPausaCambio])
 
   const progreso = Math.min(100, (tiempoTranscurrido / durationSeconds) * 100)
 
