@@ -7,6 +7,8 @@ import {
   etiquetaDuracion,
 } from '../utils/ubicacionEnVivo'
 import { useUbicacionEnVivo } from '../utils/useUbicacionEnVivo'
+import { useTextos } from '../i18n'
+import TEXTOS from '../i18n/textos/islaAuxilio'
 
 const cardClass = 'rounded-lg bg-white p-5 shadow-[0_8px_22px_rgba(0,0,0,0.12)]'
 const botonPrincipal =
@@ -17,18 +19,16 @@ function minutosRestantes(expiraAt) {
   return Math.max(0, Math.ceil((new Date(expiraAt).getTime() - Date.now()) / 60000))
 }
 
-function textoRestante(minutos) {
-  if (minutos <= 1) return 'menos de 1 min'
+function textoRestante(minutos, t) {
+  if (minutos <= 1) return t.menosDeUnMin
   if (minutos < 60) return `${minutos} min`
   const horas = Math.floor(minutos / 60)
   const resto = minutos % 60
   return resto ? `${horas} h ${resto} min` : `${horas} h`
 }
 
-function abrirWhatsApp(contacto, token, duracionMin) {
-  const mensaje =
-    `Estoy compartiendo mi ubicación en vivo contigo durante ${etiquetaDuracion(duracionMin)}. ` +
-    `Puedes verla aquí: ${construirEnlaceSeguimiento(token)}`
+function abrirWhatsApp(contacto, token, duracionMin, t) {
+  const mensaje = t.mensaje(etiquetaDuracion(duracionMin), construirEnlaceSeguimiento(token))
   // location.href (no window.open): mismo motivo que en "Compartir mi
   // ubicación" — no lo bloquea el navegador tras una espera asíncrona, y en
   // el celular el sistema abre WhatsApp dejando Calma de fondo.
@@ -39,6 +39,8 @@ function abrirWhatsApp(contacto, token, duracionMin) {
 // sesión). El paso a paso es: duración → contacto → enlace por WhatsApp.
 export default function UbicacionEnVivoPanel({ contactos, onAgregarContacto, onEditarContacto }) {
   const { estado, sesion, error, iniciar, detener } = useUbicacionEnVivo()
+  const textos = useTextos(TEXTOS)
+  const t = textos.enVivo
 
   // null | 'duracion' | 'contacto' | 'sin-contacto' | 'sin-codigo-pais'
   const [paso, setPaso] = useState(null)
@@ -81,13 +83,13 @@ export default function UbicacionEnVivoPanel({ contactos, onAgregarContacto, onE
     // Con sesión activa solo se reenvía el enlace a otro contacto.
     if (sesion) {
       cerrar()
-      abrirWhatsApp(contacto, sesion.token, sesion.duracion_min)
+      abrirWhatsApp(contacto, sesion.token, sesion.duracion_min, t)
       return
     }
 
     cerrar()
     const nueva = await iniciar(minutos)
-    if (nueva) abrirWhatsApp(contacto, nueva.token, nueva.duracion_min)
+    if (nueva) abrirWhatsApp(contacto, nueva.token, nueva.duracion_min, t)
   }
 
   if (estado === 'cargando') return null
@@ -99,7 +101,7 @@ export default function UbicacionEnVivoPanel({ contactos, onAgregarContacto, onE
           aria-hidden="true"
           className="h-5 w-5 animate-spin rounded-full border-2 border-auxilio-1/30 border-t-auxilio-1"
         />
-        <p className="text-sm text-ink-soft">Obteniendo tu ubicación…</p>
+        <p className="text-sm text-ink-soft">{textos.obteniendoUbicacion}</p>
       </div>
     )
   }
@@ -118,23 +120,22 @@ export default function UbicacionEnVivoPanel({ contactos, onAgregarContacto, onE
               <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-auxilio-1 opacity-60" />
               <span className="relative inline-flex h-3 w-3 rounded-full bg-auxilio-1" />
             </span>
-            <p className="text-[15px] font-semibold text-ink">Compartiendo tu ubicación en vivo</p>
+            <p className="text-[15px] font-semibold text-ink">{t.compartiendo}</p>
           </div>
-          <p className="text-sm text-ink-soft">Termina en {textoRestante(restante)}.</p>
+          <p className="text-sm text-ink-soft">{t.terminaEn(textoRestante(restante, t))}</p>
           <p className="mt-2 text-[13px] leading-snug text-ink-soft">
-            Mantén Calma abierta en tu pantalla: si cierras la app o bloqueas el teléfono, tu
-            ubicación deja de actualizarse.
+            {t.mantenAbierta}
           </p>
           <div className="mt-4 flex flex-col gap-2">
             <button type="button" onClick={detener} className={`py-3 ${botonPrincipal}`}>
-              Detener
+              {t.detener}
             </button>
             <button
               type="button"
               onClick={() => (contactos.length === 1 ? elegirContacto(contactos[0]) : setPaso('contacto'))}
               className={`py-2.5 ${botonSecundario}`}
             >
-              Enviar el enlace a otro contacto
+              {t.otroContacto}
             </button>
           </div>
         </motion.div>
@@ -144,25 +145,24 @@ export default function UbicacionEnVivoPanel({ contactos, onAgregarContacto, onE
         <button
           type="button"
           onClick={() => setPaso('duracion')}
-          className="flex min-h-[68px] w-full items-center gap-3 rounded-full border border-white/20 bg-white/[0.08] py-3 pl-3 pr-5 text-left focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-white/30"
+          className="flex min-h-[68px] w-full items-center gap-3 rounded-full border border-cielo/20 bg-white/[0.08] py-3 pl-3 pr-5 text-left focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-cielo/30"
         >
           <span className="relative flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-full bg-white/10" aria-hidden="true">
             <span className="h-2.5 w-2.5 rounded-full bg-auxilio-1" />
             <span className="absolute h-6 w-6 rounded-full border-2 border-auxilio-1/50" />
           </span>
           <span>
-            <span className="block text-[15px] font-semibold text-white">Compartir ubicación en vivo</span>
-            <span className="block text-[13px] text-white/60">Por 15 min, 1 h o 4 h</span>
+            <span className="block text-[15px] font-semibold text-cielo">{t.boton}</span>
+            <span className="block text-[13px] text-cielo/60">{t.botonDetalle}</span>
           </span>
         </button>
       )}
 
       {paso === 'duracion' && (
         <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className={cardClass}>
-          <p className="mb-1 text-sm font-semibold text-ink">¿Por cuánto tiempo?</p>
+          <p className="mb-1 text-sm font-semibold text-ink">{t.cuantoTiempo}</p>
           <p className="mb-4 text-[13px] leading-snug text-ink-soft">
-            Tu contacto recibirá un enlace para ver tu ubicación mientras Calma esté abierta en tu
-            pantalla. Puedes detenerlo cuando quieras.
+            {t.explicacion}
           </p>
           <div className="mb-3 grid grid-cols-3 gap-2">
             {DURACIONES_MIN.map((minutos) => (
@@ -177,14 +177,14 @@ export default function UbicacionEnVivoPanel({ contactos, onAgregarContacto, onE
             ))}
           </div>
           <button type="button" onClick={cerrar} className={`w-full py-2.5 ${botonSecundario}`}>
-            Cancelar
+            {textos.cancelar}
           </button>
         </motion.div>
       )}
 
       {paso === 'contacto' && (
         <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className={cardClass}>
-          <p className="mb-3 text-sm font-semibold text-ink">¿A quién le envías el enlace?</p>
+          <p className="mb-3 text-sm font-semibold text-ink">{t.aQuien}</p>
           <div className="flex flex-col gap-2">
             {contactos.map((contacto) => (
               <button
@@ -198,7 +198,7 @@ export default function UbicacionEnVivoPanel({ contactos, onAgregarContacto, onE
             ))}
           </div>
           <button type="button" onClick={cerrar} className={`mt-3 w-full py-2.5 ${botonSecundario}`}>
-            Cancelar
+            {textos.cancelar}
           </button>
         </motion.div>
       )}
@@ -206,7 +206,7 @@ export default function UbicacionEnVivoPanel({ contactos, onAgregarContacto, onE
       {paso === 'sin-contacto' && (
         <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className={`text-center ${cardClass}`}>
           <p className="mb-3 text-sm text-ink-soft">
-            Agrega un contacto de confianza primero para poder compartir tu ubicación
+            {textos.primeroUnContacto}
           </p>
           <div className="flex justify-center gap-2">
             <button
@@ -217,10 +217,10 @@ export default function UbicacionEnVivoPanel({ contactos, onAgregarContacto, onE
               }}
               className={`px-5 py-2.5 ${botonPrincipal}`}
             >
-              Agregar contacto
+              {t.agregarContacto}
             </button>
             <button type="button" onClick={cerrar} className={`px-5 py-2.5 ${botonSecundario}`}>
-              Cancelar
+              {textos.cancelar}
             </button>
           </div>
         </motion.div>
@@ -229,8 +229,7 @@ export default function UbicacionEnVivoPanel({ contactos, onAgregarContacto, onE
       {paso === 'sin-codigo-pais' && (
         <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className={`text-center ${cardClass}`}>
           <p className="mb-3 text-sm text-ink-soft">
-            {contactoProblema?.nombre} no tiene código de país guardado. Edítalo primero para poder
-            enviarle el enlace por WhatsApp.
+            {t.sinCodigoPais(contactoProblema?.nombre)}
           </p>
           <div className="flex justify-center gap-2">
             <button
@@ -242,17 +241,17 @@ export default function UbicacionEnVivoPanel({ contactos, onAgregarContacto, onE
               }}
               className={`px-5 py-2.5 ${botonPrincipal}`}
             >
-              Editar contacto
+              {textos.editarContacto}
             </button>
             <button type="button" onClick={cerrar} className={`px-5 py-2.5 ${botonSecundario}`}>
-              Cancelar
+              {textos.cancelar}
             </button>
           </div>
         </motion.div>
       )}
 
       {error && paso === null && (
-        <p role="alert" className="mt-3 rounded-lg bg-white/[0.08] px-4 py-3 text-sm text-white">
+        <p role="alert" className="mt-3 rounded-lg bg-white/[0.08] px-4 py-3 text-sm text-cielo">
           {error}
         </p>
       )}

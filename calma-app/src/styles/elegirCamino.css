@@ -2,3 +2,7 @@
 .elegir-bg {
   background: linear-gradient(180deg, #030b1e 0%, #001b44 34%, #002e6b 70%, #0a4b94 90%);
 }
+
+:root[data-tema='dia'] .elegir-bg {
+  background: linear-gradient(180deg, #d6d6f3 0%, #f1d6e8 34%, #ffdccd 70%, #ffc4ac 90%);
+}

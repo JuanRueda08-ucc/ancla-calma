@@ -5,6 +5,8 @@ import ScreenHeader from '../components/ScreenHeader'
 import StarField from '../components/StarField'
 import { riseIn } from '../animations/transitions'
 import { conOrigen } from '../utils/useVolverA'
+import { useTextos } from '../i18n'
+import TEXTOS from '../i18n/textos/islaAire'
 
 function AnclaIcon({ className }) {
   return (
@@ -38,14 +40,10 @@ function ChevronIcon({ className }) {
 const SECUNDARIAS = [
   {
     to: '/islas/aire/puerto-seguro',
-    title: 'Puerto seguro',
-    description: 'Grounding, relajación y ejercicios sensoriales',
     Icon: AnclaIcon,
   },
   {
     to: '/bitacora',
-    title: 'Escribir en la bitácora',
-    description: 'Pon en palabras cómo te sientes',
     Icon: BitacoraIcon,
   },
 ]
@@ -60,21 +58,22 @@ function OpcionFila({ to, title, description, Icon, delay }) {
       type="button"
       onClick={() => navigate(to, conOrigen(location))}
       whileTap={{ scale: 0.98, transition: { duration: 0.15 } }}
-      className="mb-3 flex w-full items-center gap-4 rounded-xl border border-white/10 bg-white/[0.06] p-4 text-left focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-aire-accent/60"
+      className="mb-3 flex w-full items-center gap-4 rounded-xl border border-cielo/10 bg-white/[0.06] p-4 text-left focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-aire-accent/60"
     >
       <span className="flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-full bg-white/10 text-aire-accent">
         <Icon className="h-6 w-6" />
       </span>
       <span className="min-w-0 flex-1">
-        <span className="block text-base font-semibold text-white">{title}</span>
-        <span className="block text-[13px] text-white/60">{description}</span>
+        <span className="block text-base font-semibold text-cielo">{title}</span>
+        <span className="block text-[13px] text-cielo/60">{description}</span>
       </span>
-      <ChevronIcon className="h-5 w-5 flex-shrink-0 text-white/40" />
+      <ChevronIcon className="h-5 w-5 flex-shrink-0 text-cielo/40" />
     </motion.button>
   )
 }
 
 export default function IslaAireMenu() {
+  const t = useTextos(TEXTOS)
   const navigate = useNavigate()
   const location = useLocation()
 
@@ -85,11 +84,11 @@ export default function IslaAireMenu() {
       <StarField />
 
       <div className="relative z-[2] mx-auto max-w-[620px] px-5 pb-20 pt-10">
-        <ScreenHeader backTo="/islas" accountButtonClassName="bg-white/20 text-white" />
+        <ScreenHeader backTo="/islas" accountButtonClassName="bg-white/20 text-cielo" />
 
         <motion.div {...riseIn(0)} className="mb-8">
-          <h1 className="text-[30px] font-semibold leading-tight text-white">Isla del Aire</h1>
-          <p className="mt-1.5 text-[15px] text-white/75">¿Qué quieres hacer?</p>
+          <h1 className="text-[30px] font-semibold leading-tight text-cielo">{t.titulo}</h1>
+          <p className="mt-1.5 text-[15px] text-cielo/75">{t.subtitulo}</p>
         </motion.div>
 
         {/* la respiración es la herramienta principal de la isla */}
@@ -100,11 +99,11 @@ export default function IslaAireMenu() {
           whileTap={{ scale: 0.98, transition: { duration: 0.15 } }}
           className="mb-5 w-full overflow-hidden rounded-xl border border-aire-accent/30 bg-aire-accent/[0.12] px-6 pb-4 pt-6 text-left focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-aire-accent/60"
         >
-          <span className="block text-[22px] font-semibold leading-tight text-white">
-            Respira como las olas
+          <span className="block text-[22px] font-semibold leading-tight text-cielo">
+            {t.respira}
           </span>
-          <span className="mt-1.5 block text-sm text-white/70">
-            Inhala y exhala al ritmo del mar
+          <span className="mt-1.5 block text-sm text-cielo/70">
+            {t.respiraDetalle}
           </span>
           <svg viewBox="0 0 300 48" preserveAspectRatio="none" className="mt-5 h-12 w-full" aria-hidden="true">
             <path
@@ -128,7 +127,7 @@ export default function IslaAireMenu() {
         </motion.button>
 
         {SECUNDARIAS.map((opcion, index) => (
-          <OpcionFila key={opcion.to} {...opcion} delay={0.16 + 0.08 * index} />
+          <OpcionFila key={opcion.to} {...opcion} {...t.secundarias[index]} delay={0.16 + 0.08 * index} />
         ))}
       </div>
     </div>

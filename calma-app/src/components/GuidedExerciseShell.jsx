@@ -3,6 +3,8 @@ import { AnimatePresence, motion } from 'framer-motion'
 import StarField from './StarField'
 import { NIGHT_SKY_BG } from '../styles/nightSky'
 import { CerrarIcon, PausaIcon, PlayIcon } from './Iconos'
+import { useTextos } from '../i18n'
+import TEXTOS from '../i18n/textos/ejercicios'
 
 const TICK_MS = 150
 
@@ -16,6 +18,7 @@ export default function GuidedExerciseShell({
   children,
 }) {
   const [pausado, setPausado] = useState(false)
+  const t = useTextos(TEXTOS)
   const [tiempoTranscurrido, setTiempoTranscurrido] = useState(0)
 
   useEffect(() => {
@@ -35,7 +38,7 @@ export default function GuidedExerciseShell({
   const progreso = Math.min(100, (tiempoTranscurrido / durationSeconds) * 100)
 
   return (
-    <div className={`relative min-h-screen overflow-hidden ${NIGHT_SKY_BG} text-white`}>
+    <div className={`relative min-h-screen overflow-hidden ${NIGHT_SKY_BG} text-cielo`}>
       <StarField />
 
       <div className="relative z-[3] mx-auto flex min-h-screen max-w-[620px] flex-col px-5 pb-10 pt-[calc(2.5rem+env(safe-area-inset-top))]">
@@ -46,16 +49,16 @@ export default function GuidedExerciseShell({
           <button
             type="button"
             onClick={() => setPausado((prev) => !prev)}
-            aria-label={pausado ? 'Reanudar' : 'Pausar'}
-            className="flex h-[42px] w-[42px] items-center justify-center rounded-full bg-white/[0.12] text-base text-white"
+            aria-label={pausado ? t.reanudar : t.pausar}
+            className="flex h-[42px] w-[42px] items-center justify-center rounded-full bg-white/[0.12] text-base text-cielo"
           >
             {pausado ? <PlayIcon className="h-5 w-5" /> : <PausaIcon className="h-5 w-5" />}
           </button>
           <button
             type="button"
             onClick={onBack}
-            aria-label="Cerrar"
-            className="flex h-[42px] w-[42px] items-center justify-center rounded-full bg-white/[0.12] text-base text-white"
+            aria-label={t.cerrar}
+            className="flex h-[42px] w-[42px] items-center justify-center rounded-full bg-white/[0.12] text-base text-cielo"
           >
             <CerrarIcon className="h-5 w-5" />
           </button>
@@ -83,7 +86,7 @@ export default function GuidedExerciseShell({
           </AnimatePresence>
         </div>
 
-        <p className="mt-8 text-center text-[12.5px] text-white/55">{footerLabel}</p>
+        <p className="mt-8 text-center text-[12.5px] text-cielo/55">{footerLabel}</p>
       </div>
     </div>
   )

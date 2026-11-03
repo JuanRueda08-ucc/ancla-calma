@@ -287,6 +287,33 @@ algo que parecía un bug era en realidad una decisión deliberada. Antes de
   bienestar, no un descuido de seguridad. Se puede reforzar más adelante
   si se considera necesario.
 
+## Idioma y tema (noviembre 2026)
+- **El idioma se pregunta una sola vez, después de "Comenzar"**, no en cada
+  visita ni antes de las herramientas: quien entra directo a una isla (por
+  ejemplo desde un enlace en crisis) la ve en español sin pasos extra, y
+  puede cambiarlo después desde el menú de cuenta o Perfil. Decisión del
+  usuario: selector al inicio + opción "Cambiar idioma" dentro de la app.
+- **El tema NO se pregunta al inicio**: es un botón sol/luna en la esquina
+  superior, junto a la cuenta (decisión explícita del usuario). El de noche
+  sigue siendo el predeterminado.
+- **El tema de día es un amanecer en pasteles (lavanda, rosa, durazno,
+  coral), no blanco sólido** — pedido explícito. Las tarjetas blancas (hojas
+  de bitácora, formularios) se mantienen igual en los dos temas.
+- Los ejercicios guiados siguen el tema elegido pero no muestran el botón
+  (misma regla que la cuenta: pantallas enfocadas, sin navegación extra).
+- **Idioma y tema viven en localStorage, no en la cuenta**: tienen que
+  funcionar sin sesión. Por eso no hay migración ni columna nueva.
+- Las etiquetas de emoción de la bitácora se siguen guardando en español
+  (`constants/emociones.js`) y solo se traducen al mostrarlas: así una
+  entrada no cambia de idioma en la base según cuándo se escribió.
+- Las 4 herramientas iniciales del Faro se siembran en el idioma elegido en
+  ese momento; después son contenido de la persona y no se traducen.
+- **Eliminar cuenta en inglés pide escribir "DELETE"** (en español sigue
+  siendo "ELIMINAR"): la palabra tiene que ser fácil de teclear en el idioma
+  de quien la usa. El resto de la regla de Eliminar cuenta no cambia.
+- La política de privacidad en inglés aclara que es una traducción y que la
+  versión en español es la que rige.
+
 ## Multi-agente (Codex + Claude Code)
 - Ver `AGENTS.md` (raíz, `calma-app/`, `supabase/`) para convenciones que
   ambos agentes deben seguir. `CLAUDE.md` en cada una de esas carpetas solo

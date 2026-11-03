@@ -6,7 +6,12 @@ tarea grande, revisar qué está "en progreso" acá para no pisar trabajo del
 otro agente. Al terminar una tarea significativa, actualizar este archivo.
 
 ## En progreso / pendiente ahora mismo
-- Nada en curso.
+- Idioma (español/inglés) y tema de día (rama `feature/idioma-tema`, PR en
+  borrador): selector de idioma tras "Comenzar", "Cambiar idioma" en el
+  menú de cuenta y en Perfil, botón sol/luna, todas las pantallas traducidas
+  y con versión de día. Falta: revisar el tema de día con sesión iniciada
+  (Bitácora, Historial, Faro, Perfil) y en un teléfono real; revisión de la
+  traducción de la política de privacidad.
 
 ## Completado (diseño y documentación)
 - Rediseño de la pantalla Entrada (PR #2, ya en main): escena nocturna

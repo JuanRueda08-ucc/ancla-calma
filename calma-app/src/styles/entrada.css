@@ -47,3 +47,23 @@
   filter: blur(2.5px);
   border-radius: 50%;
 }
+
+/* Tema de día: amanecer. Lavanda arriba, rosa y durazno hasta el coral del
+   horizonte, y un sol que asoma sobre el mar (de noche no se dibuja). */
+:root[data-tema='dia'] .entrada-bg {
+  background: linear-gradient(180deg, #cdd3f3 0%, #ecd3ea 30%, #ffd8c8 58%, #ffb89d 78%);
+}
+
+.entrada-sol {
+  display: none;
+}
+
+:root[data-tema='dia'] .entrada-sol {
+  display: block;
+  background: radial-gradient(circle, #fff6e6 0%, #ffe1b8 38%, rgba(255, 177, 153, 0.55) 62%, transparent 72%);
+}
+
+/* de día la linterna casi no se nota: el haz queda como un brillo suave */
+:root[data-tema='dia'] .entrada-beam {
+  opacity: 0.45;
+}

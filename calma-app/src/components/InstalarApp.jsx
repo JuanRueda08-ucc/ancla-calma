@@ -1,6 +1,8 @@
 import { useEffect, useState } from 'react'
 import { AnimatePresence, motion } from 'framer-motion'
 import { CerrarIcon } from './Iconos'
+import { useTextos } from '../i18n'
+import TEXTOS from '../i18n/textos/instalarApp'
 
 const CLAVE_DESCARTADO = 'calma:instalar-descartado'
 
@@ -39,6 +41,7 @@ export default function InstalarApp() {
   const [eventoInstalar, setEventoInstalar] = useState(null)
   const [visible, setVisible] = useState(() => !yaInstalada() && !leerDescartado() && esIOS())
   const ios = esIOS()
+  const t = useTextos(TEXTOS)
 
   useEffect(() => {
     if (yaInstalada() || leerDescartado()) return undefined
@@ -81,31 +84,31 @@ export default function InstalarApp() {
           animate={{ opacity: 1, y: 0 }}
           exit={{ opacity: 0, y: 12 }}
           aria-labelledby="instalar-titulo"
-          className="relative mt-6 flex items-start gap-3 rounded-xl border border-white/15 bg-white/[0.08] p-4 pr-11"
+          className="relative mt-6 flex items-start gap-3 rounded-xl border border-cielo/15 bg-white/[0.08] p-4 pr-11"
         >
           <img src="/icons/icon-192.png" alt="" className="h-11 w-11 flex-shrink-0 rounded-[10px]" />
           <div className="min-w-0">
-            <h2 id="instalar-titulo" className="text-[15px] font-semibold text-white">
-              Lleva Calma en tu teléfono
+            <h2 id="instalar-titulo" className="text-[15px] font-semibold text-cielo">
+              {t.titulo}
             </h2>
             {ios ? (
-              <p className="mt-1 text-[13px] leading-snug text-white/75">
-                Toca <CompartirIcon className="inline h-4 w-4 -translate-y-px" />{' '}
-                <span className="font-semibold text-white">Compartir</span> y luego{' '}
-                <span className="font-semibold text-white">Agregar a pantalla de inicio</span>. Abre
-                como una app y funciona sin conexión.
+              <p className="mt-1 text-[13px] leading-snug text-cielo/75">
+                {t.iosToca} <CompartirIcon className="inline h-4 w-4 -translate-y-px" />{' '}
+                <span className="font-semibold text-cielo">{t.iosCompartir}</span> {t.iosYLuego}{' '}
+                <span className="font-semibold text-cielo">{t.iosAgregar}</span>
+                {t.iosFinal}
               </p>
             ) : (
               <>
-                <p className="mt-1 text-[13px] leading-snug text-white/75">
-                  Ábrela como una app desde tu pantalla de inicio, incluso sin conexión.
+                <p className="mt-1 text-[13px] leading-snug text-cielo/75">
+                  {t.android}
                 </p>
                 <button
                   type="button"
                   onClick={instalar}
-                  className="mt-3 rounded-full bg-white px-5 py-2 text-sm font-bold text-brand-navyDeep focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-white/40"
+                  className="mt-3 rounded-full bg-white px-5 py-2 text-sm font-bold text-brand-navyDeep focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-cielo/40"
                 >
-                  Instalar
+                  {t.instalar}
                 </button>
               </>
             )}
@@ -113,8 +116,8 @@ export default function InstalarApp() {
           <button
             type="button"
             onClick={descartar}
-            aria-label="No mostrar de nuevo"
-            className="absolute right-2 top-2 flex h-9 w-9 items-center justify-center rounded-full text-white/60 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-white/30"
+            aria-label={t.descartar}
+            className="absolute right-2 top-2 flex h-9 w-9 items-center justify-center rounded-full text-cielo/60 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-cielo/30"
           >
             <CerrarIcon className="h-4 w-4" />
           </button>

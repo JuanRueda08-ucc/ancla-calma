@@ -34,7 +34,7 @@ export default function Accordion({
   return (
     <motion.div
       {...riseIn(delay)}
-      className="mb-3 overflow-hidden rounded-xl border border-white/10 bg-white/[0.06]"
+      className="mb-3 overflow-hidden rounded-xl border border-cielo/10 bg-white/[0.06]"
     >
       <button
         type="button"
@@ -48,14 +48,14 @@ export default function Accordion({
             <Icon className="h-5 w-5" />
           </span>
         )}
-        <span className="flex-1 text-[15px] font-semibold text-white">{titulo}</span>
+        <span className="flex-1 text-[15px] font-semibold text-cielo">{titulo}</span>
         {detalle && (
-          <span className="whitespace-nowrap text-xs font-semibold text-white/55">{detalle}</span>
+          <span className="whitespace-nowrap text-xs font-semibold text-cielo/55">{detalle}</span>
         )}
         <motion.span
           animate={{ rotate: abierto ? 180 : 0 }}
           transition={{ duration: 0.2 }}
-          className="text-white/50"
+          className="text-cielo/50"
         >
           <ChevronIcon className="h-5 w-5" />
         </motion.span>

@@ -1,15 +1,19 @@
 import { useEffect, useState } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useLocation, useNavigate } from 'react-router-dom'
 import { AnimatePresence, motion } from 'framer-motion'
 import '../styles/islaNoche.css'
 import ScreenHeader from '../components/ScreenHeader'
 import StarField from '../components/StarField'
-import { ChevronIcon, PersonaIcon, SalirIcon } from '../components/Iconos'
+import { ChevronIcon, IdiomaIcon, PersonaIcon, SalirIcon } from '../components/Iconos'
 import { riseIn } from '../animations/transitions'
 import { useAuth } from '../context/AuthContext'
 import { useVolverA } from '../utils/useVolverA'
 import { supabase } from '../lib/supabaseClient'
 import { AVATARES } from '../constants/avatares'
+import { useTextos } from '../i18n'
+import TEXTOS from '../i18n/textos/perfil'
+import TEXTOS_COMUNES from '../i18n/textos/comun'
+import { conOrigen } from '../utils/useVolverA'
 
 const MIN_PASSWORD_LENGTH = 6
 const MIN_NOMBRE_LENGTH = 2
@@ -20,15 +24,15 @@ const inputClass =
 const botonNavyClass =
   'w-full rounded-full bg-gradient-to-br from-brand-navy to-brand-navyDeep py-2.5 text-sm font-bold text-white shadow-[0_10px_20px_rgba(0,46,107,0.25)] disabled:cursor-not-allowed disabled:opacity-50 disabled:shadow-none'
 
-function mapUpdateEmailError(error) {
+function mapUpdateEmailError(error, t) {
   const message = error?.message?.toLowerCase() ?? ''
   if (message.includes('email') && (message.includes('invalid') || message.includes('format'))) {
-    return 'El correo electrónico no es válido.'
+    return t.correoInvalido
   }
   if (message.includes('already') || message.includes('registered') || message.includes('exists')) {
-    return 'Ese correo ya está en uso por otra cuenta.'
+    return t.correoEnUso
   }
-  return 'No pudimos actualizar tu correo. Intenta de nuevo.'
+  return t.errorCorreo
 }
 
 // Fila de ajustes que se despliega: correo, contraseña y eliminar cuenta
@@ -40,7 +44,7 @@ function SeccionPlegable({ id, titulo, abierta, onToggle, peligro = false, child
   return (
     <div
       className={`mb-2.5 overflow-hidden rounded-xl border ${
-        peligro ? 'border-red-400/30 bg-red-500/[0.08]' : 'border-white/10 bg-white/[0.06]'
+        peligro ? 'border-red-400/30 bg-red-500/[0.08]' : 'border-cielo/10 bg-white/[0.06]'
       }`}
     >
       <button
@@ -48,15 +52,15 @@ function SeccionPlegable({ id, titulo, abierta, onToggle, peligro = false, child
         onClick={onToggle}
         aria-expanded={abierta}
         aria-controls={panelId}
-        className={`flex w-full items-center justify-between px-4 py-3.5 text-left text-[15px] font-semibold focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-inset focus-visible:ring-white/30 ${
-          peligro ? 'text-red-300' : 'text-white'
+        className={`flex w-full items-center justify-between px-4 py-3.5 text-left text-[15px] font-semibold focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-inset focus-visible:ring-cielo/30 ${
+          peligro ? 'text-red-300' : 'text-cielo'
         }`}
       >
         {titulo}
         <motion.span
           animate={{ rotate: abierta ? 180 : 0 }}
           transition={{ duration: 0.2 }}
-          className="text-white/50"
+          className="text-cielo/50"
         >
           <ChevronIcon className="h-5 w-5" />
         </motion.span>
@@ -85,6 +89,9 @@ export default function Perfil() {
   const { user, refreshProfile, signOut } = useAuth()
   const navigate = useNavigate()
   const volverA = useVolverA('/islas')
+  const location = useLocation()
+  const t = useTextos(TEXTOS)
+  const { avatares } = useTextos(TEXTOS_COMUNES)
 
   const [perfilCargando, setPerfilCargando] = useState(true)
   const [avatarId, setAvatarId] = useState(null)
@@ -148,9 +155,7 @@ export default function Perfil() {
     setPerfilMensaje('')
 
     if (nombreLimpio !== '' && (nombreLimpio.length < MIN_NOMBRE_LENGTH || nombreLimpio.length > MAX_NOMBRE_LENGTH)) {
-      setPerfilError(
-        `El nombre debe tener entre ${MIN_NOMBRE_LENGTH} y ${MAX_NOMBRE_LENGTH} caracteres.`
-      )
+      setPerfilError(t.nombreLongitud(MIN_NOMBRE_LENGTH, MAX_NOMBRE_LENGTH))
       return
     }
 
@@ -162,14 +167,14 @@ export default function Perfil() {
     setPerfilGuardando(false)
 
     if (error) {
-      setPerfilError('No pudimos guardar tu perfil. Intenta de nuevo.')
+      setPerfilError(t.errorPerfil)
       return
     }
 
     setAvatarGuardado(avatarId)
     setNombreGuardado(nombreLimpio)
     setNombreUsuario(nombreLimpio)
-    setPerfilMensaje('Perfil actualizado')
+    setPerfilMensaje(t.perfilActualizado)
     refreshProfile()
   }
 
@@ -183,12 +188,10 @@ export default function Perfil() {
     setEmailEnviando(false)
 
     if (error) {
-      setEmailError(mapUpdateEmailError(error))
+      setEmailError(mapUpdateEmailError(error, t))
       return
     }
-    setEmailMensaje(
-      'Revisa tu bandeja de entrada (la actual y la nueva) para confirmar el cambio de correo.'
-    )
+    setEmailMensaje(t.revisaBandeja)
   }
 
   const handleActualizarContrasena = async (e) => {
@@ -197,11 +200,11 @@ export default function Perfil() {
     setPasswordMensaje('')
 
     if (nuevaContrasena.length < MIN_PASSWORD_LENGTH) {
-      setPasswordError(`La contraseña debe tener al menos ${MIN_PASSWORD_LENGTH} caracteres.`)
+      setPasswordError(t.contrasenaCorta(MIN_PASSWORD_LENGTH))
       return
     }
     if (nuevaContrasena !== confirmarContrasena) {
-      setPasswordError('Las contraseñas no coinciden.')
+      setPasswordError(t.noCoinciden)
       return
     }
 
@@ -210,10 +213,10 @@ export default function Perfil() {
     setPasswordEnviando(false)
 
     if (error) {
-      setPasswordError('No pudimos actualizar tu contraseña. Intenta de nuevo.')
+      setPasswordError(t.errorContrasena)
       return
     }
-    setPasswordMensaje('Contraseña actualizada')
+    setPasswordMensaje(t.contrasenaActualizada)
     setNuevaContrasena('')
     setConfirmarContrasena('')
   }
@@ -226,7 +229,7 @@ export default function Perfil() {
     signOut()
   }
 
-  const puedeEliminarCuenta = textoConfirmacionEliminar === 'ELIMINAR'
+  const puedeEliminarCuenta = textoConfirmacionEliminar === t.palabraEliminar
 
   const handleEliminarCuenta = async () => {
     if (!puedeEliminarCuenta || eliminandoCuenta) return
@@ -237,7 +240,7 @@ export default function Perfil() {
 
     if (error || !data?.success) {
       setEliminandoCuenta(false)
-      setEliminarCuentaError('No pudimos eliminar tu cuenta. Intenta de nuevo.')
+      setEliminarCuentaError(t.errorEliminar)
       return
     }
 
@@ -260,21 +263,21 @@ export default function Perfil() {
         <ScreenHeader backTo={volverA} showAccount={false} />
 
         <motion.div {...riseIn(0)} className="mb-8 flex flex-col items-center text-center">
-          <div className="mb-3 flex h-24 w-24 items-center justify-center overflow-hidden rounded-full bg-white/10 ring-2 ring-white/25">
+          <div className="mb-3 flex h-24 w-24 items-center justify-center overflow-hidden rounded-full bg-white/10 ring-2 ring-cielo/25">
             {avatarActual ? (
               <img src={avatarActual.src} alt="" className="h-full w-full object-cover" />
             ) : (
-              <PersonaIcon className="h-11 w-11 text-white/60" />
+              <PersonaIcon className="h-11 w-11 text-cielo/60" />
             )}
           </div>
-          <h1 className="text-[26px] font-semibold leading-tight text-white">
-            {nombreGuardado || 'Tu perfil'}
+          <h1 className="text-[26px] font-semibold leading-tight text-cielo">
+            {nombreGuardado || t.tuPerfil}
           </h1>
-          {user?.email && <p className="mt-1 text-sm text-white/65">{user.email}</p>}
+          {user?.email && <p className="mt-1 text-sm text-cielo/65">{user.email}</p>}
         </motion.div>
 
         <motion.div {...riseIn(0.06)} className={`mb-8 ${cardClass}`}>
-          <p className="mb-4 text-sm font-semibold text-ink">Tu avatar y nombre</p>
+          <p className="mb-4 text-sm font-semibold text-ink">{t.avatarYNombre}</p>
 
           {perfilCargando ? (
             <div className="flex justify-center py-4">
@@ -293,7 +296,7 @@ export default function Perfil() {
                       key={avatar.id}
                       type="button"
                       onClick={() => setAvatarId(avatar.id)}
-                      aria-label={avatar.nombre}
+                      aria-label={avatares[avatar.id]}
                       aria-pressed={seleccionado}
                       className={`h-20 w-20 rounded-full p-1 transition-shadow focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-brand-navy/30 ${
                         seleccionado ? 'ring-[3px] ring-brand-navy' : 'ring-0'
@@ -301,7 +304,7 @@ export default function Perfil() {
                     >
                       <img
                         src={avatar.src}
-                        alt={avatar.nombre}
+                        alt={avatares[avatar.id]}
                         className="h-full w-full rounded-full object-cover"
                       />
                     </button>
@@ -313,14 +316,14 @@ export default function Perfil() {
                 htmlFor="perfil-nombre"
                 className="mb-1 mt-5 block text-xs font-semibold text-ink-soft"
               >
-                Nombre de usuario
+                {t.nombreUsuario}
               </label>
               <input
                 id="perfil-nombre"
                 type="text"
                 value={nombreUsuario}
                 onChange={(e) => setNombreUsuario(e.target.value)}
-                placeholder="¿Cómo quieres que te llamemos?"
+                placeholder={t.nombreEjemplo}
                 className={inputClass}
               />
 
@@ -337,24 +340,24 @@ export default function Perfil() {
                 disabled={!hayCambiosPendientes || perfilGuardando}
                 className={`mt-4 ${botonNavyClass}`}
               >
-                {perfilGuardando ? 'Guardando…' : 'Guardar'}
+                {perfilGuardando ? t.guardando : t.guardar}
               </button>
             </>
           )}
         </motion.div>
 
         <motion.section {...riseIn(0.12)}>
-          <h2 className="mb-3 text-[15px] font-semibold text-white">Cuenta</h2>
+          <h2 className="mb-3 text-[15px] font-semibold text-cielo">{t.cuenta}</h2>
 
           <SeccionPlegable
             id="correo"
-            titulo="Cambiar correo"
+            titulo={t.cambiarCorreo}
             abierta={seccionAbierta === 'correo'}
             onToggle={() => alternarSeccion('correo')}
           >
             <form onSubmit={handleActualizarCorreo} className={cardClass}>
               <label htmlFor="perfil-email" className="mb-1 block text-xs font-semibold text-ink-soft">
-                Correo electrónico
+                {t.correo}
               </label>
               <input
                 id="perfil-email"
@@ -370,14 +373,14 @@ export default function Perfil() {
               {emailMensaje && <p className="mb-3 text-xs font-medium text-acomp-1">{emailMensaje}</p>}
 
               <button type="submit" disabled={emailEnviando} className={botonNavyClass}>
-                {emailEnviando ? 'Actualizando…' : 'Actualizar correo'}
+                {emailEnviando ? t.actualizando : t.actualizarCorreo}
               </button>
             </form>
           </SeccionPlegable>
 
           <SeccionPlegable
             id="contrasena"
-            titulo="Cambiar contraseña"
+            titulo={t.cambiarContrasena}
             abierta={seccionAbierta === 'contrasena'}
             onToggle={() => alternarSeccion('contrasena')}
           >
@@ -386,7 +389,7 @@ export default function Perfil() {
                 htmlFor="perfil-password"
                 className="mb-1 block text-xs font-semibold text-ink-soft"
               >
-                Nueva contraseña
+                {t.nuevaContrasena}
               </label>
               <input
                 id="perfil-password"
@@ -403,7 +406,7 @@ export default function Perfil() {
                 htmlFor="perfil-password-confirm"
                 className="mb-1 block text-xs font-semibold text-ink-soft"
               >
-                Confirmar nueva contraseña
+                {t.confirmarNueva}
               </label>
               <input
                 id="perfil-password-confirm"
@@ -424,40 +427,51 @@ export default function Perfil() {
               )}
 
               <button type="submit" disabled={passwordEnviando} className={botonNavyClass}>
-                {passwordEnviando ? 'Actualizando…' : 'Actualizar contraseña'}
+                {passwordEnviando ? t.actualizando : t.actualizarContrasena}
               </button>
             </form>
           </SeccionPlegable>
 
+          {/* Perfil no tiene el menú de cuenta: aquí se cambia el idioma */}
+          <button
+            type="button"
+            onClick={() => navigate('/idioma', conOrigen(location))}
+            className="mb-2.5 flex w-full items-center justify-between rounded-xl border border-cielo/10 bg-white/[0.06] px-4 py-3.5 text-left text-[15px] font-semibold text-cielo focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-cielo/30"
+          >
+            {t.idioma}
+            <span className="flex items-center gap-2 text-sm font-medium text-cielo/65">
+              {t.idiomaActual}
+              <IdiomaIcon className="h-5 w-5 text-cielo/50" />
+            </span>
+          </button>
           <button
             type="button"
             onClick={cerrarSesion}
-            className="mb-2.5 flex w-full items-center justify-between rounded-xl border border-white/10 bg-white/[0.06] px-4 py-3.5 text-left text-[15px] font-semibold text-white focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-white/30"
+            className="mb-2.5 flex w-full items-center justify-between rounded-xl border border-cielo/10 bg-white/[0.06] px-4 py-3.5 text-left text-[15px] font-semibold text-cielo focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-cielo/30"
           >
-            Cerrar sesión
-            <SalirIcon className="h-5 w-5 text-white/50" />
+            {t.cerrarSesion}
+            <SalirIcon className="h-5 w-5 text-cielo/50" />
           </button>
         </motion.section>
 
         <motion.div {...riseIn(0.18)} className="mt-8">
           <SeccionPlegable
             id="eliminar"
-            titulo="Eliminar mi cuenta"
+            titulo={t.eliminarMiCuenta}
             abierta={seccionAbierta === 'eliminar'}
             onToggle={() => alternarSeccion('eliminar')}
             peligro
           >
             <div className="rounded-lg border-2 border-red-300 bg-red-50 p-5">
               <p className="mb-4 text-xs leading-relaxed text-red-600">
-                Esto elimina tu cuenta de forma permanente, junto con tus contactos de confianza,
-                tu bitácora completa (incluyendo notas de voz), y tu perfil. No se puede deshacer.
+                {t.advertenciaEliminar}
               </p>
 
               <label
                 htmlFor="perfil-confirmar-eliminar"
                 className="mb-1 block text-xs font-semibold text-red-600"
               >
-                Escribe ELIMINAR para confirmar
+                {t.escribePalabra(t.palabraEliminar)}
               </label>
               <input
                 id="perfil-confirmar-eliminar"
@@ -478,7 +492,7 @@ export default function Perfil() {
                 disabled={!puedeEliminarCuenta || eliminandoCuenta}
                 className="w-full rounded-full bg-red-500 py-2.5 text-sm font-bold text-white shadow-[0_10px_20px_rgba(220,38,38,0.25)] disabled:cursor-not-allowed disabled:opacity-50 disabled:shadow-none"
               >
-                {eliminandoCuenta ? 'Eliminando cuenta…' : 'Eliminar cuenta definitivamente'}
+                {eliminandoCuenta ? t.eliminandoCuenta : t.eliminarDefinitivamente}
               </button>
             </div>
           </SeccionPlegable>

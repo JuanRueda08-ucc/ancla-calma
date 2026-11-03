@@ -21,6 +21,19 @@
     <meta name="apple-mobile-web-app-title" content="Calma" />
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
     <title>Calma — Proyecto ANCLA</title>
+    <!-- Tema e idioma guardados, aplicados antes de que cargue la app para que
+         no destelle el tema nocturno a quien eligió el de día (ver
+         PreferenciasContext.jsx). -->
+    <script>
+      try {
+        var tema = localStorage.getItem('calma:tema')
+        if (tema === 'dia') {
+          document.documentElement.dataset.tema = 'dia'
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#FDE9E0')
+        }
+        if (localStorage.getItem('calma:idioma') === 'en') document.documentElement.lang = 'en'
+      } catch (e) {}
+    </script>
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link

@@ -312,3 +312,61 @@ describe('acordeones: una sola sección abierta a la vez', () => {
     expect(await screen.findByText('Se requiere inicio de sesión para añadir contactos.')).toBeInTheDocument()
   })
 })
+
+describe('idioma y tema', () => {
+  it('la primera vez, "Comenzar" pregunta el idioma; en inglés la app sigue en inglés', async () => {
+    const usuario = userEvent.setup()
+    await abrirApp('/')
+    await usuario.click(await screen.findByRole('button', { name: 'Comenzar' }))
+
+    expect(await screen.findByRole('heading', { name: 'Elige tu idioma' })).toBeInTheDocument()
+    expect(window.location.pathname).toBe('/idioma')
+    await usuario.click(screen.getByRole('button', { name: /English/ }))
+
+    expect(await screen.findByRole('heading', { name: 'What do you need today?' })).toBeInTheDocument()
+    expect(window.location.pathname).toBe('/elegir')
+    expect(document.documentElement.lang).toBe('en')
+    expect(localStorage.getItem('calma:idioma')).toBe('en')
+  })
+
+  it('con el idioma ya elegido, "Comenzar" va directo a elegir camino', async () => {
+    const usuario = userEvent.setup()
+    localStorage.setItem('calma:idioma', 'es')
+    await abrirApp('/')
+    await usuario.click(await screen.findByRole('button', { name: 'Comenzar' }))
+    expect(await screen.findByRole('heading', { name: '¿Qué necesitas hoy?' })).toBeInTheDocument()
+  })
+
+  it('las herramientas de calma no esperan a elegir idioma: abren en español', async () => {
+    await abrirApp('/islas/auxilio')
+    expect(await screen.findByRole('heading', { level: 1, name: 'Isla del Auxilio' })).toBeInTheDocument()
+  })
+
+  it('"Cambiar idioma" del menú de cuenta vuelve a la misma pantalla, ya traducida', async () => {
+    const usuario = userEvent.setup()
+    localStorage.setItem('calma:idioma', 'es')
+    await abrirApp('/islas/senales')
+    await screen.findByRole('heading', { name: 'Isla de las Señales' })
+
+    await usuario.click(screen.getByRole('button', { name: 'Cuenta' }))
+    await usuario.click(screen.getByRole('link', { name: 'Cambiar idioma' }))
+    await usuario.click(await screen.findByRole('button', { name: /English/ }))
+
+    expect(await screen.findByRole('heading', { name: 'Island of Signs' })).toBeInTheDocument()
+    expect(window.location.pathname).toBe('/islas/senales')
+    expect(screen.getByText('Feeling distressed')).toBeInTheDocument()
+  })
+
+  it('el botón de tema alterna entre noche y día y lo recuerda', async () => {
+    const usuario = userEvent.setup()
+    await abrirApp('/islas')
+    await screen.findByRole('heading', { name: '¿A dónde quieres ir?' })
+
+    await usuario.click(screen.getByRole('button', { name: 'Cambiar al tema de día' }))
+    expect(document.documentElement.dataset.tema).toBe('dia')
+    expect(localStorage.getItem('calma:tema')).toBe('dia')
+
+    await usuario.click(screen.getByRole('button', { name: 'Cambiar al tema de noche' }))
+    expect(document.documentElement.dataset.tema).toBe('noche')
+  })
+})

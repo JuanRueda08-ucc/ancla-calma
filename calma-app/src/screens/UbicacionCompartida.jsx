@@ -8,6 +8,9 @@ import StarField from '../components/StarField'
 import { riseIn } from '../animations/transitions'
 import { construirLinkMapa } from '../utils/compartirUbicacion'
 import { verUbicacion } from '../utils/ubicacionEnVivo'
+import { usePreferencias } from '../context/PreferenciasContext'
+import { LOCALES, textoActual, useTextos } from '../i18n'
+import TEXTOS from '../i18n/textos/ubicacionCompartida'
 
 // Página pública que abre el contacto de confianza desde WhatsApp. No pide
 // cuenta: el token del enlace es lo único que da acceso. Consulta cada 10 s
@@ -16,15 +19,16 @@ const CONSULTA_MS = 10000
 // Pasado este tiempo sin actualizaciones, se avisa que el dato puede ser viejo.
 const DESACTUALIZADA_MS = 2 * 60 * 1000
 
-function haceCuanto(fecha, ahora) {
+function haceCuanto(fecha, ahora, t) {
   const segundos = Math.max(0, Math.round((ahora - new Date(fecha).getTime()) / 1000))
-  if (segundos < 60) return `hace ${segundos} s`
+  if (segundos < 60) return t.haceSegundos(segundos)
   const minutos = Math.round(segundos / 60)
-  if (minutos < 60) return `hace ${minutos} min`
-  return `hace ${Math.floor(minutos / 60)} h ${minutos % 60} min`
+  if (minutos < 60) return t.haceMinutos(minutos)
+  return t.haceHoras(Math.floor(minutos / 60), minutos % 60)
 }
 
 function Mapa({ lat, lng, precision }) {
+  const t = useTextos(TEXTOS)
   const contenedorRef = useRef(null)
   const mapaRef = useRef(null)
   const puntoRef = useRef(null)
@@ -34,7 +38,8 @@ function Mapa({ lat, lng, precision }) {
     const mapa = L.map(contenedorRef.current, { zoomControl: true, attributionControl: true })
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
       maxZoom: 19,
-      attribution: '&copy; colaboradores de OpenStreetMap',
+      // el mapa se crea una vez: la atribución queda en el idioma de ese momento
+      attribution: textoActual(TEXTOS).atribucionMapa,
     }).addTo(mapa)
     mapaRef.current = mapa
     return () => {
@@ -77,7 +82,7 @@ function Mapa({ lat, lng, precision }) {
     <div
       ref={contenedorRef}
       role="img"
-      aria-label="Mapa con la ubicación compartida"
+      aria-label={t.mapa}
       className="h-[52vh] min-h-[280px] w-full overflow-hidden rounded-lg"
     />
   )
@@ -85,6 +90,8 @@ function Mapa({ lat, lng, precision }) {
 
 export default function UbicacionCompartida() {
   const { token } = useParams()
+  const { idioma } = usePreferencias()
+  const t = useTextos(TEXTOS)
   // 'cargando' | 'no-encontrada' | 'terminada' | 'activa'
   const [estado, setEstado] = useState('cargando')
   const [datos, setDatos] = useState(null)
@@ -141,58 +148,56 @@ export default function UbicacionCompartida() {
       <StarField />
 
       <div className="relative z-[2] mx-auto max-w-[620px] px-5 pb-16 pt-[calc(2rem+env(safe-area-inset-top))]">
-        <p className="mb-6 font-display text-[18px] uppercase tracking-[2px] text-white/80">Calma</p>
+        <p className="mb-6 font-display text-[18px] uppercase tracking-[2px] text-cielo/80">Calma</p>
 
         {estado === 'cargando' && (
           <div className="flex justify-center py-16">
             <span
               aria-hidden="true"
-              className="h-8 w-8 animate-spin rounded-full border-2 border-white/30 border-t-white"
+              className="h-8 w-8 animate-spin rounded-full border-2 border-cielo/30 border-t-cielo"
             />
-            <span className="sr-only">Cargando ubicación…</span>
+            <span className="sr-only">{t.cargando}</span>
           </div>
         )}
 
         {estado === 'no-encontrada' && (
           <motion.div {...riseIn(0)}>
-            <h1 className="text-[26px] font-semibold leading-tight text-white">Enlace no válido</h1>
-            <p className="mt-2 text-[15px] text-white/75">
-              Este enlace de ubicación no existe. Revisa que lo hayas copiado completo.
+            <h1 className="text-[26px] font-semibold leading-tight text-cielo">{t.noValido}</h1>
+            <p className="mt-2 text-[15px] text-cielo/75">
+              {t.noValidoTexto}
             </p>
           </motion.div>
         )}
 
         {estado === 'terminada' && (
           <motion.div {...riseIn(0)}>
-            <h1 className="text-[26px] font-semibold leading-tight text-white">
-              Ya no se está compartiendo
+            <h1 className="text-[26px] font-semibold leading-tight text-cielo">
+              {t.terminada}
             </h1>
-            <p className="mt-2 text-[15px] text-white/75">
-              La persona detuvo el seguimiento o se acabó el tiempo. Su ubicación ya no está
-              disponible.
+            <p className="mt-2 text-[15px] text-cielo/75">
+              {t.terminadaTexto}
             </p>
           </motion.div>
         )}
 
         {estado === 'activa' && (
           <motion.div {...riseIn(0)}>
-            <h1 className="text-[26px] font-semibold leading-tight text-white">
-              Ubicación de {datos.nombre}
+            <h1 className="text-[26px] font-semibold leading-tight text-cielo">
+              {t.ubicacionDe(datos.nombre)}
             </h1>
-            <p className="mt-1.5 flex items-center gap-2 text-[15px] text-white/75" aria-live="polite">
+            <p className="mt-1.5 flex items-center gap-2 text-[15px] text-cielo/75" aria-live="polite">
               <span className="relative flex h-2.5 w-2.5" aria-hidden="true">
                 <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-auxilio-1 opacity-60" />
                 <span className="relative inline-flex h-2.5 w-2.5 rounded-full bg-auxilio-1" />
               </span>
               {tienePosicion
-                ? `En vivo · actualizada ${haceCuanto(datos.actualizada_at, ahora)}`
-                : 'Esperando la primera ubicación…'}
+                ? t.enVivo(haceCuanto(datos.actualizada_at, ahora, t))
+                : t.esperando}
             </p>
 
             {desactualizada && (
-              <p role="alert" className="mt-4 rounded-lg border border-faro-2/40 bg-faro-1/[0.15] px-4 py-3 text-sm text-white">
-                No llegan actualizaciones hace un rato. Puede que haya cerrado Calma, bloqueado el
-                teléfono o perdido señal. Este es el último lugar conocido.
+              <p role="alert" className="mt-4 rounded-lg border border-faro-2/40 bg-faro-1/[0.15] px-4 py-3 text-sm text-cielo">
+                {t.desactualizada}
               </p>
             )}
 
@@ -202,38 +207,39 @@ export default function UbicacionCompartida() {
                   <Mapa lat={datos.lat} lng={datos.lng} precision={datos.precision_m} />
                 </div>
                 {datos.precision_m != null && (
-                  <p className="mt-2 text-[13px] text-white/60">
-                    Precisión aproximada: {Math.round(datos.precision_m)} m
+                  <p className="mt-2 text-[13px] text-cielo/60">
+                    {t.precision(Math.round(datos.precision_m))}
                   </p>
                 )}
                 <a
                   href={construirLinkMapa(datos.lat, datos.lng)}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="mt-4 block w-full rounded-full bg-white py-3.5 text-center text-sm font-bold text-brand-navyDeep focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-white/40"
+                  className="mt-4 block w-full rounded-full bg-white py-3.5 text-center text-sm font-bold text-brand-navyDeep focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-cielo/40"
                 >
-                  Abrir en Google Maps
+                  {t.abrirMaps}
                 </a>
               </>
             )}
 
-            <p className="mt-4 text-[13px] text-white/60">
-              Se comparte hasta las{' '}
-              {new Date(datos.expira_at).toLocaleTimeString('es-CO', { hour: 'numeric', minute: '2-digit' })}.
+            <p className="mt-4 text-[13px] text-cielo/60">
+              {t.hasta(
+                new Date(datos.expira_at).toLocaleTimeString(LOCALES[idioma], { hour: 'numeric', minute: '2-digit' }),
+              )}
             </p>
           </motion.div>
         )}
 
         {sinConexion && (
-          <p role="status" className="mt-4 text-sm text-white/70">
-            Sin conexión. Seguimos intentando…
+          <p role="status" className="mt-4 text-sm text-cielo/70">
+            {t.sinConexion}
           </p>
         )}
 
         {estado !== 'cargando' && (
-          <div className="mt-8 rounded-xl border border-white/10 bg-white/[0.06] px-4 py-3.5 text-[13.5px] leading-snug text-white/75">
-            Si crees que esta persona está en peligro, llama a la línea de emergencias{' '}
-            <a href="tel:123" className="font-semibold text-white underline underline-offset-2">
+          <div className="mt-8 rounded-xl border border-cielo/10 bg-white/[0.06] px-4 py-3.5 text-[13.5px] leading-snug text-cielo/75">
+            {t.emergencia}{' '}
+            <a href="tel:123" className="font-semibold text-cielo underline underline-offset-2">
               123
             </a>
             .

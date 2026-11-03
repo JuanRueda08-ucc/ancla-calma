@@ -43,3 +43,13 @@ describe('agruparPorDia', () => {
     expect(agruparPorDia([], AHORA)).toEqual([])
   })
 })
+
+describe('historial en inglés', () => {
+  it('dice "Today" y "Yesterday" y la fecha en inglés', () => {
+    expect(etiquetaDia(new Date(2026, 10, 3, 8), AHORA, 'en')).toBe('Today')
+    expect(etiquetaDia(new Date(2026, 10, 2, 8), AHORA, 'en')).toBe('Yesterday')
+    const etiqueta = etiquetaDia(new Date(2026, 9, 27, 9), AHORA, 'en')
+    expect(etiqueta).toMatch(/^Tuesday/)
+    expect(etiqueta).toMatch(/October/)
+  })
+})

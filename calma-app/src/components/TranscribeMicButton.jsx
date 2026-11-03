@@ -1,4 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
+import { useTextos } from '../i18n'
+import TEXTOS from '../i18n/textos/bitacora'
 
 function getSpeechRecognitionCtor() {
   if (typeof window === 'undefined') return null
@@ -21,6 +23,7 @@ function MicIcon({ className }) {
 }
 
 export default function TranscribeMicButton({ value, onTranscript }) {
+  const t = useTextos(TEXTOS).voz
   const [status, setStatus] = useState('idle') // 'idle' | 'listening' | 'error'
   const [interimText, setInterimText] = useState('')
 
@@ -43,7 +46,8 @@ export default function TranscribeMicButton({ value, onTranscript }) {
     if (!SpeechRecognitionCtor) return
 
     const recognition = new SpeechRecognitionCtor()
-    recognition.lang = 'es-CO'
+    // el dictado escucha en el idioma de la app
+    recognition.lang = t.idiomaDictado
     recognition.continuous = true
     recognition.interimResults = true
 
@@ -122,10 +126,10 @@ export default function TranscribeMicButton({ value, onTranscript }) {
 
   const ariaLabel =
     status === 'listening'
-      ? 'Detener transcripción'
+      ? t.detenerTranscripcion
       : status === 'error'
-        ? 'Error de micrófono'
-        : 'Transcribir por voz'
+        ? t.errorMicrofono
+        : t.transcribir
 
   const stateClass =
     status === 'listening'
@@ -140,7 +144,7 @@ export default function TranscribeMicButton({ value, onTranscript }) {
         type="button"
         onClick={handleClick}
         aria-label={ariaLabel}
-        title={status === 'error' ? 'No se pudo acceder al micrófono' : ariaLabel}
+        title={status === 'error' ? t.sinAccesoMicrofono : ariaLabel}
         className={`flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full transition-colors ${stateClass}`}
       >
         <MicIcon className="h-4 w-4" />
