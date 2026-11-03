@@ -1,9 +1,10 @@
-import { useNavigate } from 'react-router-dom'
+import { useLocation, useNavigate } from 'react-router-dom'
 import { motion } from 'framer-motion'
 import '../styles/islaNoche.css'
 import ScreenHeader from '../components/ScreenHeader'
 import StarField from '../components/StarField'
 import { riseIn } from '../animations/transitions'
+import { conOrigen } from '../utils/useVolverA'
 
 function AnclaIcon({ className }) {
   return (
@@ -51,12 +52,13 @@ const SECUNDARIAS = [
 
 function OpcionFila({ to, title, description, Icon, delay }) {
   const navigate = useNavigate()
+  const location = useLocation()
 
   return (
     <motion.button
       {...riseIn(delay)}
       type="button"
-      onClick={() => navigate(to)}
+      onClick={() => navigate(to, conOrigen(location))}
       whileTap={{ scale: 0.98, transition: { duration: 0.15 } }}
       className="mb-3 flex w-full items-center gap-4 rounded-xl border border-white/10 bg-white/[0.06] p-4 text-left focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-aire-accent/60"
     >
@@ -74,6 +76,7 @@ function OpcionFila({ to, title, description, Icon, delay }) {
 
 export default function IslaAireMenu() {
   const navigate = useNavigate()
+  const location = useLocation()
 
   return (
     <div className="isla-noche-bg relative min-h-[100dvh] overflow-hidden">
@@ -93,7 +96,7 @@ export default function IslaAireMenu() {
         <motion.button
           {...riseIn(0.08)}
           type="button"
-          onClick={() => navigate('/islas/aire/respiracion')}
+          onClick={() => navigate('/islas/aire/respiracion', conOrigen(location))}
           whileTap={{ scale: 0.98, transition: { duration: 0.15 } }}
           className="mb-5 w-full overflow-hidden rounded-xl border border-aire-accent/30 bg-aire-accent/[0.12] px-6 pb-4 pt-6 text-left focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-aire-accent/60"
         >

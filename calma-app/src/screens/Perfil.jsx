@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { useLocation, useNavigate } from 'react-router-dom'
+import { useNavigate } from 'react-router-dom'
 import { AnimatePresence, motion } from 'framer-motion'
 import '../styles/islaNoche.css'
 import ScreenHeader from '../components/ScreenHeader'
@@ -7,6 +7,7 @@ import StarField from '../components/StarField'
 import { ChevronIcon, PersonaIcon, SalirIcon } from '../components/Iconos'
 import { riseIn } from '../animations/transitions'
 import { useAuth } from '../context/AuthContext'
+import { useVolverA } from '../utils/useVolverA'
 import { supabase } from '../lib/supabaseClient'
 import { AVATARES } from '../constants/avatares'
 
@@ -83,8 +84,7 @@ function SeccionPlegable({ id, titulo, abierta, onToggle, peligro = false, child
 export default function Perfil() {
   const { user, refreshProfile, signOut } = useAuth()
   const navigate = useNavigate()
-  const location = useLocation()
-  const volverA = location.state?.from ?? '/islas'
+  const volverA = useVolverA('/islas')
 
   const [perfilCargando, setPerfilCargando] = useState(true)
   const [avatarId, setAvatarId] = useState(null)

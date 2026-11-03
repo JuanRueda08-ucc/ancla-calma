@@ -171,6 +171,12 @@ otro agente. Al terminar una tarea significativa, actualizar este archivo.
   Siempre hay una elegida (Emocionales al entrar). "¿Te reconoces?" y el
   aviso de orientativas sin cambios. El acordeón compartido queda solo para
   el Panel.
+- Regla de navegación común: "Volver" regresa a la pantalla de origen al
+  llegar desde otra sección (`utils/useVolverA.js`: `conOrigen` en el
+  enlace, `useVolverA` en el destino). Aplicada a Señales → Respirar un
+  momento y → Buscar apoyo, Isla del Aire → Bitácora, Panel → Isla del
+  Auxilio y menú de cuenta → Perfil. Entrando directo, cada pantalla vuelve
+  a su lugar de siempre.
 - Reestructuración de documentación multi-agente (AGENTS.md/CLAUDE.md
   anidados + carpeta docs/) — commiteada y verificada: Claude Code carga
   los CLAUDE.md anidados de calma-app/ y supabase/ al trabajar en esas

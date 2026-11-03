@@ -1,11 +1,12 @@
 import { useState } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useLocation, useNavigate } from 'react-router-dom'
 import { motion } from 'framer-motion'
 import '../styles/islaNoche.css'
 import ScreenHeader from '../components/ScreenHeader'
 import StarField from '../components/StarField'
 import { CorazonIcon, CuerpoIcon, FlechaIcon, InfoIcon, MenteIcon, OjoIcon } from '../components/Iconos'
 import { riseIn } from '../animations/transitions'
+import { conOrigen } from '../utils/useVolverA'
 
 const CATEGORIAS = [
   {
@@ -77,6 +78,7 @@ function nombreCorto(titulo) {
 
 export default function IslaSenales() {
   const navigate = useNavigate()
+  const location = useLocation()
   // Mosaico: siempre hay una categoría seleccionada y sus señales se ven abajo.
   const [seleccionada, setSeleccionada] = useState(CATEGORIAS[0].id)
   const actual = CATEGORIAS.find((categoria) => categoria.id === seleccionada)
@@ -160,7 +162,7 @@ export default function IslaSenales() {
             <motion.button
               key={paso.to}
               type="button"
-              onClick={() => navigate(paso.to)}
+              onClick={() => navigate(paso.to, conOrigen(location))}
               whileTap={{ scale: 0.98, transition: { duration: 0.15 } }}
               className="mb-3 flex w-full items-center gap-4 rounded-xl border border-senales-1/35 bg-senales-1/[0.12] p-4 text-left focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-senales-1/60"
             >

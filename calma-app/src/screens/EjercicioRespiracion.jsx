@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { AnimatePresence, motion } from 'framer-motion'
 import { FlechaAtrasIcon, SilencioIcon, SonidoIcon } from '../components/Iconos'
+import { useVolverA } from '../utils/useVolverA'
 
 const FASES = ['Inhala…', 'Sostén…', 'Exhala…', 'Sostén…']
 const ESCALA_POR_FASE = [1.25, 1.25, 0.85, 0.85]
@@ -11,6 +12,7 @@ const DURACION_FASE_MS = 4000
 
 export default function EjercicioRespiracion() {
   const navigate = useNavigate()
+  const volverA = useVolverA('/islas/aire')
   const [faseIndex, setFaseIndex] = useState(0)
   const [sonidoActivo, setSonidoActivo] = useState(true)
 
@@ -27,7 +29,7 @@ export default function EjercicioRespiracion() {
         <div className="flex items-center justify-between px-1 pt-1">
           <button
             type="button"
-            onClick={() => navigate('/islas/aire')}
+            onClick={() => navigate(volverA)}
             aria-label="Volver"
             className="flex h-[42px] w-[42px] items-center justify-center rounded-full bg-white/[0.12] text-base text-white"
           >
