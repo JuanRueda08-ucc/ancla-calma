@@ -142,6 +142,49 @@ describe('Isla del Auxilio con sesión: marcación rápida', () => {
   })
 })
 
+describe('Panel de Acompañamiento con pestañas', () => {
+  const contenidoVisible = () => screen.getByRole('tabpanel')
+
+  it('abre en "Ahora", con tu persona y qué decir a la vista', async () => {
+    await abrirApp('/acompanamiento')
+    await screen.findByRole('heading', { name: 'Panel de Acompañamiento' })
+
+    expect(screen.getByRole('tab', { name: 'Ahora' })).toHaveAttribute('aria-selected', 'true')
+    expect(within(contenidoVisible()).getByRole('heading', { name: 'Tu persona' })).toBeInTheDocument()
+    expect(within(contenidoVisible()).getByRole('button', { name: 'Copiar: Estoy aquí contigo.' })).toBeInTheDocument()
+    expect(screen.queryByRole('heading', { name: 'Entender las señales' })).not.toBeInTheDocument()
+  })
+
+  it('cada pestaña muestra solo su contenido', async () => {
+    const usuario = userEvent.setup()
+    await abrirApp('/acompanamiento')
+    await screen.findByRole('heading', { name: 'Panel de Acompañamiento' })
+
+    await usuario.click(screen.getByRole('tab', { name: 'Señales' }))
+    expect(within(contenidoVisible()).getByRole('heading', { name: 'Entender las señales' })).toBeInTheDocument()
+    expect(screen.queryByRole('heading', { name: 'Tu persona' })).not.toBeInTheDocument()
+
+    await usuario.click(screen.getByRole('tab', { name: 'Guía' }))
+    expect(within(contenidoVisible()).getByRole('button', { name: /Principios clave/ })).toBeInTheDocument()
+    expect(screen.getAllByRole('tabpanel')).toHaveLength(1)
+  })
+
+  it('las pestañas se recorren con las flechas del teclado', async () => {
+    const usuario = userEvent.setup()
+    await abrirApp('/acompanamiento')
+    await screen.findByRole('heading', { name: 'Panel de Acompañamiento' })
+
+    screen.getByRole('tab', { name: 'Ahora' }).focus()
+    await usuario.keyboard('{ArrowRight}')
+    expect(screen.getByRole('tab', { name: 'Señales' })).toHaveFocus()
+    expect(screen.getByRole('tab', { name: 'Señales' })).toHaveAttribute('aria-selected', 'true')
+    await usuario.keyboard('{End}')
+    expect(screen.getByRole('tab', { name: 'Guía' })).toHaveAttribute('aria-selected', 'true')
+    await usuario.keyboard('{ArrowRight}')
+    expect(screen.getByRole('tab', { name: 'Ahora' })).toHaveAttribute('aria-selected', 'true')
+  })
+})
+
 describe('acordeones: una sola sección abierta a la vez', () => {
   const abiertas = () =>
     screen
@@ -161,15 +204,16 @@ describe('acordeones: una sola sección abierta a la vez', () => {
     expect(screen.queryAllByRole('button', { expanded: true }).filter((b) => b.getAttribute('aria-controls')?.startsWith('acordeon-'))).toHaveLength(0)
   })
 
-  it('en el Panel de Acompañamiento también, incluidas las secciones de la guía', async () => {
+  it('en el Panel de Acompañamiento también, en la pestaña Guía', async () => {
     const usuario = userEvent.setup()
     await abrirApp('/acompanamiento')
     await screen.findByRole('heading', { name: 'Panel de Acompañamiento' })
 
+    await usuario.click(screen.getByRole('tab', { name: 'Guía' }))
     await usuario.click(screen.getByRole('button', { name: /Qué evitar/ }))
     expect(abiertas()).toEqual(['Qué evitar'])
-    await usuario.click(screen.getByRole('button', { name: /Mensajes de apoyo rápido/ }))
-    expect(abiertas()).toEqual(['Mensajes de apoyo rápido'])
+    await usuario.click(screen.getByRole('button', { name: /Cómo acompañar/ }))
+    expect(abiertas()).toEqual(['Cómo acompañar'])
   })
 
   it('el Panel sin sesión pide iniciar sesión en la tarjeta de tu persona', async () => {
