@@ -20,6 +20,12 @@ Ver también: ../AGENTS.md (raíz), ../docs/ARCHITECTURE.md, ../docs/DECISIONS.m
   implementar chequeos de sesión manuales dentro del componente de pantalla.
 - Ejercicios guiados (Puerto Seguro): usar `GuidedExerciseShell` — no
   reimplementar la barra de progreso/temporizador/pausa a mano.
+- "Volver" regresa a la pantalla de ORIGEN cuando se llega desde otra
+  sección (ej. Señales → Respiración vuelve a Señales, no a la Isla del
+  Aire). El enlace pasa `conOrigen(location)` y la pantalla destino usa
+  `useVolverA('/su-padre-de-siempre')` (`src/utils/useVolverA.js`) para su
+  botón "Volver". No fijar el destino de "Volver" a mano en pantallas a las
+  que se llega desde varios lugares.
 - Todas las funciones de `contactosStorage.js`, `bitacoraStorage.js`,
   `audioStorage.js` son ASYNC (hablan con Supabase) — cualquier componente
   que las use necesita manejar estados de carga/error, no asumir que

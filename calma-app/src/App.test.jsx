@@ -142,6 +142,45 @@ describe('Isla del Auxilio con sesión: marcación rápida', () => {
   })
 })
 
+describe('"Volver" regresa a la pantalla de origen entre secciones', () => {
+  it('Señales → Respirar un momento → Volver regresa a Señales', async () => {
+    const usuario = userEvent.setup()
+    await abrirApp('/islas/senales')
+    await usuario.click(await screen.findByRole('button', { name: /Respirar un momento/ }))
+    await screen.findByRole('heading', { name: 'Respiración de caja' })
+
+    await usuario.click(screen.getByRole('button', { name: 'Volver' }))
+    await waitFor(() => expect(window.location.pathname).toBe('/islas/senales'))
+  })
+
+  it('Señales → Buscar apoyo → Volver regresa a Señales', async () => {
+    const usuario = userEvent.setup()
+    await abrirApp('/islas/senales')
+    await usuario.click(await screen.findByRole('button', { name: /Buscar apoyo/ }))
+    await screen.findByRole('heading', { level: 1, name: 'Isla del Auxilio' })
+    expect(screen.getByRole('link', { name: /Volver/ })).toHaveAttribute('href', '/islas/senales')
+  })
+
+  it('Isla del Aire → Escribir en la bitácora → Volver regresa a la Isla del Aire', async () => {
+    const usuario = userEvent.setup()
+    await abrirApp('/islas/aire', {
+      sesion: SESION,
+      respuestas: { profiles: { data: { avatar_id: null, display_name: null }, error: null } },
+    })
+    await usuario.click(await screen.findByRole('button', { name: /Escribir en la bitácora/ }))
+    await screen.findByRole('heading', { name: '¿Cómo te sientes?' })
+    expect(screen.getByRole('link', { name: /Volver/ })).toHaveAttribute('href', '/islas/aire')
+  })
+
+  it('entrando directo, cada pantalla vuelve a su lugar de siempre', async () => {
+    const usuario = userEvent.setup()
+    await abrirApp('/islas/aire/respiracion')
+    await screen.findByRole('heading', { name: 'Respiración de caja' })
+    await usuario.click(screen.getByRole('button', { name: 'Volver' }))
+    await waitFor(() => expect(window.location.pathname).toBe('/islas/aire'))
+  })
+})
+
 describe('Panel de Acompañamiento con pestañas', () => {
   const contenidoVisible = () => screen.getByRole('tabpanel')
 
@@ -234,16 +273,26 @@ describe('acordeones: una sola sección abierta a la vez', () => {
       .filter((boton) => boton.getAttribute('aria-controls')?.startsWith('acordeon-'))
       .map((boton) => within(boton).getByText(/./, { selector: 'span.flex-1' }).textContent)
 
-  it('en la Isla de las Señales, abrir una categoría cierra la anterior', async () => {
+  it('en la Isla de las Señales (mosaico), elegir una ficha muestra solo sus señales', async () => {
     const usuario = userEvent.setup()
     await abrirApp('/islas/senales')
     await screen.findByRole('heading', { name: 'Isla de las Señales' })
 
-    expect(abiertas()).toEqual(['Señales emocionales'])
-    await usuario.click(screen.getByRole('button', { name: /Señales físicas/ }))
-    expect(abiertas()).toEqual(['Señales físicas'])
-    await usuario.click(screen.getByRole('button', { name: /Señales físicas/ }))
-    expect(screen.queryAllByRole('button', { expanded: true }).filter((b) => b.getAttribute('aria-controls')?.startsWith('acordeon-'))).toHaveLength(0)
+    const fichas = screen.getAllByRole('button', { pressed: true }).concat(screen.getAllByRole('button', { pressed: false }))
+    expect(fichas.filter((b) => b.getAttribute('aria-controls') === 'senales-detalle')).toHaveLength(4)
+    expect(screen.getByRole('button', { name: /Emocionales/ })).toHaveAttribute('aria-pressed', 'true')
+    expect(screen.getByText('Sentir angustia')).toBeInTheDocument()
+
+    await usuario.click(screen.getByRole('button', { name: /Físicas/ }))
+    expect(screen.getByRole('button', { name: /Físicas/ })).toHaveAttribute('aria-pressed', 'true')
+    expect(screen.getByRole('button', { name: /Emocionales/ })).toHaveAttribute('aria-pressed', 'false')
+    expect(screen.getByRole('heading', { name: 'Señales físicas' })).toBeInTheDocument()
+    expect(screen.getByText('Tensión corporal')).toBeInTheDocument()
+    expect(screen.queryByText('Sentir angustia')).not.toBeInTheDocument()
+
+    // tocar la ficha ya elegida la deja elegida (siempre hay una a la vista)
+    await usuario.click(screen.getByRole('button', { name: /Físicas/ }))
+    expect(screen.getByRole('button', { name: /Físicas/ })).toHaveAttribute('aria-pressed', 'true')
   })
 
   it('en el Panel de Acompañamiento también, en la pestaña Guía', async () => {

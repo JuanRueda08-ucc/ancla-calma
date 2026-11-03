@@ -7,6 +7,7 @@ import UbicacionEnVivoPanel from '../components/UbicacionEnVivoPanel'
 import '../styles/islaNoche.css'
 import { riseIn } from '../animations/transitions'
 import { useAuth } from '../context/AuthContext'
+import { useVolverA } from '../utils/useVolverA'
 import { getContactos, guardarContacto, eliminarContacto, normalizarTelefono } from '../utils/contactosStorage'
 import { obtenerUbicacion, construirLinkMapa, construirLinkWhatsApp } from '../utils/compartirUbicacion'
 
@@ -74,10 +75,9 @@ export default function IslaAuxilio() {
   const { user, loading: authLoading } = useAuth()
   const navigate = useNavigate()
   const location = useLocation()
-  // "Volver" regresa a donde vino la persona si llegó desde otra pantalla
-  // (ej. "Editar contactos" del Panel de Acompañamiento); si no, a las islas.
-  const origen = location.state?.from
-  const volverA = typeof origen === 'string' && origen.startsWith('/') && origen !== location.pathname ? origen : '/islas'
+  // "Volver" regresa al origen (ej. "Editar contactos" del Panel, "Buscar
+  // apoyo" de Señales); si no, a las islas. Ver utils/useVolverA.js.
+  const volverA = useVolverA('/islas')
   const [toast, setToast] = useState(null)
   const toastTimeout = useRef(null)
 

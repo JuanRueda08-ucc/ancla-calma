@@ -9,6 +9,7 @@ import TranscribeMicButton from '../components/TranscribeMicButton'
 import { riseIn } from '../animations/transitions'
 import { guardarEntrada } from '../utils/bitacoraStorage'
 import { guardarAudio } from '../utils/audioStorage'
+import { useVolverA } from '../utils/useVolverA'
 
 const TAGS = [
   { emoji: '😌', label: 'Tranquilidad' },
@@ -75,6 +76,7 @@ export default function Bitacora() {
   // lo escrito ni la grabación de VoiceNoteRecorder al ir y volver.
   const [paso, setPaso] = useState(PASO_EMOCIONES)
   const titulosRef = useRef([])
+  const volverA = useVolverA('/islas')
 
   useEffect(() => {
     return () => {
@@ -173,7 +175,7 @@ export default function Bitacora() {
       <StarField />
 
       <div className="relative z-[2] mx-auto max-w-[620px] px-5 pb-20 pt-10">
-        <ScreenHeader backTo="/islas" accountButtonClassName="bg-white/20 text-white" />
+        <ScreenHeader backTo={volverA} accountButtonClassName="bg-white/20 text-white" />
 
         <motion.div {...riseIn(0)} className="mb-8">
           <h1 className="text-[30px] font-semibold leading-tight text-white">Tu bitácora emocional</h1>

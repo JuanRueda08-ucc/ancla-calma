@@ -165,6 +165,18 @@ otro agente. Al terminar una tarea significativa, actualizar este archivo.
   línea vertical y un punto por entrada; cada tarjeta muestra solo la hora.
   La agrupación vive en `utils/historial.js` (con pruebas propias). Una
   entrada abierta a la vez, eliminar y audio sin cambios.
+- Isla de las Señales en mosaico: las 4 categorías como fichas en una
+  cuadrícula 2x2 (ícono, nombre corto y cuántas señales); la ficha elegida
+  se resalta (aria-pressed) y sus señales aparecen debajo (aria-live).
+  Siempre hay una elegida (Emocionales al entrar). "¿Te reconoces?" y el
+  aviso de orientativas sin cambios. El acordeón compartido queda solo para
+  el Panel.
+- Regla de navegación común: "Volver" regresa a la pantalla de origen al
+  llegar desde otra sección (`utils/useVolverA.js`: `conOrigen` en el
+  enlace, `useVolverA` en el destino). Aplicada a Señales → Respirar un
+  momento y → Buscar apoyo, Isla del Aire → Bitácora, Panel → Isla del
+  Auxilio y menú de cuenta → Perfil. Entrando directo, cada pantalla vuelve
+  a su lugar de siempre.
 - Reestructuración de documentación multi-agente (AGENTS.md/CLAUDE.md
   anidados + carpeta docs/) — commiteada y verificada: Claude Code carga
   los CLAUDE.md anidados de calma-app/ y supabase/ al trabajar en esas
@@ -269,8 +281,8 @@ otro agente. Al terminar una tarea significativa, actualizar este archivo.
 - Rediseño estructural: layouts distintos por tipo de pantalla en vez de
   la misma plantilla (header + tarjetas apiladas + botón). Hecho: Isla del
   Auxilio como marcación rápida, Bitácora una pregunta a la vez, Panel
-  con pestañas e Historial como línea de tiempo. Propuesto y pendiente de
-  decidir: Señales en mosaico.
+  con pestañas, Historial como línea de tiempo y Señales en mosaico.
+  Completo: las 5 pantallas propuestas ya tienen su layout propio.
 - Ubicación en vivo en segundo plano (seguir enviando con el teléfono
   bloqueado o con otra app abierta): no es posible en una app web; requeriría
   una app nativa. Ver DECISIONS.md → Ubicación.
