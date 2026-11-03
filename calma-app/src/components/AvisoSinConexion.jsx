@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { useTextos } from '../i18n'
 import TEXTOS from '../i18n/textos/comun'
 
@@ -8,6 +8,25 @@ import TEXTOS from '../i18n/textos/comun'
 export default function AvisoSinConexion() {
   const [enLinea, setEnLinea] = useState(() => navigator.onLine)
   const t = useTextos(TEXTOS)
+  const avisoRef = useRef(null)
+
+  // Los botones de las esquinas (EsquinasPantalla) están fuera del flujo:
+  // bajan lo que mida este aviso para no quedar encima de él.
+  useEffect(() => {
+    const raiz = document.documentElement
+    const aviso = avisoRef.current
+    if (!aviso) {
+      raiz.style.removeProperty('--alto-aviso')
+      return undefined
+    }
+    const medir = () => raiz.style.setProperty('--alto-aviso', `${aviso.offsetHeight}px`)
+    medir()
+    window.addEventListener('resize', medir)
+    return () => {
+      window.removeEventListener('resize', medir)
+      raiz.style.removeProperty('--alto-aviso')
+    }
+  }, [enLinea])
 
   useEffect(() => {
     const conectado = () => setEnLinea(true)
@@ -25,7 +44,7 @@ export default function AvisoSinConexion() {
   // Franja dentro del flujo de la página (no flotante): empuja la pantalla
   // hacia abajo en vez de tapar "Volver" y el botón de cuenta.
   return (
-    <div role="status" className="bg-white pt-[env(safe-area-inset-top)]">
+    <div ref={avisoRef} role="status" className="bg-white pt-[env(safe-area-inset-top)]">
       <p className="mx-auto max-w-[620px] px-5 py-2 text-center text-[13px] font-medium leading-snug text-ink">
         {t.sinConexion}
       </p>

@@ -5,6 +5,7 @@ import { riseIn } from '../animations/transitions'
 import StarField from '../components/StarField'
 import AccountMenu from '../components/AccountMenu'
 import TemaToggle from '../components/TemaToggle'
+import EsquinasPantalla from '../components/EsquinasPantalla'
 import { usePreferencias } from '../context/PreferenciasContext'
 import { useTextos } from '../i18n'
 import TEXTOS from '../i18n/textos/entrada'
@@ -141,17 +142,22 @@ export default function Entrada() {
         </div>
       </motion.div>
 
-      <motion.div {...riseIn(0)} className="absolute right-6 top-[calc(1.5rem+env(safe-area-inset-top))] z-[4]">
-        <div className="flex items-center gap-2">
-          <TemaToggle />
-          <AccountMenu buttonClassName="bg-white/20 text-cielo" />
-        </div>
-      </motion.div>
+      {/* mismas esquinas que el resto de pantallas */}
+      <EsquinasPantalla
+        derecha={
+          <>
+            <AccountMenu buttonClassName="bg-white/20 text-cielo" />
+            <TemaToggle />
+          </>
+        }
+      />
 
       <div className="relative z-[3] mx-auto flex min-h-[100dvh] w-full max-w-5xl flex-col px-7 pb-[max(2.5rem,env(safe-area-inset-bottom))] pt-[18vh] sm:px-12">
         <motion.h1
           {...riseIn(0)}
-          className="entrada-wordmark font-display uppercase leading-[0.9] tracking-[2px] text-cielo"
+          // -ml: la "C" de Comba Test trae ~0.045em de aire a la izquierda; sin
+          // esto el wordmark no queda alineado con la frase de abajo.
+          className="entrada-wordmark -ml-[0.045em] font-display uppercase leading-[0.9] tracking-[2px] text-cielo"
         >
           Calma
         </motion.h1>

@@ -158,11 +158,21 @@ algo que parecía un bug era en realidad una decisión deliberada. Antes de
   avisa arriba de la pantalla.
 - El service worker solo se registra en producción (`import.meta.env.PROD`)
   para no interferir con la recarga en caliente de desarrollo.
+- **Volver, tema y cuenta van en las esquinas de la página**
+  (`EsquinasPantalla.jsx`, montado en `<body>`), no dentro del contenedor
+  de cada pantalla: cada pantalla tiene su propio ancho (420, 540, 620 px) y
+  en desktop los botones cambiaban de lugar al navegar. Es `absolute` (se va
+  con el scroll), no `fixed`, para no flotar encima del contenido. El tema
+  va siempre en la esquina y la cuenta a su izquierda, así el tema no se
+  mueve en pantallas sin cuenta. `html` reserva el espacio de la barra de
+  desplazamiento (`scrollbar-gutter: stable`) para que nada salte al pasar
+  de una pantalla larga a una corta.
 - **Barra de estado en iPhone (app instalada): `black-translucent` +
   `viewport-fit=cover`.** El fondo de cada pantalla llega hasta arriba,
   detrás de la hora y la batería (los fondos no empiezan todos con el mismo
   color, así que no sirve pintar esa franja con un color fijo). Lo que va
-  arriba se baja con `env(safe-area-inset-top)`: `ScreenHeader`, el botón de
+  arriba se baja con `env(safe-area-inset-top)`: `ScreenHeader` y
+  `EsquinasPantalla`, el botón de
   cuenta de Entrada, la respiración, `GuidedExerciseShell`,
   `UbicacionCompartida` y `AvisoSinConexion`. Una pantalla nueva que no use
   `ScreenHeader` necesita ese mismo margen.
