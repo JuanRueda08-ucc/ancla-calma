@@ -2,9 +2,10 @@ import { AnimatePresence, motion } from 'framer-motion'
 import { riseIn } from '../animations/transitions'
 import { ChevronIcon } from './Iconos'
 
-// Acordeón translúcido para las pantallas nocturnas (Isla de las Señales y
-// Panel de Acompañamiento). El contenido va como children; `acento` define
-// el color del ícono y del anillo de foco con clases fijas de Tailwind.
+// Acordeón translúcido para las pantallas nocturnas (hoy, el Panel de
+// Acompañamiento; Señales pasó a un mosaico). El contenido va como
+// children; `acento` define el color del ícono y del anillo de foco con
+// clases fijas de Tailwind.
 const ACENTOS = {
   senales: {
     icono: 'bg-senales-1/20 text-senales-bg',

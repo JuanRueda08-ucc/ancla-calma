@@ -2,7 +2,6 @@ import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { motion } from 'framer-motion'
 import '../styles/islaNoche.css'
-import Accordion from '../components/Accordion'
 import ScreenHeader from '../components/ScreenHeader'
 import StarField from '../components/StarField'
 import { CorazonIcon, CuerpoIcon, FlechaIcon, InfoIcon, MenteIcon, OjoIcon } from '../components/Iconos'
@@ -70,16 +69,19 @@ const SIGUIENTES_PASOS = [
   },
 ]
 
+// "Señales emocionales" → "Emocionales" para la ficha del mosaico
+function nombreCorto(titulo) {
+  const nombre = titulo.replace(/^Señales\s+/, '')
+  return nombre.charAt(0).toUpperCase() + nombre.slice(1)
+}
+
 export default function IslaSenales() {
   const navigate = useNavigate()
-  const [abierto, setAbierto] = useState('emocionales')
+  // Mosaico: siempre hay una categoría seleccionada y sus señales se ven abajo.
+  const [seleccionada, setSeleccionada] = useState(CATEGORIAS[0].id)
+  const actual = CATEGORIAS.find((categoria) => categoria.id === seleccionada)
 
-  // Solo una sección abierta a la vez: abrir otra cierra la anterior.
-  const toggleAcordeon = (id) => {
-    setAbierto((actual) => (actual === id ? null : id))
-  }
-
-  const delayPasos = 0.14 + CATEGORIAS.length * 0.05
+  const delayPasos = 0.24
 
   return (
     <div className="isla-noche-bg relative min-h-[100dvh] overflow-hidden">
@@ -100,29 +102,56 @@ export default function IslaSenales() {
           señales de que podrías necesitar apoyo o acompañamiento.
         </motion.p>
 
-        {CATEGORIAS.map((categoria, index) => (
-          <Accordion
-            key={categoria.id}
-            id={`senales-${categoria.id}`}
-            Icon={categoria.Icon}
-            titulo={categoria.titulo}
-            detalle={`${categoria.senales.length} señales`}
-            abierto={abierto === categoria.id}
-            onToggle={() => toggleAcordeon(categoria.id)}
-            delay={0.14 + index * 0.05}
-          >
-            <ul className="flex flex-wrap gap-2">
-              {categoria.senales.map((senal) => (
-                <li
-                  key={senal}
-                  className="rounded-full border border-senales-1/30 bg-senales-1/[0.14] px-3.5 py-1.5 text-[13.5px] text-senales-bg"
-                >
-                  {senal}
-                </li>
-              ))}
-            </ul>
-          </Accordion>
-        ))}
+        {/* Mosaico 2x2: una ficha por categoría */}
+        <motion.div {...riseIn(0.14)} className="mb-4 grid grid-cols-2 gap-3">
+          {CATEGORIAS.map((categoria) => {
+            const activa = seleccionada === categoria.id
+            const { Icon } = categoria
+            return (
+              <button
+                key={categoria.id}
+                type="button"
+                onClick={() => setSeleccionada(categoria.id)}
+                aria-pressed={activa}
+                aria-controls="senales-detalle"
+                className={`flex min-h-[112px] flex-col items-start justify-between gap-3 rounded-xl border p-4 text-left transition-colors focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-senales-1/60 ${
+                  activa ? 'border-senales-1/70 bg-senales-1/[0.24]' : 'border-white/10 bg-white/[0.06]'
+                }`}
+              >
+                <span className="flex h-10 w-10 items-center justify-center rounded-full bg-senales-1/20 text-senales-bg">
+                  <Icon className="h-5 w-5" />
+                </span>
+                <span>
+                  <span className="block text-[15px] font-semibold text-white">{nombreCorto(categoria.titulo)}</span>
+                  <span className="block text-xs text-white/60">{categoria.senales.length} señales</span>
+                </span>
+              </button>
+            )
+          })}
+        </motion.div>
+
+        {/* Señales de la ficha elegida; aria-live anuncia el cambio */}
+        <motion.section
+          {...riseIn(0.2)}
+          id="senales-detalle"
+          aria-live="polite"
+          aria-labelledby="senales-detalle-titulo"
+          className="rounded-xl border border-senales-1/30 bg-senales-1/[0.08] p-4"
+        >
+          <h2 id="senales-detalle-titulo" className="mb-3 text-[15px] font-semibold text-white">
+            {actual.titulo}
+          </h2>
+          <ul className="flex flex-wrap gap-2">
+            {actual.senales.map((senal) => (
+              <li
+                key={senal}
+                className="rounded-full border border-senales-1/30 bg-senales-1/[0.14] px-3.5 py-1.5 text-[13.5px] text-senales-bg"
+              >
+                {senal}
+              </li>
+            ))}
+          </ul>
+        </motion.section>
 
         {/* la información lleva a una acción: respirar o pedir apoyo */}
         <motion.section {...riseIn(delayPasos)} className="mt-8">

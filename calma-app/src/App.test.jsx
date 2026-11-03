@@ -234,16 +234,26 @@ describe('acordeones: una sola sección abierta a la vez', () => {
       .filter((boton) => boton.getAttribute('aria-controls')?.startsWith('acordeon-'))
       .map((boton) => within(boton).getByText(/./, { selector: 'span.flex-1' }).textContent)
 
-  it('en la Isla de las Señales, abrir una categoría cierra la anterior', async () => {
+  it('en la Isla de las Señales (mosaico), elegir una ficha muestra solo sus señales', async () => {
     const usuario = userEvent.setup()
     await abrirApp('/islas/senales')
     await screen.findByRole('heading', { name: 'Isla de las Señales' })
 
-    expect(abiertas()).toEqual(['Señales emocionales'])
-    await usuario.click(screen.getByRole('button', { name: /Señales físicas/ }))
-    expect(abiertas()).toEqual(['Señales físicas'])
-    await usuario.click(screen.getByRole('button', { name: /Señales físicas/ }))
-    expect(screen.queryAllByRole('button', { expanded: true }).filter((b) => b.getAttribute('aria-controls')?.startsWith('acordeon-'))).toHaveLength(0)
+    const fichas = screen.getAllByRole('button', { pressed: true }).concat(screen.getAllByRole('button', { pressed: false }))
+    expect(fichas.filter((b) => b.getAttribute('aria-controls') === 'senales-detalle')).toHaveLength(4)
+    expect(screen.getByRole('button', { name: /Emocionales/ })).toHaveAttribute('aria-pressed', 'true')
+    expect(screen.getByText('Sentir angustia')).toBeInTheDocument()
+
+    await usuario.click(screen.getByRole('button', { name: /Físicas/ }))
+    expect(screen.getByRole('button', { name: /Físicas/ })).toHaveAttribute('aria-pressed', 'true')
+    expect(screen.getByRole('button', { name: /Emocionales/ })).toHaveAttribute('aria-pressed', 'false')
+    expect(screen.getByRole('heading', { name: 'Señales físicas' })).toBeInTheDocument()
+    expect(screen.getByText('Tensión corporal')).toBeInTheDocument()
+    expect(screen.queryByText('Sentir angustia')).not.toBeInTheDocument()
+
+    // tocar la ficha ya elegida la deja elegida (siempre hay una a la vista)
+    await usuario.click(screen.getByRole('button', { name: /Físicas/ }))
+    expect(screen.getByRole('button', { name: /Físicas/ })).toHaveAttribute('aria-pressed', 'true')
   })
 
   it('en el Panel de Acompañamiento también, en la pestaña Guía', async () => {
