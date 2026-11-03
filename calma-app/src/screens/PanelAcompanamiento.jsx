@@ -120,6 +120,11 @@ const botonClaroClass =
 const botonSecundarioClass =
   'rounded-full bg-white/10 px-5 py-2.5 text-sm font-semibold text-white focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-white/30'
 
+function inicialesDe(nombre) {
+  const partes = nombre.trim().split(/\s+/).filter(Boolean)
+  return partes.slice(0, 2).map((parte) => parte[0]?.toUpperCase() ?? '').join('') || '?'
+}
+
 // Pestañas: "Ahora" junta lo que se necesita en el momento (contactar y qué
 // decir); "Señales" y "Guía" son para leer con calma.
 const PESTANAS = [
@@ -158,9 +163,8 @@ export default function PanelAcompanamiento() {
   const [cargaEstado, setCargaEstado] = useState('cargando')
   const [contactos, setContactos] = useState([])
 
-  // null | 'seleccion' | 'sin-codigo-pais'
+  // null | 'sin-codigo-pais' (WhatsApp necesita el código de país)
   const [accionEstado, setAccionEstado] = useState(null)
-  const [accionTipo, setAccionTipo] = useState(null) // 'llamar' | 'mensaje'
   const [contactoProblema, setContactoProblema] = useState(null)
 
   // Esta pantalla es de acceso libre (no está detrás de RequireAuth, a
@@ -212,8 +216,10 @@ export default function PanelAcompanamiento() {
     showToast('Copiado', 1500)
   }
 
+  // `from`: la Isla del Auxilio usa este origen en su "Volver", así quien
+  // acompaña regresa al Panel y no a las islas de "Necesito ayuda".
   const irAContactos = () => {
-    navigate('/islas/auxilio')
+    navigate('/islas/auxilio', { state: { from: location.pathname } })
   }
 
   const irAIniciarSesion = () => {
@@ -222,37 +228,22 @@ export default function PanelAcompanamiento() {
 
   const cerrarPanelAccion = () => {
     setAccionEstado(null)
-    setAccionTipo(null)
     setContactoProblema(null)
   }
 
   const irAAgregarContacto = () => {
     cerrarPanelAccion()
-    navigate('/islas/auxilio')
+    irAContactos()
   }
 
-  const ejecutarAccion = (tipo, contacto) => {
-    if (tipo === 'mensaje' && !contacto.telefono.trim().startsWith('+')) {
+  const escribirPorWhatsApp = (contacto) => {
+    if (!contacto.telefono.trim().startsWith('+')) {
       setContactoProblema(contacto)
       setAccionEstado('sin-codigo-pais')
       return
     }
-
-    if (tipo === 'llamar') {
-      window.location.href = `tel:${normalizarTelefono(contacto.telefono)}`
-    } else {
-      window.location.href = construirLinkWhatsApp(contacto.telefono, '')
-    }
     cerrarPanelAccion()
-  }
-
-  const iniciarAccion = (tipo) => {
-    setAccionTipo(tipo)
-    if (contactos.length === 1) {
-      ejecutarAccion(tipo, contactos[0])
-      return
-    }
-    setAccionEstado('seleccion')
+    window.location.href = construirLinkWhatsApp(contacto.telefono, '')
   }
 
   let delay = 0
@@ -374,48 +365,38 @@ export default function PanelAcompanamiento() {
             </div>
           )}
 
+          {/* Cada contacto a la vista: se ve a quién se llama o se escribe */}
           {cargaEstado === 'listo' && (
-            <div className="flex gap-3">
-              <button
-                type="button"
-                onClick={() => iniciarAccion('llamar')}
-                className="flex flex-1 items-center justify-center gap-2 rounded-full bg-acomp-2 py-3.5 text-sm font-bold text-brand-navyDeep focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-acomp-2/50"
-              >
-                <TelefonoIcon className="h-[18px] w-[18px]" />
-                Llamar
-              </button>
-              <button
-                type="button"
-                onClick={() => iniciarAccion('mensaje')}
-                className="flex flex-1 items-center justify-center gap-2 rounded-full bg-acomp-1 py-3.5 text-sm font-bold text-brand-navyDeep focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-acomp-1/50"
-              >
-                <MensajeIcon className="h-[18px] w-[18px]" />
-                Mensaje
-              </button>
-            </div>
-          )}
-
-          {accionEstado === 'seleccion' && (
-            <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="mt-4">
-              <p className="mb-3 text-sm font-semibold text-white">
-                {accionTipo === 'llamar' ? '¿A quién quieres llamar?' : '¿A quién quieres escribirle?'}
-              </p>
-              <div className="flex flex-col gap-2">
-                {contactos.map((contacto) => (
-                  <button
-                    key={contacto.id}
-                    type="button"
-                    onClick={() => ejecutarAccion(accionTipo, contacto)}
-                    className="rounded-lg bg-white/10 px-4 py-2.5 text-left text-[14.5px] font-semibold text-white focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-white/30"
+            <ul className="flex flex-col gap-2.5">
+              {contactos.map((contacto) => (
+                <li key={contacto.id} className="flex items-center gap-3 rounded-xl bg-white/[0.08] py-2.5 pl-3 pr-2.5">
+                  <span
+                    className="flex h-11 w-11 flex-shrink-0 items-center justify-center rounded-full bg-acomp-1/25 text-[15px] font-bold text-white"
+                    aria-hidden="true"
                   >
+                    {inicialesDe(contacto.nombre)}
+                  </span>
+                  <span className="min-w-0 flex-1 truncate text-[15.5px] font-semibold text-white">
                     {contacto.nombre}
+                  </span>
+                  <a
+                    href={`tel:${normalizarTelefono(contacto.telefono)}`}
+                    aria-label={`Llamar a ${contacto.nombre}`}
+                    className="flex h-11 w-11 flex-shrink-0 items-center justify-center rounded-full bg-acomp-2 text-brand-navyDeep focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-acomp-2/50"
+                  >
+                    <TelefonoIcon className="h-5 w-5" />
+                  </a>
+                  <button
+                    type="button"
+                    onClick={() => escribirPorWhatsApp(contacto)}
+                    aria-label={`Escribir a ${contacto.nombre} por WhatsApp`}
+                    className="flex h-11 w-11 flex-shrink-0 items-center justify-center rounded-full bg-acomp-1 text-brand-navyDeep focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-acomp-1/50"
+                  >
+                    <MensajeIcon className="h-5 w-5" />
                   </button>
-                ))}
-              </div>
-              <button type="button" onClick={cerrarPanelAccion} className={`mt-3 w-full ${botonSecundarioClass}`}>
-                Cancelar
-              </button>
-            </motion.div>
+                </li>
+              ))}
+            </ul>
           )}
 
           {accionEstado === 'sin-codigo-pais' && (

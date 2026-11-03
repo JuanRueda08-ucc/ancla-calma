@@ -74,6 +74,10 @@ export default function IslaAuxilio() {
   const { user, loading: authLoading } = useAuth()
   const navigate = useNavigate()
   const location = useLocation()
+  // "Volver" regresa a donde vino la persona si llegó desde otra pantalla
+  // (ej. "Editar contactos" del Panel de Acompañamiento); si no, a las islas.
+  const origen = location.state?.from
+  const volverA = typeof origen === 'string' && origen.startsWith('/') && origen !== location.pathname ? origen : '/islas'
   const [toast, setToast] = useState(null)
   const toastTimeout = useRef(null)
 
@@ -335,7 +339,7 @@ export default function IslaAuxilio() {
       <StarField />
       {/* pb alto: deja espacio para la barra fija de líneas de ayuda */}
       <div className="relative z-[2] mx-auto max-w-[620px] px-5 pb-[calc(9rem+env(safe-area-inset-bottom))] pt-10">
-        <ScreenHeader backTo="/islas" accountButtonClassName="bg-white/20 text-white" />
+        <ScreenHeader backTo={volverA} accountButtonClassName="bg-white/20 text-white" />
 
         <motion.div {...riseIn(0)} className="mb-8">
           <h1 className="text-[30px] font-semibold leading-tight text-white">Isla del Auxilio</h1>

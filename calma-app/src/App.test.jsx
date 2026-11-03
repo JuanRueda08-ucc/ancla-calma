@@ -169,6 +169,48 @@ describe('Panel de Acompañamiento con pestañas', () => {
     expect(screen.getAllByRole('tabpanel')).toHaveLength(1)
   })
 
+  const conDosContactos = {
+    sesion: SESION,
+    respuestas: {
+      contactos_confianza: {
+        data: [
+          { id: '1', nombre: 'Mamá', telefono: '+57 300 111 2233' },
+          { id: '2', nombre: 'Andrés Gómez', telefono: '+57 311 444 5566' },
+        ],
+        error: null,
+      },
+      ubicaciones_en_vivo: { data: null, error: null },
+      profiles: { data: { avatar_id: null, display_name: null }, error: null },
+    },
+  }
+
+  it('en "Ahora" se ve cada contacto con su nombre, llamar y mensaje', async () => {
+    await abrirApp('/acompanamiento', conDosContactos)
+    const panel = await screen.findByRole('tabpanel')
+
+    expect(await within(panel).findByText('Mamá')).toBeInTheDocument()
+    expect(within(panel).getByText('Andrés Gómez')).toBeInTheDocument()
+    expect(within(panel).getByRole('link', { name: 'Llamar a Mamá' })).toHaveAttribute('href', 'tel:+573001112233')
+    expect(within(panel).getByRole('link', { name: 'Llamar a Andrés Gómez' })).toHaveAttribute('href', 'tel:+573114445566')
+    expect(within(panel).getByRole('button', { name: 'Escribir a Mamá por WhatsApp' })).toBeInTheDocument()
+    expect(within(panel).queryByRole('button', { name: 'Llamar' })).not.toBeInTheDocument()
+  })
+
+  it('"Editar contactos" lleva a la Isla del Auxilio y su "Volver" regresa al Panel', async () => {
+    const usuario = userEvent.setup()
+    await abrirApp('/acompanamiento', conDosContactos)
+    await usuario.click(await screen.findByRole('button', { name: /Editar contactos/ }))
+
+    expect(await screen.findByRole('heading', { level: 1, name: 'Isla del Auxilio' })).toBeInTheDocument()
+    expect(screen.getByRole('link', { name: /Volver/ })).toHaveAttribute('href', '/acompanamiento')
+  })
+
+  it('entrando directo a la Isla del Auxilio, "Volver" sigue llevando a las islas', async () => {
+    await abrirApp('/islas/auxilio')
+    await screen.findByRole('heading', { level: 1, name: 'Isla del Auxilio' })
+    expect(screen.getByRole('link', { name: /Volver/ })).toHaveAttribute('href', '/islas')
+  })
+
   it('las pestañas se recorren con las flechas del teclado', async () => {
     const usuario = userEvent.setup()
     await abrirApp('/acompanamiento')
