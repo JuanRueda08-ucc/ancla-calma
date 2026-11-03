@@ -55,7 +55,7 @@ Ver también: ../AGENTS.md (raíz), ../docs/ARCHITECTURE.md, ../docs/DECISIONS.m
 
 ## Antes de escribir CSS/posicionamiento a mano
 Si el cambio involucra posicionar overlays o elementos sobre una imagen
-(como los resaltados del personaje pirata), usar SIEMPRE porcentajes
+(como las zonas de la silueta de relajación muscular), usar SIEMPRE porcentajes
 relativos al contenedor, nunca píxeles fijos — la app es responsiva y se
 prueba en mobile.
 
@@ -64,4 +64,4 @@ prueba en mobile.
   `prefers-reduced-motion` a propósito (ver DECISIONS.md) — no "arreglarlo"
   agregando ese chequeo de vuelta.
 - Assets de `src/assets/personajes/pirata/`: son arte de marca real
-  extraído de un PDF, no placeholders.
+  extraído de un PDF, no placeholders (hoy sin uso en la app; no borrarlos).

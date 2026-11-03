@@ -6,14 +6,14 @@ tarea grande, revisar qué está "en progreso" acá para no pisar trabajo del
 otro agente. Al terminar una tarea significativa, actualizar este archivo.
 
 ## En progreso / pendiente ahora mismo
-- Idioma (español/inglés) y tema de día (rama `feature/idioma-tema`, PR en
-  borrador): selector de idioma tras "Comenzar", "Cambiar idioma" en el
-  menú de cuenta y en Perfil, botón sol/luna, todas las pantallas traducidas
-  y con versión de día. Falta: revisar el tema de día con sesión iniciada
-  (Bitácora, Historial, Faro, Perfil) y en un teléfono real; revisión de la
-  traducción de la política de privacidad.
+- Relajación muscular con silueta de cuerpo animada y ritmo guiado (ya en main):
+  reemplaza al personaje pirata.
 
 ## Completado (diseño y documentación)
+- Idioma español/inglés y tema de día (PR #27, ya en main): selector de
+  idioma tras "Comenzar", "Cambiar idioma" en el menú de cuenta y en Perfil,
+  botón sol/luna y todas las pantallas traducidas. Pendiente revisar el tema
+  de día con sesión iniciada y la traducción de la política de privacidad.
 - Rediseño de la pantalla Entrada (PR #2, ya en main): escena nocturna
   asimétrica — wordmark y frase alineados a la izquierda, botón
   "Comenzar" abajo sobre el mar, faro nuevo (torre esbelta crema con

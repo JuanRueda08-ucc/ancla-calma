@@ -113,7 +113,19 @@ policies de RLS — ver DECISIONS.md para el bug que motivó esta regla.
   nativa (no funciona en Firefox, se auto-oculta si no hay soporte)
 - `VoiceNoteRecorder.jsx`: grabación de audio real vía MediaRecorder API
 
-## Personaje pirata (Relajación muscular)
+## Relajación muscular (silueta del cuerpo)
+`SiluetaCuerpo.jsx`: cuerpo de frente en SVG (viewBox 0 0 200 400) con
+una forma por zona (mandíbula, hombros, brazos, manos, abdomen, piernas,
+pies; las del lado derecho son las izquierdas reflejadas). Un filtro SVG une
+las piezas en una sola silueta con un único contorno. La zona del paso se
+enciende y se contrae al tensar (5 s) y se apaga despacio con una onda de luz
+al soltar (10 s); las zonas ya trabajadas quedan tibias. La animación sale
+del temporizador de `EjercicioRelajacionMuscular.jsx` (no de duraciones de
+Framer), así que la pausa de `GuidedExerciseShell` (`onPausaCambio`) la
+detiene. Avanza solo de zona; "Siguiente zona" salta. Total ≈ 2 min.
+
+## Personaje pirata (ya no se usa en la app)
+Reemplazado por la silueta en noviembre 2026; los assets siguen en el repo.
 Assets en `calma-app/src/assets/personajes/pirata/`. Extraído de un PDF
 original con capas de Illustrator (`hombre`/`mujer`/otras — solo `hombre` se
 renderiza, el resto parecen residuos de plantilla). Estructura de assets:

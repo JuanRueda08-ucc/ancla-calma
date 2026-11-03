@@ -26,10 +26,11 @@ sin excepción, junto con el GRANT explícito correspondiente. Ver
 docs/DECISIONS.md para el bug histórico de por qué esto se volvió una regla
 no negociable.
 
-**El personaje pirata (Isla del Aire → Relajación muscular) es arte de marca
-real**, no un placeholder — cualquier cambio a esos assets debe mantener el
-estilo ilustrado/con textura, no reemplazarlo por vectores planos sin
-discutirlo primero.
+**El personaje pirata es arte de marca real**, no un placeholder — cualquier
+cambio a esos assets debe mantener el estilo ilustrado/con textura. Desde
+noviembre 2026 ya no se usa en Relajación muscular (la reemplazó una silueta
+de cuerpo animada, decisión del usuario; ver DECISIONS.md), pero los assets
+se conservan en el repo.
 
 ## Estructura narrativa de la app (por si se agregan pantallas nuevas)
 La app usa la metáfora de un archipiélago: Isla del Auxilio (ayuda/contactos),
