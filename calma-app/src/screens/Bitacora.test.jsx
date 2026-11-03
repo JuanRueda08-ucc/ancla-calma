@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
-import { render, screen, waitFor } from '@testing-library/react'
+import { render, screen, waitFor, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { crearSupabaseFalso } from '../test/supabaseFalso'
 
@@ -97,9 +97,9 @@ describe('Bitácora: una pregunta a la vez', () => {
 })
 
 describe('Historial de la bitácora', () => {
-  const fila = (id, texto) => ({
+  const fila = (id, texto, createdAt = '2026-11-01T15:00:00Z') => ({
     id,
-    created_at: '2026-11-01T15:00:00Z',
+    created_at: createdAt,
     tags: [],
     emocion_libre: null,
     que_siento: texto,
@@ -108,6 +108,41 @@ describe('Historial de la bitácora', () => {
     que_ayudo: null,
     tiene_nota_voz: false,
     nota_voz_duracion: null,
+  })
+
+  it('agrupa las entradas por día en una línea de tiempo (Hoy, Ayer, fecha)', async () => {
+    const haceDias = (dias) => {
+      const fecha = new Date()
+      fecha.setDate(fecha.getDate() - dias)
+      fecha.setHours(12, 0, 0, 0)
+      return fecha.toISOString()
+    }
+    estado.supabase = crearSupabaseFalso({
+      sesion: SESION,
+      respuestas: {
+        profiles: { data: { avatar_id: null, display_name: null }, error: null },
+        bitacora_entradas: {
+          data: [
+            fila('a', 'Entrada de hoy', haceDias(0)),
+            fila('b', 'Otra de hoy', haceDias(0)),
+            fila('c', 'Entrada de ayer', haceDias(1)),
+            fila('d', 'Entrada vieja', haceDias(7)),
+          ],
+          error: null,
+        },
+      },
+    })
+    window.history.pushState({}, '', '/bitacora/historial')
+    const { default: App } = await import('../App')
+    render(<App />)
+
+    await screen.findByRole('button', { name: /Entrada de hoy/ })
+    const dias = screen.getAllByRole('heading', { level: 2 }).map((h) => h.textContent)
+    expect(dias.slice(0, 2)).toEqual(['Hoy', 'Ayer'])
+    expect(dias).toHaveLength(3)
+
+    const hoy = screen.getByRole('heading', { name: 'Hoy' }).closest('section')
+    expect(within(hoy).getAllByRole('listitem')).toHaveLength(2)
   })
 
   it('abrir una entrada cierra la que estaba abierta', async () => {
