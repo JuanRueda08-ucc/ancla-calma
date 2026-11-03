@@ -106,8 +106,8 @@ function eliminarBaseAudioLegacy() {
   })
 }
 
-function EntradaCard({ entrada, delay, onEliminar }) {
-  const [abierto, setAbierto] = useState(false)
+// `abierto` lo controla la lista: solo una entrada abierta a la vez.
+function EntradaCard({ entrada, delay, abierto, onToggle, onEliminar }) {
   const [confirmando, setConfirmando] = useState(false)
   // 'idle' | 'loading' | 'ready' | 'unavailable'
   const [audioState, setAudioState] = useState('idle')
@@ -172,7 +172,7 @@ function EntradaCard({ entrada, delay, onEliminar }) {
     >
       <button
         type="button"
-        onClick={() => setAbierto((prev) => !prev)}
+        onClick={onToggle}
         aria-expanded={abierto}
         className="w-full px-5 py-[18px] text-left focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-inset focus-visible:ring-brand-navy/20"
       >
@@ -328,6 +328,9 @@ function EntradaCard({ entrada, delay, onEliminar }) {
 export default function HistorialBitacora() {
   const [cargaEstado, setCargaEstado] = useState('cargando') // 'cargando' | 'error' | 'listo'
   const [entradas, setEntradas] = useState([])
+  // Una sola entrada abierta a la vez: abrir otra cierra la anterior.
+  const [abiertaId, setAbiertaId] = useState(null)
+  const alternarEntrada = (id) => setAbiertaId((actual) => (actual === id ? null : id))
 
   const [migracionDisponible, setMigracionDisponible] = useState(false)
   const [entradasLocales, setEntradasLocales] = useState([])
@@ -503,6 +506,8 @@ export default function HistorialBitacora() {
               key={entrada.id}
               entrada={entrada}
               delay={0.05 * index}
+              abierto={abiertaId === entrada.id}
+              onToggle={() => alternarEntrada(entrada.id)}
               onEliminar={handleEliminar}
             />
           ))}

@@ -773,7 +773,7 @@ export default function IslaAuxilio() {
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
           exit={{ opacity: 0 }}
-          className="pointer-events-none fixed inset-x-0 bottom-[calc(7.5rem+env(safe-area-inset-bottom))] z-[6] flex justify-center px-5"
+          className="pointer-events-none fixed inset-x-0 bottom-[calc(7.5rem+env(safe-area-inset-bottom))] z-50 flex transform-gpu justify-center px-5"
         >
           <div className="rounded-full bg-ink px-5 py-3 text-sm font-medium text-white shadow-lg">
             {toast}

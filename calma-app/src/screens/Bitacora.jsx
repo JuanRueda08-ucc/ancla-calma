@@ -372,7 +372,7 @@ export default function Bitacora() {
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
           exit={{ opacity: 0 }}
-          className="pointer-events-none fixed inset-x-0 bottom-8 flex justify-center px-5"
+          className="pointer-events-none fixed inset-x-0 bottom-[calc(2rem+env(safe-area-inset-bottom))] z-50 flex transform-gpu justify-center px-5"
         >
           <div
             className={`rounded-full px-5 py-3 text-sm font-medium shadow-lg ${
