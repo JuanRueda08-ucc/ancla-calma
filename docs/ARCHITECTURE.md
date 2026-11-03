@@ -30,7 +30,7 @@
 /acompanamiento                                → PanelAcompanamiento (vuelve a /elegir)
 /login                                         → Login
 /registro                                      → Registro
-/privacidad                                    → Privacidad (stub, pendiente texto legal real)
+/privacidad                                    → Privacidad (texto real en español e inglés; pendiente revisión legal)
 /ubicacion/:token     [pública, sin cuenta]    → UbicacionCompartida (enlace de ubicación en vivo)
 ```
 
@@ -95,8 +95,9 @@ policies de RLS — ver DECISIONS.md para el bug que motivó esta regla.
   (`onPausaCambio`) detiene el reloj y al final se muestra un cierre.
 - `GuidedExerciseShell.jsx`: shell común de los 3 ejercicios de Puerto Seguro
   (fondo StarField, barra superior pausa/cerrar, temporizador real con barra
-  de progreso ligada a `durationSeconds`, independiente del avance manual
-  por pasos)
+  de progreso ligada a `durationSeconds`). Avisa la pausa con
+  `onPausaCambio` para que el ritmo de cada ejercicio también se detenga. La
+  barra de arriba sigue el tiempo real: no salta al adelantar un paso
 - `contactosStorage.js`, `bitacoraStorage.js`, `audioStorage.js`,
   `herramientasStorage.js`: capa de
   acceso a datos (Supabase), todas async, todas confían en RLS para el
