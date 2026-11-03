@@ -6,6 +6,9 @@ export default {
     cerrar: 'Cerrar',
     continuar: 'Continuar',
     finalizar: 'Finalizar',
+    sigueEn: (n) => `Sigue en ${n} s`,
+    terminaEn: (n) => `Termina en ${n} s`,
+    bienHecho: 'Muy bien',
     puerto: {
       titulo: 'Puerto Seguro',
       subtitulo: 'Un refugio tranquilo para encontrar calma',
@@ -30,6 +33,7 @@ export default {
       titulo: 'Ejercicio de grounding',
       pie: 'Ejercicio de grounding • 3 min',
       respira: 'Respira suavemente mientras observas',
+      cierre: 'Volviste al presente con tus cinco sentidos. Quédate un momento con esa calma.',
       pasos: [
         { titulo: '5 cosas que puedes ver', texto: 'Observa tu alrededor y nombra 5 cosas que puedas ver, sin apurarte.' },
         { titulo: '4 cosas que puedes tocar', texto: 'Nota la textura de algo cerca de ti: tu ropa, una superficie, tu propia piel.' },
@@ -42,6 +46,7 @@ export default {
       titulo: 'Ejercicios sensoriales',
       pie: 'Ejercicios sensoriales • 4 min',
       toca: 'Toca el recuadro para interactuar',
+      cierre: 'Conectaste con tus sentidos. Respira hondo una vez más antes de seguir.',
       pasos: [
         { titulo: 'Escucha atenta', texto: 'Cierra los ojos y escucha los sonidos a tu alrededor.' },
         { titulo: 'Enfoque visual', texto: 'Encuentra un objeto y observa todos sus detalles.' },
@@ -80,6 +85,9 @@ export default {
     cerrar: 'Close',
     continuar: 'Continue',
     finalizar: 'Finish',
+    sigueEn: (n) => `Next in ${n} s`,
+    terminaEn: (n) => `Ends in ${n} s`,
+    bienHecho: 'Well done',
     puerto: {
       titulo: 'Safe Harbor',
       subtitulo: 'A quiet refuge to find calm',
@@ -103,6 +111,7 @@ export default {
       titulo: 'Grounding exercise',
       pie: 'Grounding exercise • 3 min',
       respira: 'Breathe gently as you notice',
+      cierre: 'You came back to the present with your five senses. Stay a moment with that calm.',
       pasos: [
         { titulo: '5 things you can see', texto: 'Look around you and name 5 things you can see, without rushing.' },
         { titulo: '4 things you can touch', texto: 'Notice the texture of something near you: your clothes, a surface, your own skin.' },
@@ -115,6 +124,7 @@ export default {
       titulo: 'Sensory exercises',
       pie: 'Sensory exercises • 4 min',
       toca: 'Touch the box to interact',
+      cierre: 'You connected with your senses. Take one more deep breath before moving on.',
       pasos: [
         { titulo: 'Careful listening', texto: 'Close your eyes and listen to the sounds around you.' },
         { titulo: 'Visual focus', texto: 'Find an object and notice every detail of it.' },

@@ -74,6 +74,11 @@ export function useIdioma() {
   return useContext(PreferenciasContext)?.idioma ?? IDIOMA_POR_DEFECTO
 }
 
+// Igual para el tema (lo usa el shader del ejercicio sensorial)
+export function useTema() {
+  return useContext(PreferenciasContext)?.tema ?? 'noche'
+}
+
 export function usePreferencias() {
   const context = useContext(PreferenciasContext)
   if (context === undefined) {
