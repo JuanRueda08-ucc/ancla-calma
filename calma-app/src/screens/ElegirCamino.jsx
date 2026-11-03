@@ -1,5 +1,5 @@
 import { useNavigate, useSearchParams } from 'react-router-dom'
-import { motion } from 'framer-motion'
+import { motion, useReducedMotion } from 'framer-motion'
 import '../styles/elegirCamino.css'
 import { riseIn } from '../animations/transitions'
 import InstalarApp from '../components/InstalarApp'
@@ -46,39 +46,82 @@ const CAMINOS = [
   {
     to: '/islas',
     Icon: SalvavidasIcon,
-    band: 'bg-gradient-to-r from-auxilio-1 to-faro-1 shadow-[0_18px_44px_rgba(255,122,89,0.28)]',
+    band: 'bg-gradient-to-r from-auxilio-1 to-faro-1',
+    // sombra en reposo y al elevarse (color de la franja)
+    sombras: ['0 18px 44px rgba(255,122,89,0.28)', '0 28px 60px rgba(255,122,89,0.42)'],
+    // el salvavidas gira un cuarto de vuelta, como si flotara
+    iconoHover: { rotate: 90 },
+    iconoOrigen: 0.5,
     delay: 0.2,
   },
   {
     to: '/acompanamiento',
     Icon: FarolIcon,
-    band: 'bg-gradient-to-r from-acomp-1 to-acomp-2 shadow-[0_18px_44px_rgba(47,191,159,0.24)]',
+    band: 'bg-gradient-to-r from-acomp-1 to-acomp-2',
+    sombras: ['0 18px 44px rgba(47,191,159,0.24)', '0 28px 60px rgba(47,191,159,0.38)'],
+    // el farol se mece colgado de su asa
+    iconoHover: { rotate: [0, -10, 8, -4, 0] },
+    iconoOrigen: 0.12,
     delay: 0.32,
   },
 ]
 
-function CaminoBand({ to, title, description, Icon, band, delay }) {
+// Al pasar el mouse (o con foco de teclado) la franja se eleva, su sombra
+// crece, un reflejo de luz la recorre y el ícono se mueve; al tocarla se
+// hunde. Hijos con las mismas variantes (`reposo`/`elevada`) se animan solos.
+function CaminoBand({ to, title, description, Icon, band, sombras, iconoHover, iconoOrigen, delay }) {
   const navigate = useNavigate()
+  const reduceMotion = useReducedMotion()
+  const rapida = { duration: 0.25, ease: [0.2, 0.8, 0.2, 1] }
 
   return (
-    <motion.button
-      {...riseIn(delay)}
-      type="button"
-      onClick={() => navigate(to)}
-      whileHover={{ x: -4, transition: { duration: 0.15 } }}
-      whileTap={{ scale: 0.98, transition: { duration: 0.15 } }}
-      // Contenida y redondeada en todos los tamaños: en móvil la franja que
-      // salía por el borde derecho se veía cortada, no como un haz de luz.
-      className={`flex w-full items-center gap-4 rounded-xl px-6 py-6 text-left text-brand-navyDeep focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-cielo/70 sm:px-8 ${band}`}
-    >
-      <div className="min-w-0 flex-1">
-        <h2 className="text-[22px] font-semibold leading-tight">{title}</h2>
-        <p className="mt-2 text-sm leading-relaxed text-brand-navyDeep/80">{description}</p>
-      </div>
-      <div className="h-16 w-16 shrink-0 sm:h-20 sm:w-20">
-        <Icon />
-      </div>
-    </motion.button>
+    <motion.div {...riseIn(delay)}>
+      <motion.button
+        type="button"
+        onClick={() => navigate(to)}
+        initial="reposo"
+        animate="reposo"
+        whileHover="elevada"
+        whileFocus="elevada"
+        whileTap="hundida"
+        variants={{
+          reposo: { y: 0, scale: 1, boxShadow: sombras[0], transition: rapida },
+          elevada: { y: reduceMotion ? 0 : -6, scale: 1, boxShadow: sombras[1], transition: rapida },
+          hundida: { y: 0, scale: 0.97, boxShadow: sombras[0], transition: { duration: 0.12 } },
+        }}
+        // Contenida y redondeada en todos los tamaños: en móvil la franja que
+        // salía por el borde derecho se veía cortada, no como un haz de luz.
+        className={`relative flex w-full items-center gap-4 overflow-hidden rounded-xl px-6 py-6 text-left text-brand-navyDeep focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-cielo/70 sm:px-8 ${band}`}
+      >
+        {/* reflejo de luz que cruza la franja al elevarse */}
+        {!reduceMotion && (
+          <motion.span
+            aria-hidden="true"
+            className="pointer-events-none absolute inset-y-0 left-0 w-1/3 -skew-x-12 bg-gradient-to-r from-transparent via-white/45 to-transparent"
+            variants={{
+              reposo: { x: '-120%', transition: { duration: 0 } },
+              elevada: { x: '380%', transition: { duration: 0.8, ease: 'easeOut' } },
+            }}
+          />
+        )}
+        <div className="relative min-w-0 flex-1">
+          <h2 className="text-[22px] font-semibold leading-tight">{title}</h2>
+          <p className="mt-2 text-sm leading-relaxed text-brand-navyDeep/80">{description}</p>
+        </div>
+        <motion.div
+          className="relative h-16 w-16 shrink-0 sm:h-20 sm:w-20"
+          style={{ originY: iconoOrigen }}
+          variants={{
+            reposo: { rotate: 0, scale: 1, transition: { duration: 0.4 } },
+            elevada: reduceMotion
+              ? { scale: 1.06 }
+              : { ...iconoHover, scale: 1.06, transition: { duration: 0.7, ease: 'easeInOut' } },
+          }}
+        >
+          <Icon />
+        </motion.div>
+      </motion.button>
+    </motion.div>
   )
 }
 
