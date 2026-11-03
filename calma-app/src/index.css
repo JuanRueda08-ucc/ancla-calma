@@ -9,6 +9,13 @@
     padding: 0;
   }
 
+  /* Reserva siempre el espacio de la barra de desplazamiento: si no, al pasar
+     de una pantalla o pestaña larga a una corta (Señales → Guía en el Panel)
+     la barra desaparece y todo lo centrado salta unos píxeles a la derecha. */
+  html {
+    scrollbar-gutter: stable;
+  }
+
   /* Fondo base del tema (styles/tema.css): el rebote del scroll en iOS y el
      instante de carga no deben destellar con el color del otro tema. */
   body {
