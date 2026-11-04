@@ -158,6 +158,14 @@ algo que parecía un bug era en realidad una decisión deliberada. Antes de
   avisa arriba de la pantalla.
 - El service worker solo se registra en producción (`import.meta.env.PROD`)
   para no interferir con la recarga en caliente de desarrollo.
+- **El cambio de tema en Entrada es una secuencia, solo con CSS**
+  (`entrada.css`): hacia el día se apaga el faro y luego amanece; hacia la
+  noche oscurece y al final se prende el faro. Cada elemento tiene su
+  transición con retraso según `data-tema`, sin temporizadores en JS, así que
+  un cambio a mitad de camino se devuelve desde donde esté. `data-tema` cambia
+  al instante: el resto de pantallas no tiene esta secuencia. Los degradados no
+  se animan, por eso los cielos y el mar son capas que cambian de opacidad, con
+  una capa de alba en medio para no pasar por un gris.
 - **Volver, tema y cuenta van en las esquinas de la página**
   (`EsquinasPantalla.jsx`, montado en `<body>`), no dentro del contenedor
   de cada pantalla: cada pantalla tiene su propio ancho (420, 540, 620 px) y

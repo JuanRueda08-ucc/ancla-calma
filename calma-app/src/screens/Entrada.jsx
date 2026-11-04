@@ -31,8 +31,11 @@ export default function Entrada() {
 
   return (
     <div className="entrada-bg relative min-h-[100dvh] overflow-hidden text-cielo">
+      {/* cielos del amanecer sobre el de noche: ver entrada.css */}
+      <div className="entrada-cielo-alba" aria-hidden="true" />
+      <div className="entrada-cielo-dia" aria-hidden="true" />
       <StarField />
-      {/* sol del amanecer sobre el horizonte: solo en el tema de día */}
+      {/* sol del amanecer: de noche queda escondido detrás del mar */}
       <div className="entrada-sol pointer-events-none absolute bottom-[19%] left-[14%] h-[22vmin] w-[22vmin] rounded-full" aria-hidden="true" />
 
       {/* escena: faro anclado a la derecha, sangrando fuera del borde */}
@@ -89,8 +92,8 @@ export default function Entrada() {
 
             {/* puerta y ventana */}
             <path d="M74 300 L74 284 Q80 276 86 284 L86 300 Z" className="fill-brand-navyDeep" />
-            <rect x="77" y="206" width="6" height="14" rx="3" className="fill-faro-2" />
-            <rect x="77" y="144" width="6" height="12" rx="3" className="fill-faro-2" />
+            <rect x="77" y="206" width="6" height="14" rx="3" className="entrada-ventana fill-faro-2" />
+            <rect x="77" y="144" width="6" height="12" rx="3" className="entrada-ventana fill-faro-2" />
 
             {/* galería con barandal */}
             <rect x="46" y="118" width="68" height="8" rx="2" className="fill-brand-navyDeep" />
@@ -100,8 +103,8 @@ export default function Entrada() {
             ))}
 
             {/* sala de luz */}
-            <rect x="64" y="80" width="32" height="38" className="fill-faro-2" opacity="0.35" />
-            <circle cx="80" cy="94" r="10" fill="url(#entradaLampGrad)" />
+            <rect x="64" y="80" width="32" height="38" className="entrada-vidrio fill-faro-2" />
+            <circle cx="80" cy="94" r="10" className="entrada-lampara" fill="url(#entradaLampGrad)" />
             {MULLION_X.map((x) => (
               <line key={x} x1={x} y1="80" x2={x} y2="118" className="stroke-brand-navyDeep" strokeWidth="1.2" opacity="0.7" />
             ))}
@@ -125,11 +128,16 @@ export default function Entrada() {
       >
         <defs>
           <linearGradient id="entradaSeaGrad" x1="0" y1="0" x2="0" y2="1">
-            <stop offset="0%" className="mar-arriba" stopColor="currentColor" />
-            <stop offset="100%" className="mar-abajo" stopColor="currentColor" />
+            <stop offset="0%" className="entrada-mar-noche-arriba" stopColor="currentColor" />
+            <stop offset="100%" className="entrada-mar-noche-abajo" stopColor="currentColor" />
+          </linearGradient>
+          <linearGradient id="entradaSeaGradDia" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" className="entrada-mar-dia-arriba" stopColor="currentColor" />
+            <stop offset="100%" className="entrada-mar-dia-abajo" stopColor="currentColor" />
           </linearGradient>
         </defs>
         <rect x="0" y="0" width="400" height="100" fill="url(#entradaSeaGrad)" />
+        <rect x="0" y="0" width="400" height="100" fill="url(#entradaSeaGradDia)" className="entrada-mar-dia" />
         <line x1="0" y1="0.5" x2="400" y2="0.5" className="stroke-aire-accent" strokeWidth="1" opacity="0.35" vectorEffect="non-scaling-stroke" />
         <path d="M0 22 Q 25 16 50 22 T 100 22 T 150 22 T 200 22 T 250 22 T 300 22 T 350 22 T 400 22" fill="none" stroke="rgba(255,255,255,.16)" strokeWidth="1.5" vectorEffect="non-scaling-stroke" />
         <path d="M0 52 Q 25 45 50 52 T 100 52 T 150 52 T 200 52 T 250 52 T 300 52 T 350 52 T 400 52" fill="none" stroke="rgba(255,255,255,.1)" strokeWidth="1.5" vectorEffect="non-scaling-stroke" />
@@ -146,8 +154,8 @@ export default function Entrada() {
       <EsquinasPantalla
         derecha={
           <>
-            <AccountMenu buttonClassName="bg-white/20 text-cielo" />
-            <TemaToggle />
+            <AccountMenu buttonClassName="bg-white/20 text-cielo transition-colors duration-1000" />
+            <TemaToggle className="bg-white/20 text-cielo transition-colors duration-1000" />
           </>
         }
       />
@@ -157,14 +165,14 @@ export default function Entrada() {
           {...riseIn(0)}
           // -ml: la "C" de Comba Test trae ~0.045em de aire a la izquierda; sin
           // esto el wordmark no queda alineado con la frase de abajo.
-          className="entrada-wordmark -ml-[0.045em] font-display uppercase leading-[0.9] tracking-[2px] text-cielo"
+          className="entrada-wordmark entrada-texto -ml-[0.045em] font-display uppercase leading-[0.9] tracking-[2px] text-cielo"
         >
           Calma
         </motion.h1>
 
         <motion.p
           {...riseIn(0.15)}
-          className="mt-4 max-w-[15rem] font-sans text-[15px] leading-relaxed text-cielo/75 sm:max-w-xs sm:text-base"
+          className="entrada-texto mt-4 max-w-[15rem] font-sans text-[15px] leading-relaxed text-cielo/75 sm:max-w-xs sm:text-base"
         >
           {t.frase}
         </motion.p>
